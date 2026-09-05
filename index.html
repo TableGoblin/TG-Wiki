@@ -1,0 +1,923 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A complete guide to Table Goblin, the Pathfinder 2e Discord bot: setup, characters, combat, maps, loot and towns.">
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="Table Goblin Handbook">
+<meta property="og:description" content="A complete guide to Table Goblin, the Pathfinder 2e Discord bot.">
+<meta property="og:type" content="website">
+<style>
+  /* Standalone reset -- the Artifact host supplies this; GitHub Pages does not. */
+  html, body { margin: 0; padding: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>Table Goblin Handbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  /* ---------------------------------------------------------------
+     Table Goblin Handbook
+     Palette: green-biased neutrals (the cave) + brass (the hoard).
+     Every colour is a token on :root so all three theme states
+     -- explicit light, explicit dark, and un-stamped system -- resolve.
+     --------------------------------------------------------------- */
+  :root {
+    --ground:      #F0F1EA;
+    --ground-2:    #E5E7DC;
+    --surface:     #FAFAF6;
+    --surface-2:   #EBEDE3;
+    --line:        #D2D5C6;
+    --line-strong: #B4B9A4;
+    --text:        #1B1F16;
+    --text-2:      #4C523F;
+    --text-3:      #6E7560;
+    --brass:       #9A6E1C;
+    --brass-bright:#C08F2E;
+    --brass-wash:  #F3E7CC;
+    --verdigris:   #2F6C5E;
+    --verdigris-wash:#DDEAE5;
+    --danger:      #8A3520;
+    --danger-wash: #F4E1DA;
+    --code-bg:     #E9EBE0;
+    --shadow:      0 1px 2px rgba(27,31,22,.06), 0 6px 18px rgba(27,31,22,.05);
+    --rail-w: 246px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #12150E;
+      --ground-2:    #0D100A;
+      --surface:     #1A1E15;
+      --surface-2:   #222719;
+      --line:        #2E3427;
+      --line-strong: #414937;
+      --text:        #E8EADF;
+      --text-2:      #B0B6A2;
+      --text-3:      #878D77;
+      --brass:       #D9A945;
+      --brass-bright:#EFC468;
+      --brass-wash:  #2A2312;
+      --verdigris:   #6FBFA9;
+      --verdigris-wash:#16241F;
+      --danger:      #E08B6C;
+      --danger-wash: #2A1710;
+      --code-bg:     #1E2318;
+      --shadow:      0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:      #12150E;
+    --ground-2:    #0D100A;
+    --surface:     #1A1E15;
+    --surface-2:   #222719;
+    --line:        #2E3427;
+    --line-strong: #414937;
+    --text:        #E8EADF;
+    --text-2:      #B0B6A2;
+    --text-3:      #878D77;
+    --brass:       #D9A945;
+    --brass-bright:#EFC468;
+    --brass-wash:  #2A2312;
+    --verdigris:   #6FBFA9;
+    --verdigris-wash:#16241F;
+    --danger:      #E08B6C;
+    --danger-wash: #2A1710;
+    --code-bg:     #1E2318;
+    --shadow:      0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--text);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: Fraunces, "Iowan Old Style", Georgia, serif;
+    font-weight: 600;
+    text-wrap: balance;
+    line-height: 1.15;
+    margin: 0;
+  }
+
+  a { color: var(--verdigris); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:hover { color: var(--brass); }
+  :focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 3px; border-radius: 2px; }
+
+  code, kbd, .cmd, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-variant-ligatures: none;
+  }
+
+  /* ---------------- shell ---------------- */
+  .shell { display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr); gap: 0; }
+
+  .rail {
+    position: sticky; top: 0; align-self: start;
+    height: 100vh; overflow-y: auto;
+    padding: 30px 20px 40px 30px;
+    border-right: 1px solid var(--line);
+    background: var(--ground-2);
+    display: flex; flex-direction: column; gap: 22px;
+  }
+  .rail-brand { display: flex; flex-direction: column; gap: 3px; }
+  .rail-brand b {
+    font-family: Fraunces, Georgia, serif; font-weight: 700;
+    font-size: 19px; letter-spacing: -.01em;
+  }
+  .rail-brand span { font-size: 11.5px; color: var(--text-3); letter-spacing: .06em; text-transform: uppercase; }
+
+  .rail nav { display: flex; flex-direction: column; gap: 1px; }
+  .rail nav a {
+    display: grid; grid-template-columns: 20px 1fr; gap: 9px; align-items: baseline;
+    padding: 6px 9px; border-radius: 5px;
+    color: var(--text-2); text-decoration: none; font-size: 13.6px; line-height: 1.35;
+  }
+  .rail nav a .n {
+    font-family: "IBM Plex Mono", monospace; font-size: 11px;
+    color: var(--text-3); font-variant-numeric: tabular-nums;
+  }
+  .rail nav a:hover { background: var(--surface-2); color: var(--text); }
+  .rail nav a:hover .n { color: var(--brass); }
+
+  main { min-width: 0; padding: 0 0 96px; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 34px; }
+
+  /* ---------------- hero ---------------- */
+  .hero { padding: 76px 0 46px; border-bottom: 1px solid var(--line); }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace; font-size: 11.5px;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--brass);
+  }
+  .hero h1 {
+    font-size: clamp(42px, 6vw, 62px); font-weight: 700;
+    letter-spacing: -.022em; margin: 16px 0 0;
+  }
+  .hero .lede { font-size: 19.5px; line-height: 1.55; color: var(--text-2); margin: 20px 0 0; }
+  .hero .lede strong { color: var(--text); font-weight: 600; }
+
+  .roots { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 26px; }
+  .root-chip {
+    font-family: "IBM Plex Mono", monospace; font-size: 12.5px; font-weight: 500;
+    padding: 4px 10px; border-radius: 4px;
+    background: var(--surface); border: 1px solid var(--line); color: var(--text-2);
+  }
+  .root-chip b { color: var(--brass); font-weight: 600; }
+
+  /* ---------------- index cards ---------------- */
+  .index-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(216px, 1fr));
+    gap: 12px; margin: 34px 0 0;
+  }
+  .index-card {
+    display: flex; flex-direction: column; gap: 5px;
+    padding: 15px 16px 16px; border-radius: 7px;
+    background: var(--surface); border: 1px solid var(--line);
+    text-decoration: none; color: inherit;
+    transition: border-color .14s ease, transform .14s ease;
+  }
+  .index-card:hover { border-color: var(--brass); transform: translateY(-1px); color: inherit; }
+  .index-card .n {
+    font-family: "IBM Plex Mono", monospace; font-size: 11px;
+    color: var(--brass); font-variant-numeric: tabular-nums; letter-spacing: .08em;
+  }
+  .index-card b { font-family: Fraunces, Georgia, serif; font-size: 16.5px; font-weight: 600; }
+  .index-card span { font-size: 13.2px; color: var(--text-3); line-height: 1.45; }
+
+  /* ---------------- sections ---------------- */
+  section { padding: 62px 0 0; scroll-margin-top: 18px; }
+  .sec-head { display: flex; flex-direction: column; gap: 9px; margin-bottom: 26px; }
+  .sec-num {
+    font-family: "IBM Plex Mono", monospace; font-size: 11.5px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--brass);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sec-num::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  section h2 { font-size: clamp(28px, 3.4vw, 35px); letter-spacing: -.018em; }
+  .sec-sub { font-size: 17px; color: var(--text-2); margin: 0; }
+
+  section h3 {
+    font-size: 20px; margin: 38px 0 12px; letter-spacing: -.01em;
+  }
+  section h4 {
+    font-family: "IBM Plex Sans", sans-serif; font-size: 12px; font-weight: 600;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--text-3);
+    margin: 28px 0 10px;
+  }
+  p { margin: 0 0 14px; }
+  section > p, section > .prose { max-width: 68ch; }
+  ul, ol { margin: 0 0 14px; padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  li::marker { color: var(--brass); }
+
+  /* ---------------- command rows (the repeated object) ---------------- */
+  .cmds { display: flex; flex-direction: column; gap: 0; margin: 16px 0 20px;
+          border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+          background: var(--surface); }
+  .cmd-row {
+    display: grid; grid-template-columns: 1fr auto; gap: 6px 14px;
+    padding: 12px 15px; border-bottom: 1px solid var(--line);
+  }
+  .cmd-row:last-child { border-bottom: 0; }
+  .cmd {
+    font-size: 13.4px; font-weight: 500; color: var(--text);
+    overflow-x: auto; white-space: nowrap; padding-bottom: 1px;
+  }
+  .cmd .opt { color: var(--text-3); }
+  .cmd b { color: var(--brass); font-weight: 600; }
+  .cmd-row .desc { grid-column: 1 / -1; font-size: 14px; color: var(--text-2); line-height: 1.5; }
+  .cmd-row .desc code { font-size: 12.6px; }
+
+  .badge {
+    align-self: start; font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase;
+    padding: 2.5px 7px; border-radius: 3px; white-space: nowrap; font-weight: 500;
+  }
+  .b-player { background: var(--verdigris-wash); color: var(--verdigris); }
+  .b-self   { background: var(--surface-2);      color: var(--text-3); }
+  .b-gm     { background: var(--brass-wash);     color: var(--brass); }
+
+  /* ---------------- callouts ---------------- */
+  .note, .warn {
+    border-left: 2px solid var(--brass); padding: 13px 16px;
+    background: var(--surface); border-radius: 0 6px 6px 0;
+    margin: 18px 0; font-size: 14.6px; color: var(--text-2);
+  }
+  .warn { border-left-color: var(--danger); background: var(--danger-wash); }
+  .note strong, .warn strong { color: var(--text); }
+  .note p:last-child, .warn p:last-child { margin-bottom: 0; }
+
+  /* ---------------- tables ---------------- */
+  .t-wrap { overflow-x: auto; margin: 16px 0 20px; border: 1px solid var(--line); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.2px; background: var(--surface); }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th {
+    font-size: 11.5px; letter-spacing: .09em; text-transform: uppercase;
+    color: var(--text-3); font-weight: 600; background: var(--surface-2);
+  }
+  tr:last-child td { border-bottom: 0; }
+  td code { font-size: 12.8px; }
+
+  code:not(.cmd) {
+    background: var(--code-bg); padding: 1.5px 5px; border-radius: 3.5px;
+    font-size: .88em; color: var(--text);
+  }
+
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 7px;
+    padding: 14px 16px; overflow-x: auto; margin: 16px 0 20px;
+    font-family: "IBM Plex Mono", monospace; font-size: 13.2px; line-height: 1.62;
+    color: var(--text);
+  }
+  pre .c { color: var(--text-3); }
+  pre .k { color: var(--brass); }
+
+  /* ---------------- degrees ladder (PF2e-specific) ---------------- */
+  .ladder { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 18px 0 22px; }
+  .rung {
+    padding: 12px 13px; border-radius: 6px; background: var(--surface);
+    border: 1px solid var(--line); border-top: 3px solid var(--line-strong);
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .rung.crit-s { border-top-color: var(--verdigris); }
+  .rung.succ   { border-top-color: var(--brass-bright); }
+  .rung.fail   { border-top-color: var(--line-strong); }
+  .rung.crit-f { border-top-color: var(--danger); }
+  .rung b { font-size: 13.4px; font-weight: 600; letter-spacing: -.005em; }
+  .rung span { font-size: 12.4px; color: var(--text-3); line-height: 1.42; }
+
+  /* ---------------- channel map ---------------- */
+  .chan-list { display: flex; flex-direction: column; gap: 0; margin: 16px 0 20px;
+               border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .chan {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px 12px; align-items: center;
+    padding: 11px 15px; background: var(--surface); border-bottom: 1px solid var(--line);
+  }
+  .chan:last-child { border-bottom: 0; }
+  .chan .nm { font-family: "IBM Plex Mono", monospace; font-size: 13.4px; font-weight: 500; }
+  .chan .nm em { color: var(--text-3); font-style: normal; }
+  .chan .ty {
+    font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--text-3); font-family: "IBM Plex Mono", monospace;
+    border: 1px solid var(--line-strong); padding: 2px 6px; border-radius: 3px;
+  }
+  .chan .why { grid-column: 1 / -1; font-size: 13.6px; color: var(--text-2); }
+
+  footer {
+    margin-top: 74px; padding: 26px 0 0; border-top: 1px solid var(--line);
+    font-size: 13.6px; color: var(--text-3);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .rail { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+    .rail nav { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); }
+    .wrap { padding: 0 22px; }
+    .ladder { grid-template-columns: repeat(2, 1fr); }
+    .hero { padding: 46px 0 34px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+      <b>Table Goblin</b>
+      <span>Handbook</span>
+    </div>
+    <nav>
+      <a href="#start"><span class="n">01</span><span>Getting Started</span></a>
+      <a href="#gm"><span class="n">02</span><span>GM Tools</span></a>
+      <a href="#chars"><span class="n">03</span><span>Characters</span></a>
+      <a href="#chat"><span class="n">04</span><span>Playing in Character</span></a>
+      <a href="#npcs"><span class="n">05</span><span>Creatures &amp; NPCs</span></a>
+      <a href="#combat"><span class="n">06</span><span>Encounters</span></a>
+      <a href="#maps"><span class="n">07</span><span>Battle Maps</span></a>
+      <a href="#loot"><span class="n">08</span><span>Loot &amp; the Purse</span></a>
+      <a href="#towns"><span class="n">09</span><span>Towns &amp; Shops</span></a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="wrap">
+
+      <!-- ============ HERO ============ -->
+      <header class="hero">
+        <div class="eyebrow">A Pathfinder 2e bot for Discord</div>
+        <h1>Your table has a goblin in it now.</h1>
+        <p class="lede">
+          It knows every one of PF2e's 5,800-odd items and 6,000-odd monsters, it remembers
+          whose turn it is, and it has never once forgotten to apply the multiple attack penalty.
+          <strong>Table Goblin runs the bookkeeping so your table can get on with the game.</strong>
+        </p>
+        <p class="lede" style="font-size:16.5px;">
+          Import a sheet straight from Pathbuilder. Roll a strike by typing
+          <code>pc::"grins and swings"{strike}</code> into chat. Paint walls on a battle map and
+          let the bot work out cover and flanking. End a fight and watch the treasure land in the
+          party purse — with the magic items masked until somebody identifies them.
+        </p>
+        <div class="roots">
+          <span class="root-chip"><b>/tg</b> characters</span>
+          <span class="root-chip"><b>/tgm</b> campaign</span>
+          <span class="root-chip"><b>/tgnpc</b> creatures</span>
+          <span class="root-chip"><b>/tge</b> combat</span>
+          <span class="root-chip"><b>/tgmap</b> maps</span>
+          <span class="root-chip"><b>/tgloot</b> treasure</span>
+          <span class="root-chip"><b>/tgtown</b> settlements</span>
+        </div>
+
+        <div class="index-grid">
+          <a class="index-card" href="#start"><span class="n">01</span><b>Getting Started</b><span>Invite the bot, create a campaign, and understand what it builds for you.</span></a>
+          <a class="index-card" href="#gm"><span class="n">02</span><b>GM Tools</b><span>Roles, players, channel bindings, and the treasure tables.</span></a>
+          <a class="index-card" href="#chars"><span class="n">03</span><b>Characters</b><span>Pathbuilder import, the interactive sheet, companions and coin.</span></a>
+          <a class="index-card" href="#chat"><span class="n">04</span><b>Playing in Character</b><span>Speak and roll from chat without touching a slash command.</span></a>
+          <a class="index-card" href="#npcs"><span class="n">05</span><b>Creatures &amp; NPCs</b><span>Pull monsters from the bestiary or build your own.</span></a>
+          <a class="index-card" href="#combat"><span class="n">06</span><b>Encounters</b><span>Initiative, conditions, saves, and the dying rules.</span></a>
+          <a class="index-card" href="#maps"><span class="n">07</span><b>Battle Maps</b><span>Grids, tokens, terrain, fog of war, cover and flanking.</span></a>
+          <a class="index-card" href="#loot"><span class="n">08</span><b>Loot &amp; the Purse</b><span>Payouts, unidentified magic, and the shared party fund.</span></a>
+          <a class="index-card" href="#towns"><span class="n">09</span><b>Towns &amp; Shops</b><span>Generate a settlement, its shopkeepers and their shelves.</span></a>
+        </div>
+      </header>
+
+      <!-- ============ 01 GETTING STARTED ============ -->
+      <section id="start">
+        <div class="sec-head">
+          <div class="sec-num">Section 01</div>
+          <h2>Getting Started</h2>
+          <p class="sec-sub">Invite the bot, register a campaign, and let it build you a table.</p>
+        </div>
+
+        <h3>What the bot asks for, and why</h3>
+        <p>Table Goblin requests four permissions on invite. It asks for these and nothing else, and each one is load-bearing:</p>
+
+        <div class="t-wrap">
+          <table>
+            <thead><tr><th>Permission</th><th>What breaks without it</th></tr></thead>
+            <tbody>
+              <tr><td><b>Manage Roles</b></td><td>It can't create your campaign's two roles, so nobody can be granted access to anything.</td></tr>
+              <tr><td><b>Manage Channels</b></td><td>No category, no channels, no permission model — <code>setup_channels</code> does nothing.</td></tr>
+              <tr><td><b>Manage Webhooks</b></td><td>Characters can't speak. Every in-character post goes out through a webhook so it wears the character's name and portrait.</td></tr>
+              <tr><td><b>Manage Messages</b></td><td>Your <code>pc::{strike}</code> trigger stays in the channel instead of being tidied away after the character's post goes up.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="note">
+          <p><strong>Re-inviting wipes registered commands.</strong> If you re-authorise the bot and the slash commands vanish, that's expected — they come back when the bot next starts up. Give it a moment, then refresh Discord.</p>
+        </div>
+
+        <h3>Two commands to a working table</h3>
+        <div class="cmds">
+          <div class="cmd-row">
+            <div class="cmd">/tgm create_campaign <b>name</b> <span class="opt">[notes]</span></div>
+            <span class="badge b-gm">admin only</span>
+            <div class="desc">Registers the campaign and makes you its first GM. Run it from any channel that isn't already part of a campaign. The name's slug is unique <em>per server</em> — another Discord running "Abomination Vaults" is none of your business.</div>
+          </div>
+          <div class="cmd-row">
+            <div class="cmd">/tgm setup_channels <b>campaign_name</b> <span class="opt">[mode] [include_voice]</span></div>
+            <span class="badge b-gm">gm only</span>
+            <div class="desc">Builds the two roles, the category, and the channels, then binds them. This is the only <code>/tgm</code> command that takes a campaign name, because the campaign has no channels yet to identify it by.</div>
+          </div>
+        </div>
+
+        <h3>What it builds</h3>
+        <div class="chan-list">
+          <div class="chan">
+            <span class="nm">#ic</span><span class="ty">Forum</span>
+            <span class="why">In-character. A forum so each thread is a scene, and an old scene can be closed without scrolling it away.</span>
+          </div>
+          <div class="chan">
+            <span class="nm">#ooc</span><span class="ty">Text</span>
+            <span class="why">Table talk, scheduling, arguing about the rules.</span>
+          </div>
+          <div class="chan">
+            <span class="nm">#gm-private</span><span class="ty">Text</span>
+            <span class="why">GM only — and explicitly denied to the Members role on the channel itself, so it stays private even if you later open the category up.</span>
+          </div>
+          <div class="chan">
+            <span class="nm">#character-sheets</span><span class="ty">Text</span>
+            <span class="why">Somewhere to keep sheets that isn't the scene.</span>
+          </div>
+          <div class="chan">
+            <span class="nm">#dicerolls</span><span class="ty">Text</span>
+            <span class="why">For tables that like the dice kept out of the fiction.</span>
+          </div>
+          <div class="chan">
+            <span class="nm">#voice <em>(optional)</em></span><span class="ty">Voice</span>
+            <span class="why">Pass <code>include_voice</code> to get one. Members can speak in it; nobody outside the campaign can see it.</span>
+          </div>
+        </div>
+
+        <h4>The two roles</h4>
+        <div class="t-wrap">
+          <table>
+            <thead><tr><th>Role</th><th>Granted by</th><th>What it allows</th></tr></thead>
+            <tbody>
+              <tr><td><code>TG-&lt;campaign&gt;-GM</code></td><td><code>/tgm add_gm</code></td><td>Everything a member can do, plus managing the campaign's channels, messages and threads.</td></tr>
+              <tr><td><code>TG-&lt;campaign&gt;-Members</code></td><td><code>/tgm add_player</code></td><td>View, post, reply in forum threads, react, attach files, use the bot, and speak in voice.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Neither role carries a single server-wide permission. Everything is granted on the campaign's
+          category, so a role can never confer anything outside its own campaign — and with
+          <code>@everyone</code> denied on that category, nobody sees the campaign at all without one of them.
+        </p>
+
+        <h3>Prefer your own channels? That works too.</h3>
+        <p>
+          The category is a convenience, not a requirement. <strong>Any channel inside the campaign's
+          category belongs to that campaign automatically</strong> — drop a new one in and it works
+          immediately, no binding needed.
+        </p>
+        <p>
+          If you'd rather use channels you already have, skip <code>setup_channels</code> and bind them
+          by hand. Binding is how you tell the bot which channel plays which <em>role</em> — where the
+          map posts, which one is GM-private:
+        </p>
+        <div class="cmds">
+          <div class="cmd-row">
+            <div class="cmd">/tgm channel_add <b>channel_type</b> <span class="opt">[channel]</span></div>
+            <span class="badge b-gm">gm only</span>
+            <div class="desc">Binds a channel as In-Character, Out-of-Character, GM Private, Character Sheets or Dice Rolls. Defaults to the channel you run it in. Text, forum and voice channels are all accepted.</div>
+          </div>
+          <div class="cmd-row">
+            <div class="cmd">/tgm repair_campaign <span class="opt">[add_ic_forum]</span></div>
+            <span class="badge b-gm">gm only</span>
+            <div class="desc">Recreates anything missing on an existing campaign and reapplies the current permission model.</div>
+          </div>
+        </div>
+        <div class="note">
+          <p><strong>Commands work inside forum threads</strong> because the thread's parent category resolves even though the thread's own id is bound to nothing. That's the main reason the category matters.</p>
+        </div>
+        <div class="warn">
+          <p><strong>Discord cannot convert a text channel into a forum.</strong> If you're upgrading an older campaign, <code>repair_campaign add_ic_forum:true</code> creates a <em>new</em> forum and leaves your old IC channel in place with its history intact, simply unbound. Delete it yourself when you're ready.</p>
+        </div>
+      </section>
+
+      <!-- ============ 02 GM TOOLS ============ -->
+      <section id="gm">
+        <div class="sec-head">
+          <div class="sec-num">Section 02</div>
+          <h2>GM Tools</h2>
+          <p class="sec-sub">Everything under <code>/tgm</code> — and every one of them is gated.</p>
+        </div>
+        <p>
+          Every <code>/tgm</code> command needs a campaign GM or a Server Administrator, and every one
+          except <code>create_campaign</code> must be run from inside that campaign's own channels.
+          <strong>The channel is how the bot knows which campaign you mean</strong>, which is why none
+          of them takes a campaign name you could point somewhere else.
+        </p>
+
+        <h3>People</h3>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgm add_gm <b>user</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Makes another user a GM of this campaign and gives them the GM role.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgm add_player <b>user</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Grants the Members role — this is what gives access to the campaign's channels.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgm remove_player <b>user</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Takes it away again. The bot only ever removes a role it was asked to remove, so assigning these by hand in Discord stays perfectly valid.</div></div>
+        </div>
+
+        <h3>Table settings</h3>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgm auto_saves <b>enabled</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Chooses who rolls a player's saving throw. <b>Off (default):</b> the player gets a button and rolls their own — most of the fun of failing a save is failing it yourself. <b>On:</b> the bot rolls for them, to keep things moving. A creature's save is always rolled by the bot either way.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgm list_campaigns</div><span class="badge b-gm">gm only</span>
+            <div class="desc">Every campaign in this server where you hold GM or admin rights.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgm delete_campaign <b>confirm_campaign_name</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Permanently deletes the campaign bound to this channel — every sheet in it, plus its channels, category and both roles. You must type the campaign's real name to confirm. Cannot be undone.</div></div>
+        </div>
+
+        <h3>Treasure tables</h3>
+        <p>
+          Both of these roll on PF2e's own 40 per-level treasure tables — with their real dice and
+          weightings, so commoner results stay commoner.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgm loot <b>level</b> <span class="opt">[permanent] [consumable]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Rolls a find. About one result in ten names a rune, a material or a family rather than a single item — <em>Cold Iron Weapon (Standard-Grade)</em>. Those aren't lookup failures: the table is telling you what <em>kind</em> of thing was found and leaving the specifics to you.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgm treasure <b>level</b> <span class="opt">[party_size]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">A whole level's budget from Party Treasure by Level — every permanent item, every consumable and the coin. This is a <em>level's</em> worth, not one encounter's, and it's the figure that answers "is the party on track?"</div></div>
+        </div>
+      </section>
+
+      <!-- ============ 03 CHARACTERS ============ -->
+      <section id="chars">
+        <div class="sec-head">
+          <div class="sec-num">Section 03</div>
+          <h2>Characters</h2>
+          <p class="sec-sub">Import from Pathbuilder, then never open a spreadsheet again.</p>
+        </div>
+
+        <h3>Making one</h3>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tg char create <b>player</b> <b>name</b> <b>alias</b> <span class="opt">[pathbuilder_id] […]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Creates the character. Give a <code>pathbuilder_id</code> and the whole sheet imports immediately. The <b>alias</b> is the short handle you'll use in every other command and in chat — keep it short and typeable.</div></div>
+          <div class="cmd-row"><div class="cmd">/tg char linkpathbuilder <b>alias</b> <b>pathbuilder_id</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Imports Pathbuilder data into an existing alias and makes it your active character.</div></div>
+          <div class="cmd-row"><div class="cmd">/tg char sync <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Re-imports after a level-up. Deliberately <em>preserves</em> live play data: your coin, items you found, spells learned in play, your current HP, and any manual GM corrections.</div></div>
+          <div class="cmd-row"><div class="cmd">/tg char sync_force <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">The escape hatch — discards all of that and takes Pathbuilder's word for everything.</div></div>
+        </div>
+        <div class="note">
+          <p><strong>Companions come along.</strong> Pass <code>companion_name</code>/<code>companion_alias</code> or <code>eidolon_name</code>/<code>eidolon_alias</code> at creation and they're linked to the character. An eidolon always displays its summoner's HP, because that's whose hit points it actually spends.</p>
+        </div>
+
+        <h3>The sheet</h3>
+        <p>
+          <code>/tg char sheet</code> opens an interactive sheet with five tabs — Overview, Combat,
+          Spellbook, Gear, Companions. Only the person who ran the command can click anything;
+          everyone else can see it.
+        </p>
+        <p>
+          Rolling happens through dropdowns rather than more commands. The Combat tab has skills,
+          saves and strikes (plus a separate dropdown for companion attacks). The Spellbook tab lets
+          you pick a rank and then a spell — casting <strong>consumes the correct slot automatically</strong>,
+          applies any lasting buff or debuff, and attaches an <b>Uncast</b> button for a mis-click.
+        </p>
+
+        <h3>Coin</h3>
+        <p>
+          Imported from Pathbuilder once, then it's yours. PF2e coinage is decimal, so the bot keeps
+          your purse in the shape you're holding it — adding 5 sp to 3 sp gives you 8 sp, not 0.8 gp.
+          It only breaks a purse down when it has to, which is exactly the moment a real table would
+          make change.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tg char money <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">What you're carrying, and the total in gold.</div></div>
+          <div class="cmd-row"><div class="cmd">/tg char money_add <b>amount</b> · money_spend <b>amount</b> · money_set <b>amount</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Amounts read naturally: <code>50gp</code>, <code>2gp 5sp</code>, <code>3 silver</code>. Don't put a sign on it — the command name already says which way it goes.</div></div>
+        </div>
+
+        <h3>The rest</h3>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tg char active <b>alias</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Sets which character <code>pc::</code> and bare commands mean.</div></div>
+          <div class="cmd-row"><div class="cmd">/tg char set_avatar <span class="opt">[image] [image_url]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">The portrait on webhook posts and the token on the battle map. Upload a file or paste a link — both work.</div></div>
+          <div class="cmd-row"><div class="cmd">/tg char learn_spell <b>rank</b> <b>name</b> <b>spell_list</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Adds a spell outside Pathbuilder. Survives a routine <code>sync</code>.</div></div>
+          <div class="cmd-row"><div class="cmd">/tg char set_armor <b>category</b> <b>armor_name</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Recomputes AC from the real armour entry.</div></div>
+          <div class="cmd-row"><div class="cmd">/tg char resist <b>damage_type</b> <b>kind</b> <span class="opt">[amount]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Permanent resistance, weakness or immunity.</div></div>
+          <div class="cmd-row"><div class="cmd">/tg char list · sheet · print · clone · delete · update</div><span class="badge b-self">self / gm</span>
+            <div class="desc">The usual housekeeping. <code>update</code> takes an expression like <code>str_score=18</code> for a manual correction, and those corrections survive a sync.</div></div>
+        </div>
+      </section>
+
+      <!-- ============ 04 CHAT SYNTAX ============ -->
+      <section id="chat">
+        <div class="sec-head">
+          <div class="sec-num">Section 04</div>
+          <h2>Playing in Character</h2>
+          <p class="sec-sub">The bit that stops feeling like using a bot.</p>
+        </div>
+        <p>
+          You don't have to run a command to act. Type a prefix straight into any of the campaign's
+          channels and Table Goblin posts as your character, through the same webhook the sheet uses.
+          <strong>The dice logic is identical either way</strong> — there's no separate "chat version"
+          of a roll.
+        </p>
+
+<pre><span class="c">&lt;prefix&gt;</span>::<span class="c">["message"]</span><span class="k">{action}</span>
+npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</span><span class="k">{action}</span></pre>
+
+        <div class="t-wrap">
+          <table>
+            <thead><tr><th>You type</th><th>What happens</th></tr></thead>
+            <tbody>
+              <tr><td><code>pc:: I stand my ground.</code></td><td>Speech, posted as your active character.</td></tr>
+              <tr><td><code>pc::{strike}</code></td><td>A narrative default, plus a dropdown to pick the strike and a target.</td></tr>
+              <tr><td><code>pc::"grins and swings"{strike}</code></td><td>Your own narration, then the same dropdown.</td></tr>
+              <tr><td><code>alt2::{cast}</code></td><td>The same, but as your second companion.</td></tr>
+              <tr><td><code>npc::Old Man Withers::"You'll regret that."{strike}</code></td><td>A GM narrating an NPC by its real name.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>Prefixes</h4>
+        <div class="t-wrap">
+          <table>
+            <thead><tr><th>Prefix</th><th>Resolves to</th></tr></thead>
+            <tbody>
+              <tr><td><code>pc</code></td><td>Your active character.</td></tr>
+              <tr><td><code>alt</code> / <code>alt2</code> / <code>alt3</code></td><td>Its 1st / 2nd / 3rd companion. An eidolon is always <code>alt</code>.</td></tr>
+              <tr><td><code>companion</code> · <code>eidolon</code> · <code>familiar</code></td><td>That specific companion type.</td></tr>
+              <tr><td><em>any alias you own</em></td><td>That character directly, whatever's active.</td></tr>
+              <tr><td><code>npc::&lt;Name&gt;::</code></td><td>GM only — voices any creature in the campaign.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="note">
+          <p><strong>Your trigger message is tidied away</strong> once the character's post goes up, so the channel reads as fiction rather than as commands. A rejected attempt is left alone so you can see and fix it.</p>
+        </div>
+        <div class="warn">
+          <p><strong>Nothing happened?</strong> Chat triggers only work in a campaign's own channels, and stay <em>completely silent</em> anywhere else — even for a perfectly formed <code>pc::{strike}</code>. Because any <code>word::</code> counts as a candidate, the bot has to stay out of ordinary server conversation entirely. Also: <code>{strike}</code> and <code>{cast}</code> need a live encounter in that channel, since the target list comes from the roster.</p>
+        </div>
+      </section>
+
+      <!-- ============ 05 CREATURES ============ -->
+      <section id="npcs">
+        <div class="sec-head">
+          <div class="sec-num">Section 05</div>
+          <h2>Creatures &amp; NPCs</h2>
+          <p class="sec-sub">Six thousand monsters, or one you made up.</p>
+        </div>
+        <p>
+          You need something to fight before you can run a fight. Everything here is GM-only —
+          creature stat blocks are the GM's to know.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgnpc add <b>creature</b> <b>alias</b> <span class="opt">[…]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Pulls a creature from the bestiary by name and registers it under a short alias. Pass several comma-separated aliases to add a whole pack at once.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgnpc suggest <b>level</b> <span class="opt">[tier]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Stuck for an opponent? Suggests creatures at a level.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgnpc add_custom <b>alias</b> <b>name</b> <b>hp</b> <b>ac</b> <span class="opt">[…]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Build one from scratch when the bestiary hasn't got it.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgnpc strike_add <b>alias</b> <b>name</b> <b>to_hit</b> <b>dice</b> <b>die</b> <b>damage_type</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Give a custom creature something to hit with.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgnpc sheet <b>alias</b> · edit · skill_set · resist · list · remove</div><span class="badge b-gm">gm only</span>
+            <div class="desc">Inspect and adjust. <code>sheet</code> replies privately — the whole point of hiding creature HP from players would be lost otherwise.</div></div>
+        </div>
+      </section>
+
+      <!-- ============ 06 ENCOUNTERS ============ -->
+      <section id="combat">
+        <div class="sec-head">
+          <div class="sec-num">Section 06</div>
+          <h2>Encounters</h2>
+          <p class="sec-sub">Initiative, conditions, and the rules that run themselves.</p>
+        </div>
+
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tge start <span class="opt">[name] [add_party] [loot]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc"><code>add_party</code> pulls in every PC and their companions automatically. Set <code>loot:true</code> and the fight pays out when it ends.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge roll <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Roll initiative. <code>/tge init</code> sets a value by hand; <code>/tge tiebreak</code> settles a clash.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge begin</div><span class="badge b-gm">gm only</span>
+            <div class="desc">Locks the order and starts round one.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge next · prev · delay <b>after</b></div><span class="badge b-self">turn / gm</span>
+            <div class="desc">Advance the turn. <b>Delay</b> puts you back directly after whoever you named — not at a fixed spot — and expires harmlessly at end of round if they never act.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge damage <b>alias</b> <b>amount</b> <span class="opt">[damage_type] [critical] [nonlethal]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Applies damage through resistances and weaknesses.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge heal <b>alias</b> <b>amount</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">The other direction.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge condition <b>alias</b> <b>name</b> <span class="opt">[value]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Applies a PF2e condition, with its value where it has one.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge status <span class="opt">[detail]</span></div><span class="badge b-player">player</span>
+            <div class="desc">The current order, who's up, and everyone's state.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge end</div><span class="badge b-gm">gm only</span>
+            <div class="desc">Ends the fight, reports the damage taken, banishes thralls and summons — and pays out the loot if you flagged it.</div></div>
+        </div>
+
+        <h3>Degrees of success</h3>
+        <p>The bot resolves the whole ladder rather than printing all four and leaving you to find the row:</p>
+        <div class="ladder">
+          <div class="rung crit-s"><b>Critical Success</b><span>Beat the DC by 10 or more.</span></div>
+          <div class="rung succ"><b>Success</b><span>Met or beat the DC.</span></div>
+          <div class="rung fail"><b>Failure</b><span>Missed the DC.</span></div>
+          <div class="rung crit-f"><b>Critical Failure</b><span>Missed it by 10 or more.</span></div>
+        </div>
+        <p>
+          A natural 20 shifts the result <em>one step up</em> — it isn't an automatic critical — and a
+          natural 1 shifts one step down. A critical hit doubles the whole total, modifiers included.
+          For a basic save the bot says what the target actually takes: none, half, full or double.
+        </p>
+
+        <h4>Multiple attack penalty</h4>
+        <p>
+          Tracked per turn, automatically: &minus;5 then &minus;10, or &minus;4/&minus;8 for an agile
+          weapon. Flurry rangers get &minus;3/&minus;6 (&minus;2/&minus;4 agile). Thralls and summons
+          share their master's counter, because their strikes count against it.
+        </p>
+
+        <h4>Dying, wounded and unconscious</h4>
+        <ul>
+          <li><b>At 0 HP</b> a PC — or a creature you flagged <code>significant</code> — falls unconscious and starts dying. Their initiative moves to directly before whoever dropped them. Everything else just dies.</li>
+          <li><b>Recovery checks</b> roll automatically at the start of the dying character's turn, against a DC that climbs with the dying value.</li>
+          <li><b>Only healing to 1+ HP wakes someone.</b> Succeeding a recovery check clears dying but leaves them unconscious.</li>
+          <li><b>Wounded</b> climbs each time dying is lost, and raises where dying starts next time.</li>
+        </ul>
+
+        <div class="note">
+          <p><strong>HP visibility is asymmetric on purpose.</strong> Your own side and the GM see exact numbers. The opposition shows only a band — Healthy, Bloodied, Critical — to keep the table guessing the way it would around a real one.</p>
+        </div>
+      </section>
+
+      <!-- ============ 07 MAPS ============ -->
+      <section id="maps">
+        <div class="sec-head">
+          <div class="sec-num">Section 07</div>
+          <h2>Battle Maps</h2>
+          <p class="sec-sub">Tokens, terrain, fog — and geometry the bot works out for you.</p>
+        </div>
+
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgmap upload_gridless <b>image</b> <b>columns</b> <b>rows</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Give it a plain image and how many squares to overlay.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap upload_gridded <b>image</b> <b>columns</b> <b>rows</b> <b>cell_size</b> <span class="opt">[offset_x] [offset_y]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">For a map that already has a grid printed on it. <code>/tgmap calibrate</code> helps you line it up.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap place <b>alias</b> <b>cell</b> <span class="opt">[elevation]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Puts a token down, e.g. <code>cell:H12</code>. Elevation is tracked for flying and climbing.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap move <span class="opt">[alias] [destination]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Arrow-key controls, or name a destination cell to jump straight there.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap terrain · terrain_clear</div><span class="badge b-gm">gm only</span>
+            <div class="desc">Paint walls, difficult terrain, hazards and water directly onto the grid.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap fog <b>enabled</b> <span class="opt">[radius] [reset]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Fog of war, shared across the party. Explored ground stays remembered — but a creature standing in remembered territory is never revealed by memory alone.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap show · status · distance</div><span class="badge b-player">player</span>
+            <div class="desc">Re-post the map, check a token's state, or measure between two of them.</div></div>
+        </div>
+
+        <h3>What the map works out on its own</h3>
+        <p>
+          Once both combatants have tokens down, every attack roll gains a line reporting the geometry.
+          <strong>It never changes the roll</strong> — it's information, not enforcement.
+        </p>
+        <div class="t-wrap">
+          <table>
+            <thead><tr><th>Check</th><th>What you're told</th></tr></thead>
+            <tbody>
+              <tr><td><b>Reach</b></td><td>The distance, and a warning if the target is out of it. Reach comes from size — Small/Medium 5 ft, Large 10, Huge 15 — plus the reach trait.</td></tr>
+              <tr><td><b>Range</b></td><td>Which range increment you're in and the &minus;2 per increment past the first, plus a warning past the sixth where the shot isn't possible at all.</td></tr>
+              <tr><td><b>Cover</b></td><td>A line crossing a painted wall gives standard cover (+2 AC); one crossing another creature gives lesser cover (+1). <b>Greater cover is never inferred</b> — it comes from Take Cover, which the grid can't see.</td></tr>
+              <tr><td><b>Flanking</b></td><td>Detected on PF2e's real geometry — opposite sides or corners, both of you within melee reach — and it names your partner.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note">
+          <p><strong>Flanking detection is deliberately conservative.</strong> It won't invent a flank it can't prove, but it can miss one made with a polearm, since it only knows size-based reach. Applying Off-Guard is still yours to do.</p>
+        </div>
+      </section>
+
+      <!-- ============ 08 LOOT ============ -->
+      <section id="loot">
+        <div class="sec-head">
+          <div class="sec-num">Section 08</div>
+          <h2>Loot &amp; the Purse</h2>
+          <p class="sec-sub">What the fight paid out, who took it, and what it actually is.</p>
+        </div>
+        <p>
+          Start a fight with <code>loot:true</code> and ending it rolls treasure <strong>at the party's
+          level, not the monsters'</strong> — PF2e's budget is indexed to what a party of that level
+          should have accumulated, regardless of what they fought for it. Coin goes straight to the
+          shared purse, because coin has no identity and nobody needs to decide who carries the gold.
+          Items get a dropdown each.
+        </p>
+
+        <h3>Unidentified magic</h3>
+        <p>
+          The bot rolls the treasure, so <em>nobody</em> knows what dropped — not even the GM, who gets
+          the real list privately. A magic item shows only its form: a Wand of Manifold Missiles reads
+          as <code>magic wand</code>, a Cloak of Elvenkind as <code>magic cloak</code>. That's PF2e's
+          premise — you can see a thing is magical and what shape it is, not what it does.
+        </p>
+        <div class="note">
+          <p><strong>Alchemy isn't magic.</strong> Elixirs and mutagens carry <em>alchemical</em>, not <em>magical</em>, so they arrive unmasked. There's nothing to identify.</p>
+        </div>
+
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgloot list <span class="opt">[unclaimed]</span></div><span class="badge b-player">player</span>
+            <div class="desc">The pool. Unidentified items show their mask and the DC to crack it.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgloot claim <b>item</b> <span class="opt">[alias]</span> · unclaim <b>item</b></div><span class="badge b-player">player</span>
+            <div class="desc">Claiming <b>puts the item on the character's sheet</b>, and a routine <code>sync</code> won't remove it. Claiming something someone else holds moves it rather than duplicating it.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgloot identify <b>item</b> <span class="opt">[alias] [skill]</span></div><span class="badge b-player">player</span>
+            <div class="desc">Rolls the tradition's skill — arcane→Arcana, divine→Religion, occult→Occultism, primal→Nature — against the item's level DC. Success reveals the real name. A critical failure means your character is now confidently wrong about it.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgloot claims</div><span class="badge b-player">player</span>
+            <div class="desc">Reopens the dropdowns when the original message has scrolled away.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgloot add · reveal · identify_free · remove</div><span class="badge b-gm">gm only</span>
+            <div class="desc">Drop something in by hand, see what the unidentified items really are, reveal one without a roll, or take it out entirely.</div></div>
+        </div>
+
+        <h3>The party fund</h3>
+        <p>
+          One shared purse per campaign, so the loot doesn't have to sit on one player's sheet — which
+          makes every payout a two-step correction and falls apart the week that player misses a
+          session. <strong>Every change is announced in the channel on purpose:</strong> shared money
+          with a visible trail is what makes it safe for anyone to move it without asking a GM first.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tg party money · money_add · money_spend</div><span class="badge b-player">player</span>
+            <div class="desc">Check the fund, or adjust it directly.</div></div>
+          <div class="cmd-row"><div class="cmd">/tg party contribute <b>amount</b> · withdraw <b>amount</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Moves coin between a character's purse and the fund. The character's side is checked first, so a payment that can't be afforded moves nothing at all.</div></div>
+          <div class="cmd-row"><div class="cmd">/tg party split · money_set</div><span class="badge b-gm">gm only</span>
+            <div class="desc">GM-only because neither has an equal-and-opposite undo. <b>Split</b> divides the fund evenly between the PCs — odd coin that won't divide stays in the pot rather than going to whoever sorts first.</div></div>
+        </div>
+      </section>
+
+      <!-- ============ 09 TOWNS ============ -->
+      <section id="towns">
+        <div class="sec-head">
+          <div class="sec-num">Section 09</div>
+          <h2>Towns &amp; Shops</h2>
+          <p class="sec-sub">A settlement, its shopkeepers, and what's on the shelves — in one command.</p>
+        </div>
+        <p>
+          <code>/tgtown generate level:4</code> gives you a whole town: a name, a region, shops
+          appropriate to its size, somebody behind each counter with a personality and a hook you can
+          hang a scene on, and stocked shelves. The AI GM writes the flavour by default, drawing on
+          Golarion lore and your campaign's own notes for tone.
+        </p>
+        <div class="note">
+          <p><strong>The rules engine keeps the mechanics.</strong> The AI never sets a settlement's level, its prices, or what its shops may stock. A settlement's level <em>is</em> PF2e's availability rule — it decides what can legally be sold there — so it stays the GM's call. Pass <code>ai:false</code> for the local name tables instead; if the call fails you get those anyway, and the page tells you so.</p>
+        </div>
+
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgtown generate <b>level</b> <span class="opt">[name] [size] [region] [seed] [ai]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Rolls the whole settlement. <code>seed</code> repeats an earlier roll exactly, so a town you liked can be reproduced.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgtown list · view <b>town</b> · shop <b>shop</b></div><span class="badge b-player">player</span>
+            <div class="desc">Browse. Each item on a shelf shows its level, price and a one-line description of what it actually is, with the name linked to Archives of Nethys — nobody knows every item by name.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgtown buy <b>shop</b> <b>item</b> <span class="opt">[alias] [from_fund]</span></div><span class="badge b-player">player</span>
+            <div class="desc">Buys off the shelf, from your own purse or the party fund. The coin is taken first — if it can't be afforded, nothing moves.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgtown create · edit · delete</div><span class="badge b-gm">gm only</span>
+            <div class="desc">Write a settlement by hand, or change one. Raising a town's level doesn't restock its shops — their shelves stay as they were until you say otherwise.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgtown shop_add · vendor_add · stock_add · restock</div><span class="badge b-gm">gm only</span>
+            <div class="desc">Add a shop, put someone behind the counter, or place a specific item. <code>level_bonus</code> lets one shop reach past the town's level — the smith whose cousin is a Magaambya artificer.</div></div>
+        </div>
+
+        <h4>How big is a town?</h4>
+        <div class="t-wrap">
+          <table>
+            <thead><tr><th>Size</th><th>Level</th><th>What it supports</th></tr></thead>
+            <tbody>
+              <tr><td>Village</td><td>0–1</td><td>A general store, and that's your lot.</td></tr>
+              <tr><td>Town</td><td>2–4</td><td>Adds a smith and an armourer.</td></tr>
+              <tr><td>City</td><td>5–9</td><td>Adds the specialists — alchemist, jeweller.</td></tr>
+              <tr><td>Metropolis</td><td>10+</td><td>Everything, and sometimes two of something.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          The shop list is a ladder rather than a random draw, because the ordinary shop is the one
+          that always exists. A village with a jeweller and no provisioner is backwards.
+        </p>
+
+        <footer>
+          A reference, not a rules substitute — when in doubt, check Archives of Nethys.
+          Table Goblin is an unofficial tool and is not affiliated with Paizo Inc.
+        </footer>
+      </section>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>
