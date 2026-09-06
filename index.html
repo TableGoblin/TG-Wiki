@@ -577,6 +577,80 @@
           <p><strong>Companions come along.</strong> Pass <code>companion_name</code>/<code>companion_alias</code> or <code>eidolon_name</code>/<code>eidolon_alias</code> at creation and they're linked to the character. An eidolon always displays its summoner's HP, because that's whose hit points it actually spends.</p>
         </div>
 
+        <h3 id="building">Building a character in Discord</h3>
+        <p>
+          You don't need Pathbuilder at all &mdash; <code>/tg char build</code> walks the whole
+          1st-level creation flow as a private wizard: ancestry, heritage, background, class,
+          subclass, attribute boosts, skills, your ancestry and class feats, and anything they in
+          turn ask for. Answer one dropdown at a time; <b>Back</b> and <b>Next</b> move between
+          steps, and closing Discord and coming back just resumes where you left off.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tg char build <b>name</b> <b>alias</b> <span class="opt">[level] [allow_uncommon] [assist_me]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Starts (or resumes) a build. Private by default &mdash; a first-level build is a long back-and-forth nobody else needs to watch. Set <code>assist_me:true</code> to make it visible to the table, for a GM walking a new player through it.</div></div>
+          <div class="cmd-row"><div class="cmd">/tg char levelup <span class="opt">[alias] [to_level] [allow_uncommon]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Takes an existing character up a level and asks for everything that level grants &mdash; class or archetype feats, a skill increase, four attribute boosts every five levels &mdash; in one pass, applied together only once every choice is made.</div></div>
+        </div>
+
+        <h3>Archetypes</h3>
+        <p>
+          A dedication feat opens an archetype; taking one more of its feats before choosing a
+          <em>different</em> dedication is the standard rule, and the bot enforces it &mdash; the
+          number required is read per-archetype rather than assumed, since Juggler only asks for
+          one. A class or level-up feat slot offers a <b>source</b> to pick from first: your own
+          class, an archetype you already hold (marked with its progress, e.g. <code>Witch
+          (1/2)</code>), or starting a new one &mdash; disabled with the reason why if a dedication
+          is still outstanding.
+        </p>
+        <p>
+          Free Archetype grants an archetype feat at every even level starting at 2nd, and by
+          default <b>waives</b> the two-feat requirement between dedications &mdash; the usual table
+          ruling, since the variant exists to let a character spread across several archetypes in
+          the first place. A GM can turn the requirement back on for a stricter game.
+        </p>
+        <p>
+          Some classes fold a whole archetype into their own ordinary options &mdash; picking
+          <b>Bloodrager</b> as a Barbarian's Instinct, or <b>Vindicator</b> as a Ranger's Hunter's
+          Edge, is choosing that archetype outright, dedication included. A handful of others
+          (Warrior of Legend, War Magic and four more) have no such option to hide inside and get
+          their own step in the build wizard instead, offered only to a class that could actually
+          use them &mdash; a Fighter never sees the three archetypes written for spellcasters.
+        </p>
+
+        <h3>Feats that ask a further question</h3>
+        <p>
+          A few feats aren't finished once picked. <b>Natural Ambition</b> and <b>General
+          Training</b> each grant a further feat &mdash; a 1st-level class feat and a 1st-level
+          general feat &mdash; and the <b>Versatile Human</b> heritage grants the same general
+          feat Human's own general-training feat does. Whatever you pick for the grant appears as
+          its own dropdown right underneath, filtered to what that grant actually allows, and the
+          wizard won't let you move on with it unanswered.
+        </p>
+        <p>
+          A granted feat can itself ask something &mdash; picking <b>Assurance</b> for a General
+          Training grant still needs a skill, and once you confirm one the sheet reads
+          <code>Assurance (Athletics)</code>, the same convention Pathbuilder and AoN both use. A
+          background can hand you a feat the identical way: several grant Assurance pre-filled with
+          the skill that background suggests (a Farmhand's is Athletics), shown as a confirmable
+          default rather than applied behind your back.
+        </p>
+        <p>
+          The same follow-up covers a weapon, a weapon group, a creature trait, or a saving throw
+          the feat wants at Expert or better &mdash; Advanced Weapon Training asks for a weapon
+          group, Perfection's Path only shows a save you've already reached Expert in. Reaching
+          level 2 with a multiclass dedication works the identical way: <b>Champion Dedication</b>
+          asks for a Cause, <b>Witch Dedication</b> a Patron, the same choice a member of that
+          class makes from the start.
+        </p>
+        <div class="note">
+          <p>
+            <strong>Two narrow things aren't covered.</strong> A feat with two <em>independent</em>
+            questions of its own only gets the first asked &mdash; two feats in the whole game
+            (one lets a Samsaran remember a second weapon) work this way. And a choice gated on an
+            earlier pick the wizard can't see yet is skipped rather than guessed at.
+          </p>
+        </div>
+
         <h3>The sheet</h3>
         <p>
           <code>/tg char sheet</code> opens an interactive sheet with five tabs — Overview, Combat,
@@ -616,6 +690,9 @@
             <div class="desc">Recomputes AC from the real armour entry.</div></div>
           <div class="cmd-row"><div class="cmd">/tg char resist <b>damage_type</b> <b>kind</b> <span class="opt">[amount]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Permanent resistance, weakness or immunity.</div></div>
+
+          <div class="cmd-row"><div class="cmd">/tg char death_trigger <b>note</b> <span class="opt">[when] [alias]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">A reminder the bot posts when this character — or one of its thralls or summons — dies. PF2e has a great many death-triggered effects and most are feat-specific, so rather than pretend to know them all, you write the reminder and the bot shows it at the right moment. Necromancers are the obvious case. Pass <code>""</code> to clear it.</div></div>
           <div class="cmd-row"><div class="cmd">/tg char list · sheet · print · clone · delete · update</div><span class="badge b-self">self / gm</span>
             <div class="desc">The usual housekeeping. <code>update</code> takes an expression like <code>str_score=18</code> for a manual correction, and those corrections survive a sync.</div></div>
         </div>
@@ -721,10 +798,59 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
             <div class="desc">The other direction.</div></div>
           <div class="cmd-row"><div class="cmd">/tge condition <b>alias</b> <b>name</b> <span class="opt">[value]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">Applies a PF2e condition, with its value where it has one.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge reload <b>alias</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Reloads a crossbow, firearm or sling and lets you choose what goes in it. See <a href="#reloading">Reloading &amp; ammunition</a>.</div></div>
           <div class="cmd-row"><div class="cmd">/tge status <span class="opt">[detail]</span></div><span class="badge b-player">player</span>
             <div class="desc">The current order, who's up, and everyone's state.</div></div>
           <div class="cmd-row"><div class="cmd">/tge end</div><span class="badge b-gm">gm only</span>
             <div class="desc">Ends the fight, reports the damage taken, banishes thralls and summons — and pays out the loot if you flagged it.</div></div>
+        </div>
+
+
+        <h3 id="reloading">Reloading &amp; ammunition</h3>
+        <p>
+          A crossbow, firearm or sling has to be reloaded between shots.
+          <strong>A bow does not</strong> &mdash; its reload is 0, meaning nocking happens as
+          part of the Strike &mdash; so bows never appear here, and asking for one gets a
+          polite refusal rather than an empty menu.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tge reload <b>alias</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Opens a private panel: pick the weapon (skipped when only one of yours reloads), then pick the round. Only ammunition that actually fits is listed &mdash; bolts for a crossbow, arrows for a bow, arquebus rounds for a firearm &mdash; and anything that <em>changes</em> the shot is sorted to the top so you don't scroll past forty plain bolts to find the one alchemical round you bought last town. The round leaves your pack when you load it, and an <b>Unload</b> button puts it back.</div></div>
+        </div>
+        <div class="note">
+          <p>
+            <strong>What the round actually does is quoted from the round itself.</strong>
+            It is tempting to assume ammunition sets the damage type &mdash; it does for six
+            items out of 216. Around forty <em>add</em> damage, and most of the rest impose a
+            condition or change a material. So Table Goblin prints the round's own words on
+            the attack and only overrides the damage type where the round genuinely says
+            &ldquo;instead of its normal damage type&rdquo;. Freeze Ammunition really does
+            deal cold; Blister Ammunition deals nothing at all and makes the target itch.
+          </p>
+        </div>
+        <p>
+          Your loaded round shows up on the <b>Combat</b> tab of the character sheet: the
+          strike reads <code>&#10022; Crossbow +9 &mdash; &#10024; Freeze Ammunition</code> when
+          it's loaded and <code>&#9888; empty</code> when it isn't. Firing spends the round and
+          empties the weapon, which is what tells you to reload before the next shot.
+        </p>
+
+        <h3>Thralls &amp; summons</h3>
+        <p>
+          Both create <strong>temporary creatures</strong>: they join the encounter, land on the map,
+          and are swept away by <code>/tge end</code>. Aliases keep counting up within a fight — if
+          <code>thrall2</code> dies in round one, round two raises <code>thrall3</code> and
+          <code>thrall4</code>.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tge thralls <b>place</b> <span class="opt">[alias] [player]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Raises Necromancer thralls, adds them and places them in one command. <b>The count comes from the cells you list</b> — <code>place:N18, M21, O25</code> raises three. Each is a level &minus;1 creature with 1 HP and Speed 15 ft, striking at the Necromancer's spell attack for 1d6 (2d6 at 5th, another d6 every 4 levels after). Every check a thrall makes fails automatically; every check against it succeeds.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge summon <b>spell</b> <b>rank</b> <b>creature</b> <b>place</b> <span class="opt">[alias] [player]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Casts a summon spell and places what it calls. The creature list is filtered by the spell's own trait — <em>undead</em> for Summon Undead, <em>animal</em> for Summon Animal — read from the spell's text rather than a hand-kept table, so a homebrew summon spell works without teaching the bot about it.</div></div>
+        </div>
+        <div class="note">
+          <p><strong>Thrall strikes count toward the Necromancer's multiple attack penalty</strong>, and the bot keeps that shared counter for you. The rank you cast at sets the creature level ceiling: rank 1 calls level &minus;1, rank 5 calls level 5, rank 9 calls level 13.</p>
         </div>
 
         <h3>Degrees of success</h3>
