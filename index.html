@@ -316,6 +316,109 @@
     .wrap { padding: 0 22px; }
     .ladder { grid-template-columns: repeat(2, 1fr); }
     .hero { padding: 46px 0 34px; }
+    .dm-cols { grid-template-columns: 1fr; }
+    .dm-tabbar { flex-wrap: wrap; }
+  }
+
+  /* ---------------- Discord mock-up (illustrative, not a live screenshot) ---------------- */
+  .sheet-mock {
+    --dc-bg: #313338; --dc-embed: #2b2d31; --dc-line: #3f4147;
+    --dc-text: #f2f3f5; --dc-text-2: #dbdee1; --dc-text-3: #949ba4;
+    --dc-accent: #c9a86a; --dc-accent-2: #e8cf9c;
+    margin: 18px 0 8px; border-radius: 10px; overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .sheet-mock input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+  .dm-seq {
+    --dc-bg: #313338; --dc-embed: #2b2d31; --dc-line: #3f4147;
+    --dc-text: #f2f3f5; --dc-text-2: #dbdee1; --dc-text-3: #949ba4;
+    --dc-accent: #c9a86a; --dc-accent-2: #e8cf9c;
+    margin: 18px 0 8px; border-radius: 10px; overflow: hidden; box-shadow: var(--shadow);
+    background: var(--dc-bg); color: var(--dc-text);
+    font-family: "gg sans", "IBM Plex Sans", sans-serif; font-size: 14px; line-height: 1.5;
+    padding: 16px;
+  }
+  .dm-msg + .dm-msg { margin-top: 16px; }
+  .dm-used {
+    font-size: 12px; color: var(--dc-text-3); margin: 0 0 3px 30px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .dm-used code {
+    background: #1e1f22; border-radius: 3px; padding: 0 5px; font-size: 11.5px;
+    font-family: "IBM Plex Mono", monospace; color: #949cf4;
+  }
+  .dm-caption {
+    font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--text-3); padding: 0 2px 8px;
+  }
+  .dm-window {
+    background: var(--dc-bg); color: var(--dc-text);
+    font-family: "gg sans", "IBM Plex Sans", sans-serif; font-size: 14px; line-height: 1.5;
+    padding: 16px 16px 12px;
+  }
+  .dm-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .dm-avatar {
+    width: 22px; height: 22px; border-radius: 50%; flex: none; margin-right: 2px;
+    background: conic-gradient(from 220deg, var(--dc-accent), #6b8f5e, var(--dc-accent));
+    display: inline-block; transform: translateY(6px);
+  }
+  .dm-name { font-weight: 600; color: var(--dc-text); }
+  .dm-tag {
+    font-size: 10px; font-weight: 600; background: #5865f2; color: #fff;
+    border-radius: 3px; padding: 1px 4px; letter-spacing: .02em; transform: translateY(-1px); display: inline-block;
+  }
+  .dm-time { font-size: 12px; color: var(--dc-text-3); }
+  .dm-embed {
+    border-left: 4px solid var(--dc-accent); background: var(--dc-embed);
+    border-radius: 4px; padding: 12px 14px 14px; max-width: 480px;
+  }
+  .sheet-mock .dm-embed { display: none; }
+  .dm-embed h4 {
+    margin: 0 0 10px; font-family: "IBM Plex Sans", sans-serif; text-transform: none;
+    letter-spacing: 0; font-size: 15px; font-weight: 600; color: var(--dc-text);
+  }
+  .dm-embed .dm-sub { color: var(--dc-text-3); font-size: 12.6px; margin: -6px 0 10px; }
+  .dm-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 18px; margin-bottom: 10px; }
+  .dm-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 18px; margin-bottom: 10px; }
+  .dm-f b {
+    display: block; font-size: 12.6px; font-weight: 600; color: var(--dc-text); margin-bottom: 2px;
+  }
+  .dm-f span, .dm-f div { font-size: 13.4px; color: var(--dc-text-2); }
+  .dm-embed .dm-heading {
+    font-size: 13px; font-weight: 600; color: var(--dc-text); margin: 10px 0 4px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .dm-embed .dm-line { font-size: 13.4px; color: var(--dc-text-2); margin: 0 0 2px; }
+  .dm-embed .dm-line b { color: var(--dc-text); font-weight: 600; }
+  .dm-embed .dm-line em { color: var(--dc-accent-2); font-style: normal; }
+  .dm-embed code {
+    background: #1e1f22; border-radius: 3px; padding: 1px 5px; font-size: 12px;
+    font-family: "IBM Plex Mono", monospace; color: var(--dc-text-2);
+  }
+  .dm-tabbar { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .dm-tab-btn {
+    font-size: 13px; font-weight: 500; padding: 7px 12px; border-radius: 4px;
+    background: #2b2d31; color: var(--dc-text-2); border: 1px solid var(--dc-line);
+    cursor: pointer; user-select: none; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .dm-tab-btn:hover { background: #35373c; }
+  .dm-select {
+    margin-top: 8px; font-size: 13.4px; color: var(--dc-text-2); background: #2b2d31;
+    border: 1px solid var(--dc-line); border-radius: 4px; padding: 8px 12px;
+    display: flex; align-items: center; justify-content: space-between; max-width: 420px;
+  }
+  .dm-select:not(:last-child) { margin-bottom: 6px; }
+  #st-ov:checked ~ .dm-window #panel-ov,
+  #st-cb:checked ~ .dm-window #panel-cb,
+  #st-sp:checked ~ .dm-window #panel-sp,
+  #st-ge:checked ~ .dm-window #panel-ge,
+  #st-co:checked ~ .dm-window #panel-co { display: block; }
+  #st-ov:checked ~ .dm-window .dm-tabbar label[for="st-ov"],
+  #st-cb:checked ~ .dm-window .dm-tabbar label[for="st-cb"],
+  #st-sp:checked ~ .dm-window .dm-tabbar label[for="st-sp"],
+  #st-ge:checked ~ .dm-window .dm-tabbar label[for="st-ge"],
+  #st-co:checked ~ .dm-window .dm-tabbar label[for="st-co"] {
+    background: var(--dc-accent); color: #1b1a17; border-color: var(--dc-accent);
   }
 </style>
 
@@ -412,7 +515,7 @@
           <div class="cmd-row">
             <div class="cmd">/tgm create_campaign <b>name</b> <span class="opt">[notes]</span></div>
             <span class="badge b-gm">admin only</span>
-            <div class="desc">Registers the campaign and makes you its first GM. Run it from any channel that isn't already part of a campaign. The name's slug is unique <em>per server</em> — another Discord running "Abomination Vaults" is none of your business.</div>
+            <div class="desc">Registers the campaign and makes you its first GM. Run it from any channel that isn't already part of a campaign. The name's slug is unique <em>per server</em> — another Discord running "Curse of the Crimson Vault" is none of your business.</div>
           </div>
           <div class="cmd-row">
             <div class="cmd">/tgm setup_channels <b>campaign_name</b> <span class="opt">[mode] [include_voice]</span></div>
@@ -579,6 +682,169 @@
           applies any lasting buff or debuff, and attaches an <b>Uncast</b> button for a mis-click.
         </p>
 
+        <p class="dm-caption">Click a tab below — this is a mock-up of the real embed, not a live screenshot.</p>
+        <div class="sheet-mock">
+          <input type="radio" name="sheet-tab" id="st-ov" checked>
+          <input type="radio" name="sheet-tab" id="st-cb">
+          <input type="radio" name="sheet-tab" id="st-sp">
+          <input type="radio" name="sheet-tab" id="st-ge">
+          <input type="radio" name="sheet-tab" id="st-co">
+          <div class="dm-window">
+            <div class="dm-head">
+              <span class="dm-avatar"></span>
+              <span class="dm-name">Table Goblin</span>
+              <span class="dm-tag">APP</span>
+              <span class="dm-time">Today at 8:53 AM</span>
+            </div>
+
+            <div class="dm-embed" id="panel-ov">
+              <h4>📜 Wren Alderfen — Level 5 Poppet Summoner</h4>
+              <div class="dm-fields">
+                <div class="dm-f"><b>Owner</b><span>@Player</span></div>
+                <div class="dm-f"><b>Alias</b><span><code>wren</code></span></div>
+                <div class="dm-f"><b>Hit Points</b><span>58 / 58</span></div>
+              </div>
+              <div class="dm-heading">Class Choices</div>
+              <div class="dm-line">Eidolon: Fey Eidolon</div>
+              <div class="dm-cols">
+                <div>
+                  <div class="dm-heading">🛡️ Stats &amp; Vitals</div>
+                  <div class="dm-line"><b>AC:</b> 20 | <b>Speed:</b> 25 ft.</div>
+                  <div class="dm-line"><b>Coin:</b> 3 gp, 8 sp</div>
+                  <div class="dm-line">STR: 10 (+0) &nbsp; DEX: 18 (+4)</div>
+                  <div class="dm-line">CON: 14 (+2) &nbsp; INT: 10 (+0)</div>
+                  <div class="dm-line">WIS: 14 (+2) &nbsp; CHA: 18 (+4)</div>
+                </div>
+                <div>
+                  <div class="dm-heading">🎯 Skills &amp; Ranks</div>
+                  <div class="dm-line">Deception: (T) +9</div>
+                  <div class="dm-line">Intimidation: (E) +11</div>
+                  <div class="dm-line">Nature: (T) +8</div>
+                  <div class="dm-line">Stealth: (T) +9</div>
+                  <div class="dm-line">Fey Eidolon Lore: (T) +7</div>
+                </div>
+              </div>
+              <div class="dm-heading">📖 Feats</div>
+              <div class="dm-line">Class 2 · Archetype 1 · Ancestry 2 · Skill 2 · General 1 · Heritage 1 · Summoner Evolution 1</div>
+              <div class="dm-line">11 total, 1 with an action cost</div>
+              <div class="dm-line"><em>Archetypes:</em> Beastmaster (1/1)</div>
+              <div class="dm-heading">🐾 Companions</div>
+              <div class="dm-line"><b>Talon:</b> <code>talon</code> | <code>alt</code></div>
+              <div class="dm-line"><b>Birch:</b> <code>birch</code> | <code>alt2</code></div>
+              <div class="dm-tabbar">
+                <label class="dm-tab-btn" for="st-ov">📋 Overview</label>
+                <label class="dm-tab-btn" for="st-cb">⚔️ Combat</label>
+                <label class="dm-tab-btn" for="st-sp">📖 Spellbook</label>
+                <label class="dm-tab-btn" for="st-ge">🛡️ Gear</label>
+                <label class="dm-tab-btn" for="st-co">🐾 Companions</label>
+              </div>
+              <div class="dm-select">🎲 Roll a skill or Perception check... <span>▾</span></div>
+            </div>
+
+            <div class="dm-embed" id="panel-cb">
+              <h4>⚔️ Wren Alderfen — Combat</h4>
+              <div class="dm-heading">🛡️ Defenses</div>
+              <div class="dm-line"><b>AC:</b> 20 | <b>HP:</b> 58 / 58 | <b>Speed:</b> 25 ft.</div>
+              <div class="dm-cols">
+                <div>
+                  <div class="dm-heading">🪙 Saves</div>
+                  <div class="dm-line">Fort: (E) +9 | Ref: (T) +7 | Will: (E) +11</div>
+                </div>
+                <div>
+                  <div class="dm-heading">👁 Perception</div>
+                  <div class="dm-line">(E) +9</div>
+                </div>
+              </div>
+              <div class="dm-heading">✨ Feat Actions</div>
+              <div class="dm-line">◆ Battle Medicine</div>
+              <div class="dm-heading">🗡️ Strikes</div>
+              <div class="dm-line"><b>Rapier:</b> +11 to hit | <b>1d6+2 P</b> <em>(Finesse, Agile, Deadly d8)</em> | Range 10 ft | Reach 5 ft</div>
+              <div class="dm-tabbar">
+                <label class="dm-tab-btn" for="st-ov">📋 Overview</label>
+                <label class="dm-tab-btn" for="st-cb">⚔️ Combat</label>
+                <label class="dm-tab-btn" for="st-sp">📖 Spellbook</label>
+                <label class="dm-tab-btn" for="st-ge">🛡️ Gear</label>
+                <label class="dm-tab-btn" for="st-co">🐾 Companions</label>
+              </div>
+              <div class="dm-select">🎲 Roll a saving throw... <span>▾</span></div>
+              <div class="dm-select">🗡️ Roll an attack... <span>▾</span></div>
+              <div class="dm-select">Auto — count attacks this turn <span>▾</span></div>
+              <div class="dm-select">🧪 Throw something... <span>▾</span></div>
+            </div>
+
+            <div class="dm-embed" id="panel-sp">
+              <h4>📖 Wren Alderfen — Spellbook</h4>
+              <div class="dm-line"><b>Summoner</b> (Primal — DC 21 | Attack +13)</div>
+              <div class="dm-heading">Cantrips <em>(At Will)</em></div>
+              <div class="dm-line">◆◆ Detect Magic <em>(cantrip, concentrate, detection, manipulate)</em> — Area 30-foot emanation</div>
+              <div class="dm-line">◆◆ Electric Arc — Target 1–2 creatures, Range 30 feet, 2d4 electricity, Reflex save (basic)</div>
+              <div class="dm-line">◆ Guidance — Target 1 creature, +1 status bonus to a roll before the duration ends</div>
+              <div class="dm-heading">Rank 1 [●●] (2/2 slots)</div>
+              <div class="dm-line">◆/◆◆◆ Heal — Target 1 willing creature or undead, vitality</div>
+              <div class="dm-line">◆◆ Mystic Armor — +1 item bonus to AC, Dex cap +5</div>
+              <div class="dm-heading">Rank 2 [●●] (2/2 slots)</div>
+              <div class="dm-line">◆◆ Sudden Bolt — Range 60 feet, 4d12 electricity, Reflex save (basic)</div>
+              <div class="dm-heading">✨ Focus Pool [●] (1/1)</div>
+              <div class="dm-line">◆ Boost Eidolon <em>(At Will)</em> — +2 status bonus to your eidolon's unarmed damage</div>
+              <div class="dm-line">◆◆ Evolution Surge <em>(1 point each)</em> — grants a temporary evolution to your eidolon</div>
+              <div class="dm-tabbar">
+                <label class="dm-tab-btn" for="st-ov">📋 Overview</label>
+                <label class="dm-tab-btn" for="st-cb">⚔️ Combat</label>
+                <label class="dm-tab-btn" for="st-sp">📖 Spellbook</label>
+                <label class="dm-tab-btn" for="st-ge">🛡️ Gear</label>
+                <label class="dm-tab-btn" for="st-co">🐾 Companions</label>
+              </div>
+              <div class="dm-select">✨ Choose a spell rank... <span>▾</span></div>
+            </div>
+
+            <div class="dm-embed" id="panel-ge">
+              <h4>🛡️ Wren Alderfen — Gear &amp; Inventory</h4>
+              <div class="dm-heading">🗡️ Weapons</div>
+              <div class="dm-line">Rapier</div>
+              <div class="dm-heading">🛡️ Armor &amp; Protection</div>
+              <div class="dm-line">Leather Armor (AC +2)</div>
+              <div class="dm-heading">🎒 Inventory Items</div>
+              <div class="dm-line">Bandolier (x1) · Rations (x2) · Rope, 50 ft (x1)</div>
+              <div class="dm-line">Grappling Hook (x1) · Healer's Toolkit (x1)</div>
+              <div class="dm-line">Traveler's Clothing (x1) · Torch (x5)</div>
+              <div class="dm-line">Waterskin (x1) · Climbing Kit (x1)</div>
+              <div class="dm-tabbar">
+                <label class="dm-tab-btn" for="st-ov">📋 Overview</label>
+                <label class="dm-tab-btn" for="st-cb">⚔️ Combat</label>
+                <label class="dm-tab-btn" for="st-sp">📖 Spellbook</label>
+                <label class="dm-tab-btn" for="st-ge">🛡️ Gear</label>
+                <label class="dm-tab-btn" for="st-co">🐾 Companions</label>
+              </div>
+            </div>
+
+            <div class="dm-embed" id="panel-co">
+              <h4>🐾 Wren Alderfen — Companions &amp; Eidolons</h4>
+              <div class="dm-heading">✨ Eidolon: Talon (Fey Eidolon)</div>
+              <div class="dm-line"><b>AC:</b> 22 | <b>HP:</b> 58 / 58 | <b>Speed:</b> 25 ft. | <b>Size:</b> Medium</div>
+              <div class="dm-line"><b>Saves:</b> Fortitude +9 | Reflex +9 | Will +7</div>
+              <div class="dm-line"><b>Senses:</b> Perception +9, low-light vision</div>
+              <div class="dm-line"><b>Attacks:</b> Bogie Bash +11 (1d6+4 B, finesse), Bogie Bite +11 (1d6+4 P)</div>
+              <div class="dm-line"><b>Special:</b> Energy Heart — choose an energy type other than force; unarmed attacks deal that type and gain resistance to it.</div>
+              <div class="dm-heading">🦎 Companion: Birch</div>
+              <div class="dm-line"><b>AC:</b> 20 | <b>HP:</b> 50 / 50 | <b>Speed:</b> 30 ft. | <b>Size:</b> Large</div>
+              <div class="dm-line"><b>Senses:</b> Perception +10, low-light vision, scent (imprecise) 30 ft</div>
+              <div class="dm-line"><b>Attacks:</b> Jaws +10 (2d8+3 P, unarmed) Reach 10 ft</div>
+              <div class="dm-line"><b>Support:</b> distracts an adjacent foe until the start of your next turn.</div>
+              <div class="dm-heading">🦉 Familiar: Pip</div>
+              <div class="dm-line"><b>AC:</b> 20 | <b>HP:</b> 22 / 22 | <b>Speed:</b> 25 ft. | <b>Size:</b> Tiny</div>
+              <div class="dm-line"><b>Special:</b> Independent — gains 1 action each round if not commanded.</div>
+              <div class="dm-tabbar">
+                <label class="dm-tab-btn" for="st-ov">📋 Overview</label>
+                <label class="dm-tab-btn" for="st-cb">⚔️ Combat</label>
+                <label class="dm-tab-btn" for="st-sp">📖 Spellbook</label>
+                <label class="dm-tab-btn" for="st-ge">🛡️ Gear</label>
+                <label class="dm-tab-btn" for="st-co">🐾 Companions</label>
+              </div>
+              <div class="dm-select">🗡️ Roll a companion attack... <span>▾</span></div>
+            </div>
+          </div>
+        </div>
+
         <h3>Coin</h3>
         <p>
           Imported from Pathbuilder once, then it's yours. PF2e coinage is decimal, so the bot keeps
@@ -719,6 +985,53 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
             <div class="desc">Ends the fight, reports the damage taken, banishes thralls and summons — and pays out the loot if you flagged it.</div></div>
         </div>
 
+        <p class="dm-caption">A fight from start to first blood — mock-ups, not live screenshots.</p>
+        <div class="dm-seq">
+          <div class="dm-msg">
+            <div class="dm-used">↳ used <code>/tge start</code></div>
+            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 7:39 AM</span></div>
+            <div class="dm-embed">
+              <div class="dm-line">⚔️ Encounter <b>3</b> started. Added: <b>Wren Alderfen, Ilyra Duskmere</b>. Roll initiative with <code>/tge roll</code>, then <code>/tge begin</code>.</div>
+            </div>
+          </div>
+          <div class="dm-msg">
+            <div class="dm-used">↳ used <code>/tge roll</code></div>
+            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 7:39 AM</span></div>
+            <div class="dm-embed">
+              <div class="dm-line">🎲 <em>@Player</em>, roll initiative for <b>Wren Alderfen</b>:</div>
+              <div class="dm-select">🎲 Roll initiative with... <span>▾</span></div>
+            </div>
+          </div>
+          <div class="dm-msg">
+            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Wren Alderfen</span><span class="dm-tag">APP</span><span class="dm-time">Today at 7:40 AM</span></div>
+            <div class="dm-line" style="margin-left:30px">🎲 Initiative (Perception): <b>18</b> = d20(9) +9</div>
+          </div>
+          <div class="dm-msg">
+            <div class="dm-used">↳ used <code>/tge begin</code></div>
+            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 7:42 AM</span></div>
+            <div class="dm-embed">
+              <div class="dm-line">⚔️ <b>Combat begins!</b></div>
+              <div class="dm-line"><em>@Player</em> It is your turn.</div>
+              <div class="dm-heading">⚔️ Encounter — Round 1</div>
+              <div class="dm-line">▶ <b>Current Turn</b></div>
+              <div class="dm-line">🛡️ <b>Wren Alderfen</b> — <em>@Player</em>, you're up.</div>
+              <div class="dm-line"><em>Next: Ilyra Duskmere</em></div>
+              <div class="dm-heading">Turn Order</div>
+              <div class="dm-line">▶ 🛡️ <b>Wren Alderfen</b> <code>wren</code> — init 18 — 58/58 HP</div>
+              <div class="dm-line">&nbsp;&nbsp;└ Talon <code>talon</code> — 58/58 HP</div>
+              <div class="dm-line">&nbsp;&nbsp;└ Birch <code>birch</code> — 50/50 HP</div>
+              <div class="dm-line">🛡️ <b>Ilyra Duskmere</b> <code>ilyra</code> — init 14 — 44/44 HP</div>
+            </div>
+          </div>
+          <div class="dm-msg">
+            <div class="dm-used">↳ used <code>/tge damage</code></div>
+            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 7:44 AM</span></div>
+            <div class="dm-embed">
+              <div class="dm-line">💥 <b>Ilyra Duskmere</b> takes 8 slashing damage — 36/44 HP</div>
+            </div>
+          </div>
+        </div>
+
         <h3>Thralls &amp; summons</h3>
         <p>
           Both create <strong>temporary creatures</strong>: they join the encounter, land on the map,
@@ -855,6 +1168,29 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
             <div class="desc">Drop something in by hand, see what the unidentified items really are, reveal one without a roll, or take it out entirely.</div></div>
         </div>
 
+        <p class="dm-caption">Checking the pool, then cracking one open — mock-ups, not live screenshots.</p>
+        <div class="dm-seq">
+          <div class="dm-msg">
+            <div class="dm-used">↳ used <code>/tgloot list</code></div>
+            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 9:12 AM</span></div>
+            <div class="dm-embed">
+              <h4>🎒 Loot</h4>
+              <div class="dm-line">• <b>magic wand</b> <em>(level 5, DC 20 to identify)</em> — unclaimed</div>
+              <div class="dm-line">• <b>Elixir of Life (Lesser)</b> (2 gp) — <b>Ilyra Duskmere</b></div>
+              <div class="dm-line" style="color:var(--dc-text-3)">A vial of bright red liquid that restores vitality when swallowed.</div>
+            </div>
+          </div>
+          <div class="dm-msg">
+            <div class="dm-used">↳ used <code>/tgloot identify</code></div>
+            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 9:14 AM</span></div>
+            <div class="dm-embed">
+              <div class="dm-line">🔍 <b>Wren Alderfen</b> attempts to Identify Magic on <b>magic wand</b>.</div>
+              <div class="dm-line">🎲 Arcana: <b>24</b> = d20(15) +9 vs DC 20 — Success</div>
+              <div class="dm-line">✨ It's a <b>Wand of Manifold Missiles</b>!</div>
+            </div>
+          </div>
+        </div>
+
         <h3>The party fund</h3>
         <p>
           One shared purse per campaign, so the loot doesn't have to sit on one player's sheet — which
@@ -882,8 +1218,8 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         <p>
           <code>/tgtown generate level:4</code> gives you a whole town: a name, a region, shops
           appropriate to its size, somebody behind each counter with a personality and a hook you can
-          hang a scene on, and stocked shelves. The AI GM writes the flavour by default, drawing on
-          Golarion lore and your campaign's own notes for tone.
+          hang a scene on, and stocked shelves. The AI GM writes original flavour by default, drawing
+          only on your campaign's own notes for tone — never on any published setting.
         </p>
         <div class="note">
           <p><strong>The rules engine keeps the mechanics.</strong> The AI never sets a settlement's level, its prices, or what its shops may stock. A settlement's level <em>is</em> PF2e's availability rule — it decides what can legally be sold there — so it stays the GM's call. Pass <code>ai:false</code> for the local name tables instead; if the call fails you get those anyway, and the page tells you so.</p>
@@ -899,7 +1235,43 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           <div class="cmd-row"><div class="cmd">/tgtown create · edit · delete</div><span class="badge b-gm">gm only</span>
             <div class="desc">Write a settlement by hand, or change one. Raising a town's level doesn't restock its shops — their shelves stay as they were until you say otherwise.</div></div>
           <div class="cmd-row"><div class="cmd">/tgtown shop_add · vendor_add · stock_add · restock</div><span class="badge b-gm">gm only</span>
-            <div class="desc">Add a shop, put someone behind the counter, or place a specific item. <code>level_bonus</code> lets one shop reach past the town's level — the smith whose cousin is a Magaambya artificer.</div></div>
+            <div class="desc">Add a shop, put someone behind the counter, or place a specific item. <code>level_bonus</code> lets one shop reach past the town's level — the smith whose cousin trained at a famous artificers' guild.</div></div>
+        </div>
+
+        <p class="dm-caption">Browsing a settlement, then one shop's shelves — mock-ups, not live screenshots.</p>
+        <div class="dm-seq">
+          <div class="dm-msg">
+            <div class="dm-used">↳ used <code>/tgtown view</code></div>
+            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 8:51 AM</span></div>
+            <div class="dm-embed">
+              <h4>🏘️ Oakhaven</h4>
+              <div class="dm-line" style="color:var(--dc-text-3)">Nestled along the muddy banks of the Elderrun, Oakhaven is a lawless sanctuary built around an ancient, hollowed-out ironwood tree. River pirates, honest merchants, and exiles mingle freely beneath its shaded canopy.</div>
+              <div class="dm-fields">
+                <div class="dm-f"><b>Level</b><span>8</span></div>
+                <div class="dm-f"><b>Size</b><span>City</span></div>
+                <div class="dm-f"><b>Region</b><span>Elderrun</span></div>
+              </div>
+              <div class="dm-heading">Shops (4)</div>
+              <div class="dm-line">• <b>Anvil &amp; Ember</b> — weaponsmith +1</div>
+              <div class="dm-line">• <b>Oakhaven Emporium</b> — general</div>
+              <div class="dm-line">• <b>The Bubbling Crucible</b> — alchemist</div>
+              <div class="dm-line">• <b>The Gilded Cuirass</b> — armorer</div>
+              <div class="dm-line" style="color:var(--dc-text-3)">Items of level 8 or lower are generally available here.</div>
+            </div>
+          </div>
+          <div class="dm-msg">
+            <div class="dm-used">↳ used <code>/tgtown shop</code></div>
+            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 8:52 AM</span></div>
+            <div class="dm-embed">
+              <h4>🏪 Oakhaven Emporium — general</h4>
+              <div class="dm-sub">Run by Bramen Copperkettle — nervous and chatty, glances at his cellar door whenever customers mention old ruins.</div>
+              <div class="dm-line">• Backpack — 1 sp</div>
+              <div class="dm-line">• Rope, 50 feet — 5 sp</div>
+              <div class="dm-line">• Torch — 1 cp</div>
+              <div class="dm-line">• Healer's Toolkit — 5 gp</div>
+              <div class="dm-select">🛒 Buy an item... <span>▾</span></div>
+            </div>
+          </div>
         </div>
 
         <h4>How big is a town?</h4>
