@@ -1,0 +1,266 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>Table Goblin — Terms of Service</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --ground:      #F0F1EA;
+    --surface:     #FAFAF6;
+    --surface-2:   #EBEDE3;
+    --line:        #D2D5C6;
+    --line-strong: #B4B9A4;
+    --text:        #1B1F16;
+    --text-2:      #4C523F;
+    --text-3:      #6E7560;
+    --brass:       #9A6E1C;
+    --brass-bright:#C08F2E;
+    --brass-wash:  #F3E7CC;
+    --verdigris:   #2F6C5E;
+    --shadow: 0 1px 2px rgba(27,31,22,.06), 0 6px 18px rgba(27,31,22,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #12150E;
+      --surface:     #1A1E15;
+      --surface-2:   #222719;
+      --line:        #2E3427;
+      --line-strong: #414937;
+      --text:        #E8EADF;
+      --text-2:      #B0B6A2;
+      --text-3:      #878D77;
+      --brass:       #D9A945;
+      --brass-bright:#EFC468;
+      --brass-wash:  #2A2312;
+      --verdigris:   #6FBFA9;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:      #12150E;
+    --surface:     #1A1E15;
+    --surface-2:   #222719;
+    --line:        #2E3427;
+    --line-strong: #414937;
+    --text:        #E8EADF;
+    --text-2:      #B0B6A2;
+    --text-3:      #878D77;
+    --brass:       #D9A945;
+    --brass-bright:#EFC468;
+    --brass-wash:  #2A2312;
+    --verdigris:   #6FBFA9;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground); color: var(--text);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px; line-height: 1.62; -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: Fraunces, "Iowan Old Style", Georgia, serif; font-weight: 600; text-wrap: balance; line-height: 1.2; margin: 0; }
+  a { color: var(--verdigris); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:hover { color: var(--brass); }
+  :focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 3px; border-radius: 2px; }
+  code, .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  .topbar {
+    border-bottom: 1px solid var(--line); background: var(--surface);
+    padding: 16px 0;
+  }
+  .topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .brand { font-family: Fraunces, Georgia, serif; font-weight: 700; font-size: 17px; text-decoration: none; color: var(--text); }
+  .brand span { color: var(--brass); }
+  .back { font-size: 13.5px; font-family: "IBM Plex Mono", monospace; }
+
+  .wrap { max-width: 700px; margin: 0 auto; padding: 0 28px; }
+  main { padding: 56px 0 100px; }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace; font-size: 11.5px;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--brass);
+  }
+  h1.title { font-size: clamp(32px, 5vw, 44px); letter-spacing: -.02em; margin: 14px 0 0; }
+  .updated { margin: 14px 0 0; color: var(--text-3); font-size: 13.6px; font-family: "IBM Plex Mono", monospace; }
+
+  .lede { font-size: 17.5px; color: var(--text-2); margin: 28px 0 0; max-width: 62ch; }
+
+  section { margin-top: 46px; }
+  section h2 {
+    font-size: 21px; letter-spacing: -.01em; margin-bottom: 12px;
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  section h2 .num { color: var(--brass); font-family: "IBM Plex Mono", monospace; font-size: 14px; }
+  p { margin: 0 0 14px; max-width: 64ch; color: var(--text); }
+  section p, section li { color: var(--text-2); }
+  ul, ol { margin: 0 0 14px; padding-left: 20px; max-width: 64ch; }
+  li { margin-bottom: 6px; }
+  li::marker { color: var(--brass); }
+  strong { color: var(--text); font-weight: 600; }
+
+  .note {
+    border-left: 2px solid var(--brass); padding: 13px 16px;
+    background: var(--brass-wash); border-radius: 0 6px 6px 0;
+    margin: 18px 0; font-size: 14.6px; color: var(--text-2); max-width: 64ch;
+  }
+  .note p:last-child { margin-bottom: 0; }
+  .note strong { color: var(--text); }
+
+  footer {
+    margin-top: 74px; padding: 26px 0 0; border-top: 1px solid var(--line);
+    font-size: 13.6px; color: var(--text-3);
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html">Table <span>Goblin</span></a>
+    <a class="back" href="index.html">&larr; Back to the Handbook</a>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <div class="eyebrow">Legal</div>
+    <h1 class="title">Terms of Service</h1>
+    <div class="updated">Last updated September 14, 2026</div>
+
+    <p class="lede">
+      These terms cover your use of Table Goblin, a companion bot for running Pathfinder
+      Second Edition games on Discord. By adding Table Goblin to a server or using its
+      commands, you agree to the terms below.
+    </p>
+
+    <section>
+      <h2><span class="num">01</span>What Table Goblin Is</h2>
+      <p>
+        Table Goblin is an independent, fan-made utility that helps a Discord server run
+        tabletop sessions using the Pathfinder Second Edition rules — character sheets,
+        initiative and combat tracking, loot, maps, and settlement tools. It is a piece of
+        software offered for the convenience of game tables, not a publisher of game content
+        and not a party to any game you run with it.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="num">02</span>No Affiliation with Paizo Inc.</h2>
+      <p>
+        Table Goblin is not produced, endorsed, sponsored, or specifically approved by
+        Paizo Inc. Pathfinder and associated marks are trademarks of Paizo Inc., and any
+        game rules the bot references are used under the terms of the applicable open
+        game licenses. References to Pathfinder rules, terms, or mechanics exist solely to
+        make the bot useful to players and Game Masters of that system.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="num">03</span>Content Provided As Is</h2>
+      <p>
+        Rules text, statistics, item and monster data, and anything else the bot displays
+        or generates are provided on an <strong>as-is, as-available</strong> basis, without
+        warranty of accuracy, completeness, or fitness for a particular table's use.
+        Table Goblin is a reference and bookkeeping aid, not a substitute for the official
+        rulebooks — when the bot and a published rule disagree, the Game Master's judgment
+        and the official text govern the table, not the bot's output.
+      </p>
+      <p>
+        Where the bot's AI-assisted features generate narrative text, descriptions, or
+        suggestions, that content is produced automatically and is offered for
+        entertainment and convenience only. We do not guarantee it will be accurate,
+        appropriate, or free of errors, and a table remains responsible for whatever it
+        chooses to use from it.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="num">04</span>Your Content and Data</h2>
+      <p>
+        Character sheets, campaign records, encounter state, loot, and any other
+        information you or your table enter through the bot's commands remain yours. By
+        using Table Goblin, you grant it the limited permission it needs to store, process,
+        and display that information back to your table as part of operating the service.
+        We do not claim ownership over anything you create through it.
+      </p>
+      <p>
+        You are responsible for what you and your table submit to the bot, including
+        making sure it doesn't include content you don't have the right to share.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="num">05</span>Acceptable Use</h2>
+      <p>
+        Table Goblin is meant to run alongside a Discord server in good standing. Use of
+        the bot must comply with Discord's own Terms of Service and Community Guidelines.
+        We reserve the right to limit or remove the bot's access to a server, channel, or
+        user we reasonably believe is using it to abuse, disrupt, or circumvent Discord's
+        own rules, or to attempt to interfere with the bot's normal operation.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="num">06</span>The AI GM Feature</h2>
+      <p>
+        Table Goblin offers an optional AI Game Master feature that a table may choose to
+        enable. Details of what that feature reads and sends are covered in our
+        <a href="privacy.html">Privacy Policy</a> — enabling it is an explicit choice by
+        your table, not something turned on by default.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="num">07</span>Availability, Changes, and Discontinuation</h2>
+      <p>
+        Table Goblin is developed and hosted as an independent project. We may update,
+        modify, or temporarily or permanently discontinue any command, feature, or the
+        service as a whole, at any time, with or without notice. We aren't liable to you
+        or your table for any modification, suspension, or discontinuation of the service.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="num">08</span>Disclaimer of Warranties; Limitation of Liability</h2>
+      <p>
+        The service is provided without warranties of any kind, express or implied,
+        including any warranty of merchantability, fitness for a particular purpose, or
+        non-infringement. To the fullest extent permitted by law, we are not liable for
+        any indirect, incidental, or consequential damages arising from your use of, or
+        inability to use, Table Goblin — including a lost character sheet, a disrupted
+        session, or a rules dispute at your table.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="num">09</span>Termination</h2>
+      <p>
+        You may stop using Table Goblin at any time by removing it from your server. We
+        may suspend or terminate a server's, channel's, or user's access to the bot for
+        conduct that violates these terms or Discord's own policies.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="num">10</span>Changes to These Terms</h2>
+      <p>
+        We may revise these terms from time to time. The "Last updated" date above reflects
+        the most recent revision, and continuing to use Table Goblin after a change takes
+        effect means you accept the updated terms.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="num">11</span>Contact</h2>
+      <p>
+        Questions about these terms can be sent to
+        <a href="mailto:CONTACT_EMAIL_PLACEHOLDER">CONTACT_EMAIL_PLACEHOLDER</a>.
+      </p>
+    </section>
+
+    <footer>
+      Table Goblin is an unofficial, fan-made tool and is not affiliated with, endorsed
+      by, or sponsored by Paizo Inc. See also our <a href="privacy.html">Privacy Policy</a>.
+    </footer>
+  </div>
+</main>
+</body></html>
