@@ -560,7 +560,7 @@
         </div>
 
         <h3>What the bot asks for, and why</h3>
-        <p>Table Goblin requests four permissions on invite. It asks for these and nothing else, and each one is load-bearing:</p>
+        <p>Table Goblin needs the permissions below. Use the invite link the bot's owner gives you and they're all granted for you; if you add the bot some other way, tick them on its role yourself. Each one is load-bearing:</p>
 
         <div class="t-wrap">
           <table>
@@ -570,8 +570,15 @@
               <tr><td><b>Manage Channels</b></td><td>No category, no channels, no permission model — <code>setup_channels</code> does nothing.</td></tr>
               <tr><td><b>Manage Webhooks</b></td><td>Characters can't speak. Every in-character post goes out through a webhook so it wears the character's name and portrait.</td></tr>
               <tr><td><b>Manage Messages</b></td><td>Your <code>pc::{strike}</code> trigger stays in the channel instead of being tidied away after the character's post goes up.</td></tr>
+              <tr><td><b>Manage Threads, Create Public Threads, Send Messages in Threads</b></td><td>The in-character forum can't be built or posted in. Discord also refuses to give players thread permissions the bot doesn't hold itself.</td></tr>
+              <tr><td><b>View Channels, Send Messages, Read Message History, Add Reactions, Embed Links, Attach Files</b></td><td>The everyday basics — it can't see, post, or attach maps and sheets without them.</td></tr>
+              <tr><td><b>Connect, Speak, Use Voice Activity</b></td><td>Only needed so the campaign's voice channel can be set up with the right permissions.</td></tr>
             </tbody>
           </table>
+        </div>
+
+        <div class="note">
+          <p><strong>Missing one?</strong> <code>/tgm setup_channels</code> checks before it builds anything and tells you exactly which permissions to enable on the bot's role (Server Settings &rarr; Roles), so nothing is left half-created.</p>
         </div>
 
         <div class="note">
