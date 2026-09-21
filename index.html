@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<!doctype html><html><!-- Sections are one continuous page; the rail on the left jumps to each. --><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
 <title>Table Goblin Handbook</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -126,50 +126,22 @@
   }
 
   .rail nav { display: flex; flex-direction: column; gap: 1px; }
-  .rail nav label {
+  .rail nav a {
     display: grid; grid-template-columns: 20px 1fr; gap: 9px; align-items: baseline;
     padding: 6px 9px; border-radius: 5px; cursor: pointer;
     color: var(--text-2); text-decoration: none; font-size: 13.6px; line-height: 1.35;
   }
-  .rail nav label .n {
+  .rail nav a .n {
     font-family: "IBM Plex Mono", monospace; font-size: 11px;
     color: var(--text-3); font-variant-numeric: tabular-nums;
   }
-  .rail nav label:hover { background: var(--surface-2); color: var(--text); }
-  .rail nav label:hover .n { color: var(--brass); }
+  .rail nav a { text-decoration: none; }
+  .rail nav a:hover { background: var(--surface-2); color: var(--text); }
+  .rail nav a:hover .n { color: var(--brass); }
 
-  /* ---------------- section tabs (radio + label, no JS) ---------------- */
-  .tab-radio { position: absolute; opacity: 0; pointer-events: none; }
-  main section { display: none; }
-  #tab-start:checked ~ main #start,
-  #tab-gm:checked ~ main #gm,
-  #tab-chars:checked ~ main #chars,
-  #tab-chat:checked ~ main #chat,
-  #tab-npcs:checked ~ main #npcs,
-  #tab-combat:checked ~ main #combat,
-  #tab-maps:checked ~ main #maps,
-  #tab-loot:checked ~ main #loot,
-  #tab-towns:checked ~ main #towns { display: block; }
-  #tab-start:checked ~ .rail nav label[for="tab-start"],
-  #tab-gm:checked ~ .rail nav label[for="tab-gm"],
-  #tab-chars:checked ~ .rail nav label[for="tab-chars"],
-  #tab-chat:checked ~ .rail nav label[for="tab-chat"],
-  #tab-npcs:checked ~ .rail nav label[for="tab-npcs"],
-  #tab-combat:checked ~ .rail nav label[for="tab-combat"],
-  #tab-maps:checked ~ .rail nav label[for="tab-maps"],
-  #tab-loot:checked ~ .rail nav label[for="tab-loot"],
-  #tab-towns:checked ~ .rail nav label[for="tab-towns"] {
-    background: var(--brass-wash); color: var(--brass);
-  }
-  #tab-start:checked ~ .rail nav label[for="tab-start"] .n,
-  #tab-gm:checked ~ .rail nav label[for="tab-gm"] .n,
-  #tab-chars:checked ~ .rail nav label[for="tab-chars"] .n,
-  #tab-chat:checked ~ .rail nav label[for="tab-chat"] .n,
-  #tab-npcs:checked ~ .rail nav label[for="tab-npcs"] .n,
-  #tab-combat:checked ~ .rail nav label[for="tab-combat"] .n,
-  #tab-maps:checked ~ .rail nav label[for="tab-maps"] .n,
-  #tab-loot:checked ~ .rail nav label[for="tab-loot"] .n,
-  #tab-towns:checked ~ .rail nav label[for="tab-towns"] .n { color: var(--brass); }
+  /* ---------------- active section (scroll-spy; no JS = no highlight, nothing breaks) ---------------- */
+  .rail nav a.active { background: var(--brass-wash); color: var(--brass); }
+  .rail nav a.active .n { color: var(--brass); }
 
   main { min-width: 0; padding: 0 0 96px; }
   .wrap { max-width: 760px; margin: 0 auto; padding: 0 34px; }
@@ -216,7 +188,7 @@
   .index-card span { font-size: 13.2px; color: var(--text-3); line-height: 1.45; }
 
   /* ---------------- sections ---------------- */
-  section { padding: 62px 0 0; scroll-margin-top: 18px; }
+  section { padding: 62px 0 0; scroll-margin-top: 24px; }
   .sec-head { display: flex; flex-direction: column; gap: 9px; margin-bottom: 26px; }
   .sec-num {
     font-family: "IBM Plex Mono", monospace; font-size: 11.5px; letter-spacing: .16em;
@@ -482,15 +454,6 @@
 </style>
 
 <div class="shell">
-  <input type="radio" name="section-tab" id="tab-start" class="tab-radio" checked>
-  <input type="radio" name="section-tab" id="tab-gm" class="tab-radio">
-  <input type="radio" name="section-tab" id="tab-chars" class="tab-radio">
-  <input type="radio" name="section-tab" id="tab-chat" class="tab-radio">
-  <input type="radio" name="section-tab" id="tab-npcs" class="tab-radio">
-  <input type="radio" name="section-tab" id="tab-combat" class="tab-radio">
-  <input type="radio" name="section-tab" id="tab-maps" class="tab-radio">
-  <input type="radio" name="section-tab" id="tab-loot" class="tab-radio">
-  <input type="radio" name="section-tab" id="tab-towns" class="tab-radio">
   <aside class="rail">
     <div class="rail-brand">
         <img class="rail-logo" src="table-goblin.png" alt="Table Goblin logo">
@@ -498,15 +461,15 @@
         <span>Handbook</span>
     </div>
     <nav>
-      <label for="tab-start"><span class="n">01</span><span>Getting Started</span></label>
-      <label for="tab-gm"><span class="n">02</span><span>GM Tools</span></label>
-      <label for="tab-chars"><span class="n">03</span><span>Characters</span></label>
-      <label for="tab-chat"><span class="n">04</span><span>Playing in Character</span></label>
-      <label for="tab-npcs"><span class="n">05</span><span>Creatures &amp; NPCs</span></label>
-      <label for="tab-combat"><span class="n">06</span><span>Encounters</span></label>
-      <label for="tab-maps"><span class="n">07</span><span>Battle Maps</span></label>
-      <label for="tab-loot"><span class="n">08</span><span>Loot &amp; the Purse</span></label>
-      <label for="tab-towns"><span class="n">09</span><span>Towns &amp; Shops</span></label>
+      <a href="#start"><span class="n">01</span><span>Getting Started</span></a>
+      <a href="#gm"><span class="n">02</span><span>GM Tools</span></a>
+      <a href="#chars"><span class="n">03</span><span>Characters</span></a>
+      <a href="#chat"><span class="n">04</span><span>Playing in Character</span></a>
+      <a href="#npcs"><span class="n">05</span><span>Creatures &amp; NPCs</span></a>
+      <a href="#combat"><span class="n">06</span><span>Encounters</span></a>
+      <a href="#maps"><span class="n">07</span><span>Battle Maps</span></a>
+      <a href="#loot"><span class="n">08</span><span>Loot &amp; the Purse</span></a>
+      <a href="#towns"><span class="n">09</span><span>Towns &amp; Shops</span></a>
     </nav>
   </aside>
 
@@ -539,15 +502,15 @@
         </div>
 
         <div class="index-grid">
-          <label class="index-card" for="tab-start"><span class="n">01</span><b>Getting Started</b><span>Invite the bot, create a campaign, and understand what it builds for you.</span></label>
-          <label class="index-card" for="tab-gm"><span class="n">02</span><b>GM Tools</b><span>Roles, players, channel bindings, and the treasure tables.</span></label>
-          <label class="index-card" for="tab-chars"><span class="n">03</span><b>Characters</b><span>Pathbuilder import, the interactive sheet, companions and coin.</span></label>
-          <label class="index-card" for="tab-chat"><span class="n">04</span><b>Playing in Character</b><span>Speak and roll from chat without touching a slash command.</span></label>
-          <label class="index-card" for="tab-npcs"><span class="n">05</span><b>Creatures &amp; NPCs</b><span>Pull monsters from the bestiary or build your own.</span></label>
-          <label class="index-card" for="tab-combat"><span class="n">06</span><b>Encounters</b><span>Initiative, conditions, saves, and the dying rules.</span></label>
-          <label class="index-card" for="tab-maps"><span class="n">07</span><b>Battle Maps</b><span>Grids, tokens, terrain, fog of war, cover and flanking.</span></label>
-          <label class="index-card" for="tab-loot"><span class="n">08</span><b>Loot &amp; the Purse</b><span>Payouts, unidentified magic, and the shared party fund.</span></label>
-          <label class="index-card" for="tab-towns"><span class="n">09</span><b>Towns &amp; Shops</b><span>Generate a settlement, its shopkeepers and their shelves.</span></label>
+          <a class="index-card" href="#start"><span class="n">01</span><b>Getting Started</b><span>Invite the bot, create a campaign, and understand what it builds for you.</span></a>
+          <a class="index-card" href="#gm"><span class="n">02</span><b>GM Tools</b><span>Roles, players, channel bindings, and the treasure tables.</span></a>
+          <a class="index-card" href="#chars"><span class="n">03</span><b>Characters</b><span>Pathbuilder import, the interactive sheet, companions and coin.</span></a>
+          <a class="index-card" href="#chat"><span class="n">04</span><b>Playing in Character</b><span>Speak and roll from chat without touching a slash command.</span></a>
+          <a class="index-card" href="#npcs"><span class="n">05</span><b>Creatures &amp; NPCs</b><span>Pull monsters from the bestiary or build your own.</span></a>
+          <a class="index-card" href="#combat"><span class="n">06</span><b>Encounters</b><span>Initiative, conditions, saves, and the dying rules.</span></a>
+          <a class="index-card" href="#maps"><span class="n">07</span><b>Battle Maps</b><span>Grids, tokens, terrain, fog of war, cover and flanking.</span></a>
+          <a class="index-card" href="#loot"><span class="n">08</span><b>Loot &amp; the Purse</b><span>Payouts, unidentified magic, and the shared party fund.</span></a>
+          <a class="index-card" href="#towns"><span class="n">09</span><b>Towns &amp; Shops</b><span>Generate a settlement, its shopkeepers and their shelves.</span></a>
         </div>
       </header>
 
@@ -588,14 +551,19 @@
         <h3>Two commands to a working table</h3>
         <div class="cmds">
           <div class="cmd-row">
-            <div class="cmd">/tgm create_campaign <b>name</b> <span class="opt">[notes]</span></div>
+            <div class="cmd">/tgm campaign_create <b>name</b> <span class="opt">[notes] [system]</span></div>
             <span class="badge b-gm">admin only</span>
-            <div class="desc">Registers the campaign and makes you its first GM. Run it from any channel that isn't already part of a campaign. The name's slug is unique <em>per server</em> — another Discord running "Curse of the Crimson Vault" is none of your business.</div>
+            <div class="desc">Registers the campaign and makes you its first GM. Run it from any channel that isn't already part of a campaign. The name's slug is unique <em>per server</em> — another Discord running "Curse of the Crimson Vault" is none of your business. <code>system</code> lists Pathfinder 2e only for now; the field exists so more can join it later. It then opens your campaign's rules panel, and says so, so the private message isn't a surprise.</div>
           </div>
           <div class="cmd-row">
             <div class="cmd">/tgm setup_channels <b>campaign_name</b> <span class="opt">[mode] [include_voice]</span></div>
             <span class="badge b-gm">gm only</span>
             <div class="desc">Builds the two roles, the category, and the channels, then binds them. This is the only <code>/tgm</code> command that takes a campaign name, because the campaign has no channels yet to identify it by.</div>
+          </div>
+          <div class="cmd-row">
+            <div class="cmd">/tgm campaign_rules</div>
+            <span class="badge b-gm">gm only</span>
+            <div class="desc">Your table's rules, in a private panel: which optional rules you run, and how much of the game's uncommon and rare content your players may pick. See <a href="#gm">GM Tools</a>. Worth setting before anyone builds a character, because the builder follows it from the first step.</div>
           </div>
         </div>
 
@@ -683,7 +651,7 @@
         </div>
         <p>
           Every <code>/tgm</code> command needs a campaign GM or a Server Administrator, and every one
-          except <code>create_campaign</code> must be run from inside that campaign's own channels.
+          except <code>campaign_create</code> must be run from inside that campaign's own channels.
           <strong>The channel is how the bot knows which campaign you mean</strong>, which is why none
           of them takes a campaign name you could point somewhere else.
         </p>
@@ -706,6 +674,52 @@
             <div class="desc">Every campaign in this server where you hold GM or admin rights.</div></div>
           <div class="cmd-row"><div class="cmd">/tgm delete_campaign <b>confirm_campaign_name</b></div><span class="badge b-gm">gm only</span>
             <div class="desc">Permanently deletes the campaign bound to this channel — every sheet in it, plus its channels, category and both roles. You must type the campaign's real name to confirm. Cannot be undone.</div></div>
+        </div>
+
+        <h3>Campaign rules</h3>
+        <p>
+          <code>/tgm campaign_rules</code> opens a private panel — dropdowns and buttons, not a wall of
+          arguments — holding everything about how your table plays. <strong>Nothing is saved until you
+          press Save</strong>, and only the GM who opened it can touch it.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgm campaign_rules</div><span class="badge b-gm">gm only</span>
+            <div class="desc">Runs itself automatically right after <code>campaign_create</code>, and is there whenever you want to change your mind.</div></div>
+        </div>
+
+        <h4>Optional rules</h4>
+        <p>
+          Tick the ones your table uses. <strong>The character builder and level-up follow them from the
+          start</strong>, so a player builds the right character the first time rather than patching it afterwards.
+        </p>
+        <div class="t-wrap">
+          <table>
+            <thead><tr><th>Rule</th><th>What the bot does with it</th></tr></thead>
+            <tbody>
+              <tr><td><b>Free Archetype</b></td><td>An archetype feat at every even level. Nothing to pick at 1st — the builder says so, and the first one (a dedication) arrives at 2nd through <code>/tgchar levelup</code>.</td></tr>
+              <tr><td><b>Ancestry Paragon</b></td><td>A second 1st-level ancestry feat in the builder, then another at every odd level.</td></tr>
+              <tr><td><b>Skill Paragon</b></td><td>Adds a <em>Paragon Skill</em> step: the character is trained in it (or trains something else if they already were). At 3rd, 7th and 15th an extra increase for that skill is applied for you, and every common general feat requiring it is granted as they qualify.</td></tr>
+              <tr><td><b>Dual Class</b></td><td>Adds a <em>Second Class</em> step. The character gets both classes' features and specialisations, a class feat from each class that grants one at 1st, both key attribute boosts, the higher Hit Points, the better proficiencies, and both spellcastings if both classes cast.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>Uncommon and rare</h4>
+        <p>
+          Common is always available. Uncommon and rare are two switches, <strong>both off to begin
+          with</strong> — which is stricter than it sounds, since only 8 of the game's 50 ancestries are
+          common. Turn on what your table allows.
+        </p>
+        <p>
+          Then there are <strong>ancestry exceptions</strong>: two dropdowns, one for the 20 uncommon
+          ancestries and one for the 22 rare ones. <strong>An exception flips the switch for that one
+          ancestry.</strong> With rare off, ticking Poppet makes Poppet available; with rare on, ticking
+          Poppet takes it away. An ancestry you allow brings <em>all</em> its heritages and ancestry
+          feats with it whatever their own rarity — and the panel tells you exactly how many uncommon or
+          rare ones that means before you save.
+        </p>
+        <div class="note">
+          <p><strong>Everything else follows the two switches.</strong> Backgrounds, heritages outside an allowed ancestry, feats, spells and items. Unique content is never offered at all — that is a GM handing it over by name.</p>
         </div>
 
         <h3>Treasure tables</h3>
@@ -731,13 +745,13 @@
 
         <h3>Making one</h3>
         <div class="cmds">
-          <div class="cmd-row"><div class="cmd">/tg char create <b>player</b> <b>name</b> <b>alias</b> <span class="opt">[pathbuilder_id] […]</span></div><span class="badge b-self">self / gm</span>
+          <div class="cmd-row"><div class="cmd">/tgchar create <b>player</b> <b>name</b> <b>alias</b> <span class="opt">[pathbuilder_id] […]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Creates the character. Give a <code>pathbuilder_id</code> and the whole sheet imports immediately. The <b>alias</b> is the short handle you'll use in every other command and in chat — keep it short and typeable.</div></div>
-          <div class="cmd-row"><div class="cmd">/tg char linkpathbuilder <b>alias</b> <b>pathbuilder_id</b></div><span class="badge b-self">self / gm</span>
+          <div class="cmd-row"><div class="cmd">/tgchar linkpathbuilder <b>alias</b> <b>pathbuilder_id</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Imports Pathbuilder data into an existing alias and makes it your active character.</div></div>
-          <div class="cmd-row"><div class="cmd">/tg char sync <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
+          <div class="cmd-row"><div class="cmd">/tgchar sync <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Re-imports after a level-up. Deliberately <em>preserves</em> live play data: your coin, items you found, spells learned in play, your current HP, and any manual GM corrections.</div></div>
-          <div class="cmd-row"><div class="cmd">/tg char sync_force <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
+          <div class="cmd-row"><div class="cmd">/tgchar sync_force <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">The escape hatch — discards all of that and takes Pathbuilder's word for everything.</div></div>
         </div>
         <div class="note">
@@ -746,27 +760,29 @@
 
         <h3>Building one from scratch</h3>
         <p>
-          No Pathbuilder sheet? <code>/tg char build</code> walks the same choices Pathbuilder would
+          No Pathbuilder sheet? <code>/tgchar build</code> walks the same choices Pathbuilder would
           have made for you — ancestry, heritage, background, class, boosts, skills, feats — one
           dropdown at a time, saving as it goes. A companion or familiar a class or feat grants gets
-          its own name-and-species step right there in the wizard, not a separate command afterward.
+          its own name-and-species step right there in the wizard, not a separate command afterward. Anything that grants
+          alchemical formulas gets a <strong>Formulas</strong> step with a dropdown per source &mdash; an Alchemist, a hobgoblin's Alchemical Scholar, an Investigator's
+          Alchemical Sciences, or a background that grants Alchemical Crafting.
         </p>
         <div class="cmds">
-          <div class="cmd-row"><div class="cmd">/tg char build <b>name</b> <b>alias</b> <span class="opt">[level] [allow_uncommon] [assist_me]</span></div><span class="badge b-self">self / gm</span>
-            <div class="desc">Starts a build, or resumes one already in progress under the same <b>name</b>/<b>alias</b>. <code>level</code> sets the starting level (1–20; default 1). <code>allow_uncommon</code> lifts the common-only filter on ancestries, heritages and backgrounds — most of PF2e's own options are uncommon or rarer, including a Kholo or a Poppet. <code>assist_me</code> makes the wizard visible to the whole table instead of just you, for a GM walking a new player through their first build.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgchar build <b>name</b> <b>alias</b> <span class="opt">[level] [assist_me]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Starts a build, or resumes one already in progress under the same <b>name</b>/<b>alias</b>. <code>level</code> sets the starting level (1–20; default 1). <code>assist_me</code> makes the wizard visible to the whole table instead of just you, for a GM walking a new player through their first build. <strong>What you are offered follows the campaign's rules</strong> (<code>/tgm campaign_rules</code>) — common always, uncommon and rare where your GM allows them, and whichever optional rules your table runs add their own steps.</div></div>
         </div>
         <div class="eg">
           <span class="eg-label">Example</span>
-          <code>/tg char build name:Wren Alderfen alias:wren</code>
+          <code>/tgchar build name:Wren Alderfen alias:wren</code>
           <p>A brand-new level 1 character, common options only, visible only to you.</p>
-          <code>/tg char build name:Anok alias:anok level:3 allow_uncommon:true</code>
+          <code>/tgchar build name:Anok alias:anok level:3</code>
           <p>A level 3 character with access to uncommon ancestries — the way to build a Kholo, who couldn't otherwise be picked.</p>
         </div>
 
         <p class="dm-caption">The first step, a later one, and the finish — mock-ups, not live screenshots.</p>
         <div class="dm-seq">
           <div class="dm-msg">
-            <div class="dm-used">↳ used <code>/tg char build</code></div>
+            <div class="dm-used">↳ used <code>/tgchar build</code></div>
             <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 6:02 PM</span></div>
             <div class="dm-embed">
               <div class="dm-line">Building <b>Wren Alderfen</b>.</div>
@@ -814,17 +830,17 @@
             <div class="dm-used">↳ used <code>✅ Create character</code></div>
             <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 6:19 PM</span></div>
             <div class="dm-embed">
-              <div class="dm-line">✅ <b>Wren Alderfen</b> created as <code>wren</code>. Open it with <code>/tg char sheet alias:wren</code>.</div>
+              <div class="dm-line">✅ <b>Wren Alderfen</b> created as <code>wren</code>. Open it with <code>/tgchar sheet alias:wren</code>.</div>
             </div>
           </div>
         </div>
         <div class="note">
-          <p><strong>A build resumes exactly where you left off.</strong> Run <code>/tg char build</code> again with the same <b>name</b> and <b>alias</b> and it picks the draft back up — nothing is lost to a closed laptop or a bot restart.</p>
+          <p><strong>A build resumes exactly where you left off.</strong> Run <code>/tgchar build</code> again with the same <b>name</b> and <b>alias</b> and it picks the draft back up — nothing is lost to a closed laptop or a bot restart.</p>
         </div>
 
         <h3>The sheet</h3>
         <p>
-          <code>/tg char sheet</code> opens an interactive sheet with five tabs — Overview, Combat,
+          <code>/tgchar sheet</code> opens an interactive sheet with five tabs — Overview, Combat,
           Spellbook, Gear, Companions. Only the person who ran the command can click anything;
           everyone else can see it.
         </p>
@@ -1006,28 +1022,32 @@
           make change.
         </p>
         <div class="cmds">
-          <div class="cmd-row"><div class="cmd">/tg char money <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
+          <div class="cmd-row"><div class="cmd">/tgchar money <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">What you're carrying, and the total in gold.</div></div>
-          <div class="cmd-row"><div class="cmd">/tg char money_add <b>amount</b> · money_spend <b>amount</b> · money_set <b>amount</b></div><span class="badge b-self">self / gm</span>
+          <div class="cmd-row"><div class="cmd">/tgchar money_add <b>amount</b> · money_spend <b>amount</b> · money_set <b>amount</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Amounts read naturally: <code>50gp</code>, <code>2gp 5sp</code>, <code>3 silver</code>. Don't put a sign on it — the command name already says which way it goes.</div></div>
         </div>
 
         <h3>The rest</h3>
         <div class="cmds">
-          <div class="cmd-row"><div class="cmd">/tg char active <b>alias</b></div><span class="badge b-self">self / gm</span>
+          <div class="cmd-row"><div class="cmd">/tgchar active <b>alias</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Sets which character <code>pc::</code> and bare commands mean.</div></div>
-          <div class="cmd-row"><div class="cmd">/tg char set_avatar <span class="opt">[image] [image_url]</span></div><span class="badge b-self">self / gm</span>
+          <div class="cmd-row"><div class="cmd">/tgchar set_avatar <span class="opt">[image] [image_url]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">The portrait on webhook posts and the token on the battle map. Upload a file or paste a link — both work.</div></div>
-          <div class="cmd-row"><div class="cmd">/tg char learn_spell <b>rank</b> <b>name</b> <b>spell_list</b></div><span class="badge b-self">self / gm</span>
+          <div class="cmd-row"><div class="cmd">/tgchar learn_spell <b>rank</b> <b>name</b> <b>spell_list</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Adds a spell outside Pathbuilder. Survives a routine <code>sync</code>.</div></div>
-          <div class="cmd-row"><div class="cmd">/tg char set_armor <b>category</b> <b>armor_name</b></div><span class="badge b-self">self / gm</span>
+          <div class="cmd-row"><div class="cmd">/tgchar set_armor <b>category</b> <b>armor_name</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Recomputes AC from the real armour entry.</div></div>
-          <div class="cmd-row"><div class="cmd">/tg char resist <b>damage_type</b> <b>kind</b> <span class="opt">[amount]</span></div><span class="badge b-self">self / gm</span>
+          <div class="cmd-row"><div class="cmd">/tgchar resist <b>damage_type</b> <b>kind</b> <span class="opt">[amount]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Permanent resistance, weakness or immunity.</div></div>
 
-          <div class="cmd-row"><div class="cmd">/tg char death_trigger <b>note</b> <span class="opt">[when] [alias]</span></div><span class="badge b-self">self / gm</span>
+          <div class="cmd-row"><div class="cmd">/tgchar death_trigger <b>note</b> <span class="opt">[when] [alias]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">A reminder the bot posts when this character — or one of its thralls or summons — dies. PF2e has a great many death-triggered effects and most are feat-specific, so rather than pretend to know them all, you write the reminder and the bot shows it at the right moment. Necromancers are the obvious case. Pass <code>""</code> to clear it.</div></div>
-          <div class="cmd-row"><div class="cmd">/tg char list · sheet · print · clone · delete · update</div><span class="badge b-self">self / gm</span>
+          <div class="cmd-row"><div class="cmd">/tgchar levelup &mdash; alchemical formulas</div><span class="badge b-self">self / gm</span>
+            <div class="desc">Every source of formulas is asked for in its own step at level-up: an Alchemist's Formula Book (2), a hobgoblin's <b>Alchemical Scholar</b> (1 of the new level), an Investigator's Alchemical Sciences (1 elixir or tool, 2 with Discoveries), and the feats you pick that level &mdash; Alchemical Crafting (4 first-level), the Alchemist Dedication (4 more), and the Herbalist and Poisoner Dedications (which carry Alchemical Crafting once). Formulas you already know aren't offered again, and what you pick is what the daily-prep panel draws from.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgdailyprep run <span class="opt">[alias] [player]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">A day's preparations: spell slots, prepared spells, Versatile Vials and once-per-day feats refresh. <b>Alchemists, Herbalists and Poisoners</b> then get a panel to choose the day's infused items from the formulas they know &mdash; an Alchemist up to 4 + Intelligence of any alchemical consumable, a Herbalist 4 healing items (2 outside the wilderness; 6 or 8 with Advanced Herbalism), a Poisoner 4 poisons (6 or 8 with Advanced Poisoncraft). With several sources you get the highest count, not the sum, in any mix they allow. The items go into the inventory and are destroyed at your next daily preparations.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgchar list · sheet · print · clone · delete · update</div><span class="badge b-self">self / gm</span>
             <div class="desc">The usual housekeeping. <code>update</code> takes an expression like <code>str_score=18</code> for a manual correction, and those corrections survive a sync.</div></div>
         </div>
       </section>
@@ -1081,6 +1101,32 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         </div>
         <div class="warn">
           <p><strong>Nothing happened?</strong> Chat triggers only work in a campaign's own channels, and stay <em>completely silent</em> anywhere else — even for a perfectly formed <code>pc::{strike}</code>. Because any <code>word::</code> counts as a candidate, the bot has to stay out of ordinary server conversation entirely. Also: <code>{strike}</code> and <code>{cast}</code> need a live encounter in that channel, since the target list comes from the roster.</p>
+        </div>
+
+        <h3>Maneuvers, grip and the action list</h3>
+        <p>
+          <code>{action}</code> opens a dropdown of everything your character can do beyond a plain Strike or spell. Once that list is longer than one page it
+          becomes <strong>category-first</strong> &mdash; pick a category (each shows its count), then the action, with a <em>&#9664; All categories</em> entry
+          to back out. The sheet's Combat tab uses the same list.
+        </p>
+        <p>
+          Everyone has a <strong>Skill Actions</strong> category: <b>Trip</b>, <b>Grapple</b>, <b>Shove</b>, <b>Disarm</b>, <b>Escape</b> and <b>Change Grip</b>.
+          A Fighter who took <b>Combat Grab</b> gets that too &mdash; it is its own action (a Strike that grabs on a hit), not a Grapple by another name.
+          Untrained characters may attempt any of them: the remastered rules list no training requirement.
+        </p>
+        <div class="t-wrap">
+          <table>
+            <thead><tr><th>Action</th><th>What it asks, and what it does</th></tr></thead>
+            <tbody>
+              <tr><td><b>Trip &middot; Shove &middot; Disarm &middot; Grapple</b></td><td>A target. Athletics against the right defense, with the effect applied on the result. Each one <b>is an attack</b>: it takes and adds to your multiple attack penalty.</td></tr>
+              <tr><td><b>Escape</b></td><td>The DC of what holds you and which statistic to use (Athletics, Acrobatics or an unarmed Strike). Success frees you; a critical success also lets you Stride 5 ft; a critical failure locks Escape until your next turn. Also an attack.</td></tr>
+              <tr><td><b>Combat Grab</b></td><td>A melee Strike keeping a hand free. On a hit the target is Grabbed until the end of your next turn.</td></tr>
+              <tr><td><b>Change Grip</b></td><td>Tell the bot what is in your hands: empty, one hand on a weapon, both hands, a weapon and a shield, or a weapon in each hand.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note">
+          <p><strong>Why Change Grip exists.</strong> Trip, Shove, Disarm, Grapple and Combat Grab need a free hand, and Pathbuilder can't tell the bot what is in each one, so it asks you. It is <em>opt-in</em>: until you set a grip, nothing is warned. Once you have, a maneuver with no hand free tells you so instead of rolling &mdash; tick <em>The hand is free anyway</em> to override it. A weapon with the maneuver's own trait (a trip weapon can Trip, and so on) works with no hand free, and an agile one takes the smaller multiple attack penalty.</p>
         </div>
       </section>
 
@@ -1202,6 +1248,32 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           <p><strong>Thrall strikes count toward the Necromancer's multiple attack penalty</strong>, and the bot keeps that shared counter for you. The rank you cast at sets the creature level ceiling: rank 1 calls level &minus;1, rank 5 calls level 5, rank 9 calls level 13.</p>
         </div>
 
+
+        <h3>Reaction alerts</h3>
+        <p>
+          When someone acts in a way that can trigger a reaction &mdash; a <strong>manipulate</strong> or <strong>move</strong> action, a <strong>ranged attack</strong>,
+          a <strong>concentrate</strong> action, or <strong>leaving a square</strong> &mdash; the bot checks who in the encounter could answer it and tells them. It
+          only announces: nothing is spent or rolled, and whoever holds the reaction still uses it themselves.
+        </p>
+        <div class="t-wrap">
+          <table>
+            <thead><tr><th>Whose reaction</th><th>Who is told, and where</th></tr></thead>
+            <tbody>
+              <tr><td><b>A player character</b></td><td>Posted in the encounter channel, mentioning the player <em>and</em> the campaign's GMs.</td></tr>
+              <tr><td><b>An NPC or creature</b></td><td>Posted to the GM-private channel only &mdash; the table never learns what a monster can do.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          It knows Reactive Strike (the Fighter's, the shared class feat &mdash; Barbarian at 6th and several more classes &mdash; and a creature's own),
+          Stand Still, Disrupt Prey, Not So Fast!, Reflexive Courage, Eidolon's Retort, Bone Burst and Implement's Interruption, each listening only for the triggers its own
+          text names (Stand Still and Not So Fast! care about movement only). With a battle map it also measures reach &mdash; from where a mover <em>started</em> &mdash; and stays
+          quiet for anyone out of it; without one the alert says the reach is unchecked. Someone who has already used their reaction this round isn't alerted.
+        </p>
+        <div class="note">
+          <p><strong>Two things it can't see.</strong> A Step triggers none of the movement reactions but looks like a 5-foot Stride, so every alert for movement says so. And conditions with no state behind them &mdash; a ranger's hunted prey, a thaumaturge's Exploit Vulnerability target, a necromancer's thralls &mdash; are shown in the alert for you to check.</p>
+        </div>
+
         <h3>Degrees of success</h3>
         <p>The bot resolves the whole ladder rather than printing all four and leaving you to find the row:</p>
         <div class="ladder">
@@ -1245,21 +1317,45 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         </div>
 
         <div class="cmds">
-          <div class="cmd-row"><div class="cmd">/tgmap upload_gridless <b>image</b> <b>columns</b> <b>rows</b></div><span class="badge b-gm">gm only</span>
-            <div class="desc">Give it a plain image and how many squares to overlay.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgmap upload_gridded <b>image</b> <b>columns</b> <b>rows</b> <b>cell_size</b> <span class="opt">[offset_x] [offset_y]</span></div><span class="badge b-gm">gm only</span>
+          <div class="cmd-row"><div class="cmd">/tgmap upload_gridless <b>image</b> <b>columns</b> <b>rows</b> <span class="opt">[slot] [name]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Give it a plain image and how many squares to overlay. With a <code>slot</code> it is saved to your map library under <code>name</code> instead of going onto the running encounter.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap upload_gridded <b>image</b> <b>columns</b> <b>rows</b> <b>cell_size</b> <span class="opt">[offset_x] [offset_y] [slot] [name]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">For a map that already has a grid printed on it. <code>/tgmap calibrate</code> helps you line it up.</div></div>
           <div class="cmd-row"><div class="cmd">/tgmap place <b>alias</b> <b>cell</b> <span class="opt">[elevation]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">Puts a token down, e.g. <code>cell:H12</code>. Elevation is tracked for flying and climbing.</div></div>
           <div class="cmd-row"><div class="cmd">/tgmap move <span class="opt">[alias] [destination]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Arrow-key controls, or name a destination cell to jump straight there.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgmap terrain · terrain_clear</div><span class="badge b-gm">gm only</span>
+          <div class="cmd-row"><div class="cmd">/tgmap terrain · terrain_clear <span class="opt">[slot]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">Paint walls, difficult terrain, hazards and water directly onto the grid.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgmap fog <b>enabled</b> <span class="opt">[radius] [reset]</span></div><span class="badge b-gm">gm only</span>
+          <div class="cmd-row"><div class="cmd">/tgmap fog <b>enabled</b> <span class="opt">[radius] [reset] [slot]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">Fog of war, shared across the party. Explored ground stays remembered — but a creature standing in remembered territory is never revealed by memory alone.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgmap show · status · distance</div><span class="badge b-player">player</span>
+          <div class="cmd-row"><div class="cmd">/tgmap show <span class="opt">[slot]</span> · status · distance</div><span class="badge b-player">player</span>
             <div class="desc">Re-post the map, check a token's state, or measure between two of them.</div></div>
         </div>
+
+        <h3>Building maps before the session</h3>
+        <p>
+          Every command above takes an optional <strong><code>slot</code></strong> (1&ndash;5, with a
+          picker showing what is in each). Give it one and the command works on a saved map
+          <strong>with no encounter running at all</strong> — so you can upload the room, line up its
+          grid and paint its walls on a quiet afternoon, rather than making the table wait while you do
+          it live.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgmap list</div><span class="badge b-gm">gm only</span>
+            <div class="desc">Your five slots and what is in each — grid size, how much terrain is painted, whether fog is set.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap use <b>slot</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Drops a saved map onto the encounter that is running now. Or name it when the fight starts: <code>/tge start map_slot:2</code>.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap save_current <b>slot</b> <b>name</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Keeps the map you are looking at — terrain and fog included — for next time.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap rename <b>slot</b> <b>name</b> · delete <b>slot</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Housekeeping.</div></div>
+        </div>
+        <p>
+          Using a slot <em>copies</em> the map into the fight — image, grid, fog and terrain. Tokens are
+          not copied, and nothing that happens in the fight touches the saved original, so the same
+          ambush site can be used again next month.
+        </p>
 
         <h3>What the map works out on its own</h3>
         <p>
@@ -1456,3 +1552,45 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
 </div>
 
 </body></html>
+
+<script>
+  // In-page links scroll the one continuous page themselves. Where the handbook is embedded (a sandboxed
+  // frame) the browser's own #anchor jump can fail or reload the frame, which read as "one screen per section".
+  document.addEventListener('click', function (event) {
+    var a = event.target.closest && event.target.closest('a[href^="#"]');
+    if (!a || a.getAttribute('href').length < 2) return;
+    var target = document.getElementById(a.getAttribute('href').slice(1));
+    if (!target) return;
+    event.preventDefault();
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  });
+</script>
+<script>
+  // Marks the rail link for whichever section is currently in view. Progressive: without
+  // JavaScript the links still jump, they just don't light up.
+  (function () {
+    var links = {}, order = [];
+    document.querySelectorAll('.rail nav a[href^="#"]').forEach(function (a) {
+      var id = a.getAttribute('href').slice(1);
+      links[id] = a;
+      order.push(id);
+    });
+    var sections = order.map(function (id) { return document.getElementById(id); }).filter(Boolean);
+    if (!sections.length || !('IntersectionObserver' in window)) return;
+
+    var visible = new Set();
+    function paint() {
+      var current = order.filter(function (id) { return visible.has(id); })[0];
+      if (!current) return;
+      Object.keys(links).forEach(function (id) { links[id].classList.toggle('active', id === current); });
+    }
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) { visible.add(entry.target.id); } else { visible.delete(entry.target.id); }
+      });
+      paint();
+    }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+    sections.forEach(function (section) { observer.observe(section); });
+  })();
+</script>
