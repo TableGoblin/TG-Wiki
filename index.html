@@ -167,6 +167,23 @@
   }
   .root-chip b { color: var(--brass); font-weight: 600; }
 
+  .discord-link {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: "IBM Plex Sans", sans-serif; font-size: 13px; font-weight: 600;
+    padding: 7px 14px; border-radius: 6px; text-decoration: none;
+    background: var(--verdigris); color: #F5F7F0; border: 1px solid var(--verdigris);
+    box-shadow: var(--shadow); margin-top: 14px;
+  }
+  .discord-link:hover { filter: brightness(1.08); }
+  .discord-link svg { width: 15px; height: 15px; fill: currentColor; flex: none; }
+  .rail-discord {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: "IBM Plex Sans", sans-serif; font-size: 12px; font-weight: 600;
+    color: var(--verdigris); text-decoration: none; margin-top: 2px;
+  }
+  .rail-discord:hover { color: var(--brass); }
+  .rail-discord svg { width: 13px; height: 13px; fill: currentColor; flex: none; }
+
   /* ---------------- index cards ---------------- */
   .index-grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(216px, 1fr));
@@ -459,6 +476,10 @@
         <img class="rail-logo" src="table-goblin.png" alt="Table Goblin logo">
         <b>Table Goblin</b>
         <span>Handbook</span>
+        <a class="rail-discord" href="https://discord.gg/8HtRDWQCK" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.211.375-.457.879-.626 1.278a18.27 18.27 0 0 0-5.518 0A12.76 12.76 0 0 0 9.115 3 19.736 19.736 0 0 0 4.68 4.372C1.727 8.75.929 13.028 1.328 17.244a19.9 19.9 0 0 0 5.993 3.03c.483-.66.914-1.36 1.285-2.098a12.87 12.87 0 0 1-2.024-.973c.17-.124.336-.253.497-.386 3.902 1.803 8.13 1.803 11.987 0 .162.133.329.262.497.386-.645.386-1.323.71-2.026.974.371.738.802 1.438 1.285 2.098a19.876 19.876 0 0 0 5.995-3.03c.468-4.891-.795-9.13-3.5-13.876ZM8.68 14.813c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Zm7.324 0c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Z"/></svg>
+          Join the Discord
+        </a>
     </div>
     <nav>
       <a href="#start"><span class="n">01</span><span>Getting Started</span></a>
@@ -479,6 +500,10 @@
       <!-- ============ HERO ============ -->
       <header class="hero">
         <div class="eyebrow">A Pathfinder 2e bot for Discord</div>
+        <a class="discord-link" href="https://discord.gg/8HtRDWQCK" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.211.375-.457.879-.626 1.278a18.27 18.27 0 0 0-5.518 0A12.76 12.76 0 0 0 9.115 3 19.736 19.736 0 0 0 4.68 4.372C1.727 8.75.929 13.028 1.328 17.244a19.9 19.9 0 0 0 5.993 3.03c.483-.66.914-1.36 1.285-2.098a12.87 12.87 0 0 1-2.024-.973c.17-.124.336-.253.497-.386 3.902 1.803 8.13 1.803 11.987 0 .162.133.329.262.497.386-.645.386-1.323.71-2.026.974.371.738.802 1.438 1.285 2.098a19.876 19.876 0 0 0 5.995-3.03c.468-4.891-.795-9.13-3.5-13.876ZM8.68 14.813c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Zm7.324 0c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Z"/></svg>
+          Join the Discord
+        </a>
         <h1>Your table has a goblin in it now.</h1>
         <p class="lede">
           It knows every class, archetype, item, and monster. It remembers
@@ -764,7 +789,7 @@
           <p><strong>Companions come along.</strong> Pass <code>companion_name</code>/<code>companion_alias</code> or <code>eidolon_name</code>/<code>eidolon_alias</code> at creation and they're linked to the character. An eidolon always displays its summoner's HP, because that's whose hit points it actually spends.</p>
         </div>
 
-        <h3>Companions, eidolons, familiars, and constructs</h3>
+        <h3>Companions, eidolons, familiars, constructs, and followers</h3>
         <p>
           A companion or familiar a class or feat grants during <code>/tgchar build</code> gets its own
           step right in the wizard — nothing further to run. Adding one to a character built another
@@ -780,9 +805,11 @@
             <div class="desc">Creates or updates a Familiar in one step — name, a named variety if it has one (e.g. "Faerie Dragon"), and its abilities. Run it again on the same <b>familiar_alias</b> to change any of that later.</div></div>
           <div class="cmd-row"><div class="cmd">/tgcompanion set_construct <b>construct_alias</b> <b>name</b> <span class="opt">[size] [alias] [player]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Creates or updates an Inventor's Construct Innovation. Its tier (Prototype/Advanced/Incredible/Paragon) is read from the character's own feats, not asked here.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgcompanion set_follower <b>follower_alias</b> <b>name</b> <b>follower_type</b> <span class="opt">[alias] [player]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Creates or updates a Captain's follower. <b>follower_type</b> is Adept, Berserker, Medic, Scout, Sharpshooter, or Shieldbearer — run it again on the same <b>follower_alias</b> to change type later.</div></div>
         </div>
         <div class="note">
-          <p><strong>An Eidolon is a two-step setup; a Familiar or Construct isn't.</strong> <code>add</code> creates the Eidolon stub and reads its family from the Eidolon subclass you already picked, then <code>set_eidolon</code> configures it. <code>set_familiar</code> and <code>set_construct</code> create <em>and</em> configure in one call each.</p>
+          <p><strong>An Eidolon is a two-step setup; a Familiar, Construct, or Follower isn't.</strong> <code>add</code> creates the Eidolon stub and reads its family from the Eidolon subclass you already picked, then <code>set_eidolon</code> configures it. <code>set_familiar</code>, <code>set_construct</code>, and <code>set_follower</code> each create <em>and</em> configure in one call.</p>
         </div>
 
         <h3>Building one from scratch</h3>
