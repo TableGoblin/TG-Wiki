@@ -666,6 +666,12 @@
             <div class="desc">Takes it away again. The bot only ever removes a role it was asked to remove, so assigning these by hand in Discord stays perfectly valid.</div></div>
         </div>
 
+        <h3>GM narration persona</h3>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgm persona <span class="opt">[name] [token] [token_url]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Sets or updates the campaign's own narration identity — a name and avatar for the <code>gm::</code> chat trigger, the same way an NPC has one. Run it with no arguments to see what's currently set. One persona per campaign, shared by every GM at the table, not one per person.</div></div>
+        </div>
+
         <h3>Table settings</h3>
         <div class="cmds">
           <div class="cmd-row"><div class="cmd">/tgm auto_saves <b>enabled</b></div><span class="badge b-gm">gm only</span>
@@ -756,6 +762,27 @@
         </div>
         <div class="note">
           <p><strong>Companions come along.</strong> Pass <code>companion_name</code>/<code>companion_alias</code> or <code>eidolon_name</code>/<code>eidolon_alias</code> at creation and they're linked to the character. An eidolon always displays its summoner's HP, because that's whose hit points it actually spends.</p>
+        </div>
+
+        <h3>Companions, eidolons, familiars, and constructs</h3>
+        <p>
+          A companion or familiar a class or feat grants during <code>/tgchar build</code> gets its own
+          step right in the wizard — nothing further to run. Adding one to a character built another
+          way, or one imported from Pathbuilder without <code>companion_name</code>/<code>eidolon_name</code>
+          at creation, uses <code>/tgcompanion</code> instead.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgcompanion add <b>companion_alias</b> <b>companion_name</b> <b>kind</b> <span class="opt">[alias] [player]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Attaches a bare stub to an existing character. <b>kind</b> is <code>Animal Companion</code> or <code>Eidolon</code> — a Familiar or Construct Innovation isn't created here, see <code>set_familiar</code>/<code>set_construct</code> below.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgcompanion set_eidolon <b>key_ability</b> <b>primary_strike_name</b> <b>primary_choice</b> <b>primary_damage_type</b> <b>secondary_strike_name</b> <b>secondary_damage_type</b> <span class="opt">[eidolon_alias] [player]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Configures an Eidolon already created with <code>add</code>: Strength- or Dexterity-based, and the shape of both unarmed attacks. Applies immediately — no separate sync needed.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgcompanion set_familiar <b>familiar_alias</b> <b>name</b> <b>ability_1</b> <b>ability_2</b> <span class="opt">[specific] [ability_3…6] [alias] [player]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Creates or updates a Familiar in one step — name, a named variety if it has one (e.g. "Faerie Dragon"), and its abilities. Run it again on the same <b>familiar_alias</b> to change any of that later.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgcompanion set_construct <b>construct_alias</b> <b>name</b> <span class="opt">[size] [alias] [player]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Creates or updates an Inventor's Construct Innovation. Its tier (Prototype/Advanced/Incredible/Paragon) is read from the character's own feats, not asked here.</div></div>
+        </div>
+        <div class="note">
+          <p><strong>An Eidolon is a two-step setup; a Familiar or Construct isn't.</strong> <code>add</code> creates the Eidolon stub and reads its family from the Eidolon subclass you already picked, then <code>set_eidolon</code> configures it. <code>set_familiar</code> and <code>set_construct</code> create <em>and</em> configure in one call each.</p>
         </div>
 
         <h3>Building one from scratch</h3>
@@ -1078,6 +1105,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
               <tr><td><code>pc::"grins and swings"{strike}</code></td><td>Your own narration, then the same dropdown.</td></tr>
               <tr><td><code>alt2::{cast}</code></td><td>The same, but as your second companion.</td></tr>
               <tr><td><code>npc::Old Man Withers::"You'll regret that."{strike}</code></td><td>A GM narrating an NPC by its real name.</td></tr>
+              <tr><td><code>gm::"The door creaks open..."</code></td><td>Narration as the campaign's own GM persona (set with <code>/tgm persona</code>).</td></tr>
             </tbody>
           </table>
         </div>
@@ -1092,6 +1120,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
               <tr><td><code>companion</code> · <code>eidolon</code> · <code>familiar</code></td><td>That specific companion type.</td></tr>
               <tr><td><em>any alias you own</em></td><td>That character directly, whatever's active.</td></tr>
               <tr><td><code>npc::&lt;Name&gt;::</code></td><td>GM only — voices any creature in the campaign.</td></tr>
+              <tr><td><code>gm</code></td><td>GM only — the campaign's own narration persona, set up with <code>/tgm persona</code>.</td></tr>
             </tbody>
           </table>
         </div>
