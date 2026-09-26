@@ -491,6 +491,7 @@
       <a href="#maps"><span class="n">07</span><span>Battle Maps</span></a>
       <a href="#loot"><span class="n">08</span><span>Loot &amp; the Purse</span></a>
       <a href="#towns"><span class="n">09</span><span>Towns &amp; Shops</span></a>
+      <a href="#lookup"><span class="n">10</span><span>Reference Lookup</span></a>
     </nav>
   </aside>
 
@@ -536,6 +537,7 @@
           <a class="index-card" href="#maps"><span class="n">07</span><b>Battle Maps</b><span>Grids, tokens, terrain, fog of war, cover and flanking.</span></a>
           <a class="index-card" href="#loot"><span class="n">08</span><b>Loot &amp; the Purse</b><span>Payouts, unidentified magic, and the shared party fund.</span></a>
           <a class="index-card" href="#towns"><span class="n">09</span><b>Towns &amp; Shops</b><span>Generate a settlement, its shopkeepers and their shelves.</span></a>
+          <a class="index-card" href="#lookup"><span class="n">10</span><b>Reference Lookup</b><span>Search Archives of Nethys by name, filtered to one category at a time.</span></a>
         </div>
       </header>
 
@@ -1633,6 +1635,29 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           The shop list is a ladder rather than a random draw, because the ordinary shop is the one
           that always exists. A village with a jeweller and no provisioner is backwards.
         </p>
+
+      </section>
+
+      <!-- ============ 10 LOOKUP ============ -->
+      <section id="lookup">
+        <div class="sec-head">
+          <div class="sec-num">Section 10</div>
+          <h2>Reference Lookup</h2>
+          <p class="sec-sub">Rules text the bot doesn't need to know, one search away.</p>
+        </div>
+        <p>
+          <code>/tglookup</code> searches Archives of Nethys for a name and links straight to the page —
+          for the full description behind a feat, a spell's exact wording, or an item's flavour text.
+          By default it searches every category at once: classes, class feats, ancestries, ancestry
+          feats, backgrounds, general feats, spells, weapons, armor, shields, and alchemical items.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tglookup <b>query</b> <span class="opt">[category]</span></div><span class="badge b-player">player</span>
+            <div class="desc"><code>category</code> narrows the search to one bucket — useful once a name shows up in more than one place. Choices: <b>Class</b>, <b>Class Feat</b>, <b>Ancestry</b>, <b>Ancestry Feat</b>, <b>Background</b>, <b>General Feat</b>, <b>Spell</b>, <b>Weapon</b>, <b>Armor</b>, <b>Shield</b>, <b>Alchemical</b>, <b>Skill</b>.</div></div>
+        </div>
+        <div class="note">
+          <p><strong>Skill is different.</strong> It's a plain name match against the game's own skill list (Acrobatics, Arcana, ...) that jumps straight to that skill's AoN page — there's no bot-side skill data to search, so it skips the multi-category search entirely.</p>
+        </div>
 
         <footer>
           A reference, not a rules substitute — when in doubt, check Archives of Nethys.
