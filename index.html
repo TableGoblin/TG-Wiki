@@ -780,10 +780,8 @@
             <div class="desc">Creates the character. Give a <code>pathbuilder_id</code> and the whole sheet imports immediately. The <b>alias</b> is the short handle you'll use in every other command and in chat — keep it short and typeable.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar linkpathbuilder <b>alias</b> <b>pathbuilder_id</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Imports Pathbuilder data into an existing alias and makes it your active character.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgchar sync <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
-            <div class="desc">Re-imports after a level-up. Deliberately <em>preserves</em> live play data: your coin, items you found, spells learned in play, your current HP, and any manual GM corrections.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgchar sync_force <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
-            <div class="desc">The escape hatch — discards all of that and takes Pathbuilder's word for everything.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgchar sync <span class="opt">[alias] [force]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Re-imports after a level-up. Deliberately <em>preserves</em> live play data: your coin, items you found, spells learned in play, your current HP, and any manual GM corrections. <code>force: True</code> is the escape hatch — discards all of that and takes Pathbuilder's word for everything.</div></div>
         </div>
         <div class="note">
           <p><strong>Companions come along.</strong> Pass <code>companion_name</code>/<code>companion_alias</code> or <code>eidolon_name</code>/<code>eidolon_alias</code> at creation and they're linked to the character. An eidolon always displays its summoner's HP, because that's whose hit points it actually spends.</p>
@@ -1092,6 +1090,8 @@
             <div class="desc">Adds a spell outside Pathbuilder. Survives a routine <code>sync</code>.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar set_armor <b>category</b> <b>armor_name</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Recomputes AC from the real armour entry.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgchar strike_add <b>weapon</b> <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Builds a real, rollable Strike from a weapon already in your inventory (autocompletes to just what you own) &mdash; resolves its die size, traits, and any runes already on it, then computes real attack/damage bonuses the same way a manual stat edit does. Re-run it after adding a rune to refresh the same strike in place. Every character also always has a "Fist" strike (1d4 bludgeoning, agile, finesse, nonlethal, unarmed) with no setup needed &mdash; this command is only for weapons.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar resist <b>damage_type</b> <b>kind</b> <span class="opt">[amount]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Permanent resistance, weakness or immunity.</div></div>
 
