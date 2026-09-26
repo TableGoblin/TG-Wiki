@@ -1461,6 +1461,20 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           shared purse, because coin has no identity and nobody needs to decide who carries the gold.
           Items get a dropdown each.
         </p>
+        <p>
+          <strong>The payout scales with the fight's real difficulty</strong>, not a flat guess. Every
+          encounter's actual XP (Building Creatures' own level-difference table, summed across its whole
+          roster against the party's level) counts toward the current level's real treasure budget —
+          whether or not that fight pays out loot. Turning loot off for a while doesn't lose that
+          progress; the next payout catches up everything owed in one go, because the math always asks
+          "what does the level owe by now," never "what does this one fight owe."
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgm loot_settings <span class="opt">[mode] [multiplier]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">View or change loot pacing. <code>mode</code> is <b>XP Budget</b> (levels by real XP) or <b>Milestone</b> (you level by story beat — loot still paces by the same real-XP percentage, but a private notice replaces the level-up trigger once a level's budget is fully granted). <code>multiplier</code> is a generosity dial — 1.0 is the book average.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgm treasure_catchup</div><span class="badge b-gm">gm only</span>
+            <div class="desc">Pays out whatever the current level's real budget still owes, all at once — shows the exact amount and asks to confirm first.</div></div>
+        </div>
 
         <h3>Unidentified magic</h3>
         <p>
