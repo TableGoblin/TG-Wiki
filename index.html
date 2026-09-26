@@ -1558,8 +1558,10 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
             <div class="desc">Clears it — no shops available anywhere until a town is active again. There's no shopping mid-dungeon or three days from the nearest settlement.</div></div>
           <div class="cmd-row"><div class="cmd">/tgtown create · edit · delete</div><span class="badge b-gm">gm only</span>
             <div class="desc">Write a settlement by hand, or change one. Raising a town's level doesn't restock its shops — their shelves stay as they were until you say otherwise.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgtown shop_add · vendor_add · stock_add · restock</div><span class="badge b-gm">gm only</span>
+          <div class="cmd-row"><div class="cmd">/tgtown shop_add · vendor_add · stock_add</div><span class="badge b-gm">gm only</span>
             <div class="desc">Add a shop, put someone behind the counter, or place a specific item. Work on any town regardless of which one is currently active for players. <code>level_bonus</code> lets one shop reach past the town's level — the smith whose cousin trained at a famous artificers' guild.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgtown restock <b>shop</b> <span class="opt">[count]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Rolls the shelves again, replacing what was there. Scoped to the active town (unlike the authoring commands above) — a typo'd shop name can't silently restock the wrong, inactive town.</div></div>
         </div>
         <div class="note">
           <p><strong>You can't buy out in the woods.</strong> <code>/tgtown shop</code> and <code>buy</code> both refuse outright with no active town set — a shop typed by hand from a different town is refused too, not just left off the list. Set one with <code>/tgtown set_active</code> once the party reaches a settlement.</p>
