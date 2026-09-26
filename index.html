@@ -895,8 +895,8 @@
         <h3>The sheet</h3>
         <p>
           <code>/tgchar sheet</code> opens an interactive sheet with five tabs — Overview, Combat,
-          Spellbook, Gear, Companions. Only the person who ran the command can click anything;
-          everyone else can see it.
+          Spellbook, Gear, Companions. Only you see it and only you can click anything — pass
+          <code>show_all:true</code> to post it visibly for the whole table instead.
         </p>
         <p>
           Rolling happens through dropdowns rather than more commands. The Combat tab has skills,
@@ -1533,14 +1533,23 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         <div class="cmds">
           <div class="cmd-row"><div class="cmd">/tgtown generate <b>level</b> <span class="opt">[name] [size] [region] [seed] [ai]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">Rolls the whole settlement. <code>seed</code> repeats an earlier roll exactly, so a town you liked can be reproduced.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgtown list · view <b>town</b> · shop <b>shop</b></div><span class="badge b-player">player</span>
-            <div class="desc">Browse. Each item on a shelf shows its level, price and a one-line description of what it actually is, with the name linked to Archives of Nethys — nobody knows every item by name.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgtown list · view <b>town</b></div><span class="badge b-player">player</span>
+            <div class="desc">Browse every settlement, or one town's own shop list. <code>list</code> marks whichever one is currently active with 🏠.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgtown shop <b>shop</b></div><span class="badge b-player">player</span>
+            <div class="desc">One shop's shelves — level, price and a one-line description for each item, linked to Archives of Nethys. Only ever shows shops in the campaign's <b>active town</b> (below); nobody knows every item by name, and nobody can browse a shop three towns away.</div></div>
           <div class="cmd-row"><div class="cmd">/tgtown buy <b>shop</b> <b>item</b> <span class="opt">[alias] [from_fund]</span></div><span class="badge b-player">player</span>
-            <div class="desc">Buys off the shelf, from your own purse or the party fund. The coin is taken first — if it can't be afforded, nothing moves.</div></div>
+            <div class="desc">Buys off the shelf, from your own purse or the party fund. The coin is taken first — if it can't be afforded, nothing moves. Same active-town scope as <code>shop</code> above.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgtown set_active <b>town</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Sets which settlement the party can currently buy from. <code>shop</code>/<code>buy</code> only ever reach this one town.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgtown deactivate</div><span class="badge b-gm">gm only</span>
+            <div class="desc">Clears it — no shops available anywhere until a town is active again. There's no shopping mid-dungeon or three days from the nearest settlement.</div></div>
           <div class="cmd-row"><div class="cmd">/tgtown create · edit · delete</div><span class="badge b-gm">gm only</span>
             <div class="desc">Write a settlement by hand, or change one. Raising a town's level doesn't restock its shops — their shelves stay as they were until you say otherwise.</div></div>
           <div class="cmd-row"><div class="cmd">/tgtown shop_add · vendor_add · stock_add · restock</div><span class="badge b-gm">gm only</span>
-            <div class="desc">Add a shop, put someone behind the counter, or place a specific item. <code>level_bonus</code> lets one shop reach past the town's level — the smith whose cousin trained at a famous artificers' guild.</div></div>
+            <div class="desc">Add a shop, put someone behind the counter, or place a specific item. Work on any town regardless of which one is currently active for players. <code>level_bonus</code> lets one shop reach past the town's level — the smith whose cousin trained at a famous artificers' guild.</div></div>
+        </div>
+        <div class="note">
+          <p><strong>You can't buy out in the woods.</strong> <code>/tgtown shop</code> and <code>buy</code> both refuse outright with no active town set — a shop typed by hand from a different town is refused too, not just left off the list. Set one with <code>/tgtown set_active</code> once the party reaches a settlement.</p>
         </div>
 
         <p class="dm-caption">Browsing a settlement, then one shop's shelves — mock-ups, not live screenshots.</p>
