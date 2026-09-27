@@ -825,8 +825,10 @@
           alchemical formulas gets a <strong>Formulas</strong> step with a dropdown per source &mdash; an Alchemist, a hobgoblin's Alchemical Scholar, an Investigator's
           Alchemical Sciences, or a background that grants Alchemical Crafting. A fresh <strong>level-1</strong> character finishes with real starting wealth (15gp) and a searchable
           shopping-cart vendor for common starting gear, opened automatically right after creation &mdash; 7 specialist vendors (Melee Weapons, Ranged Weapons, Armor, Shields,
-          Adventuring Gear, Alchemical, Scrolls), each result showing real stats (a weapon's damage die/group/traits, armor's AC/Dex cap/Str/type, a shield's AC/Hardness/HP)
-          rather than just its price &mdash; search each vendor, add matches to a cart, and check out once at the end.
+          Adventuring Gear, Alchemical, Scrolls). The top line shows what you're actually trained in, grouped by rank, and each weapon/armor result is flagged
+          <strong>⚠️ Not proficient</strong> if you aren't trained in it yet (shields have no proficiency of their own to check) &mdash; each result also shows real stats
+          (a weapon's damage die/group/traits, armor's AC/Dex cap/Str/type, a shield's AC/Hardness/HP) rather than just its price. Search each vendor, add matches to a cart,
+          remove one with the cart's own "Remove an item" dropdown if you change your mind, and check out once at the end.
         </p>
         <div class="cmds">
           <div class="cmd-row"><div class="cmd">/tgchar build <b>name</b> <b>alias</b> <span class="opt">[level] [assist_me]</span></div><span class="badge b-self">self / gm</span>
