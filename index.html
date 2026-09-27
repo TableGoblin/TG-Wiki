@@ -768,7 +768,7 @@
           <div class="cmd-row"><div class="cmd">/tgm give <b>alias</b> <span class="opt">[weapon] [armor] [item] [rune]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">Gives a character something outside the normal loot/purchase cycle — no coin changes hands. A <code>rune</code> given together with <code>weapon</code>/<code>armor</code> applies directly to it for free; given alone it's granted as a loose rune, free for the player to apply themselves later via <code>/tgchar weapon edit</code>/<code>armor edit</code>'s own "own it already" discount.</div></div>
           <div class="cmd-row"><div class="cmd">/tgm starting_gear <b>alias</b></div><span class="badge b-gm">gm only</span>
-            <div class="desc">Catches an existing character up on the starting-gear vendor — for one built before that shipped, or who never got the chance. Only works if the character currently has zero coin. The character's own player does the shopping, not the GM.</div></div>
+            <div class="desc">Resets an existing character to a fresh starting-gear shopping trip — for one built before that shipped, one who never got the chance, or one a bug left stuck partway through. A real reset: no gate on the character's current coin, grants a fresh 15gp purse. The character's own player does the shopping, not the GM. For reopening a trip that just closed early or timed out, see <code>/tgchar starting_gear</code> below.</div></div>
         </div>
       </section>
 
@@ -831,6 +831,8 @@
         <div class="cmds">
           <div class="cmd-row"><div class="cmd">/tgchar build <b>name</b> <b>alias</b> <span class="opt">[level] [assist_me]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Starts a build, or resumes one already in progress under the same <b>name</b>/<b>alias</b>. <code>level</code> sets the starting level (1–20; default 1). <code>assist_me</code> makes the wizard visible to the whole table instead of just you, for a GM walking a new player through their first build. <strong>What you are offered follows the campaign's rules</strong> (<code>/tgm campaign_rules</code>) — common always, uncommon and rare where your GM allows them, and whichever optional rules your table runs add their own steps.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgchar starting_gear <span class="opt">[alias] [player]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Reopens your still-open starting-gear shopping trip if it closed early or timed out — no GM needed. Only works while it's genuinely still open; once you check out or click Done shopping, this refuses and points to <code>/tgm starting_gear</code> for a real re-do.</div></div>
         </div>
         <div class="eg">
           <span class="eg-label">Example</span>
