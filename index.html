@@ -899,6 +899,9 @@
         <div class="note">
           <p><strong>A feat that grants an innate cantrip asks for it on the spot.</strong> Roughly 60 ancestry feats and heritages work this way — Open Mind lets a Kashrishi cast any occult cantrip, Arcane Tattoos lets a Human pick from seven named schools, Oracular Samsaran asks a tradition first and then a cantrip from it. Picking one immediately asks its own follow-up right there in the same step, the same way Assurance already asks for a skill.</p>
         </div>
+        <div class="note">
+          <p><strong>Non-spell ancestry choices work the same way.</strong> Kobold's Draconic Benefactor — one shared choice of 40 dragons, made once no matter which of its 3 feats you take first — sets your breath weapon's real damage type, shape and save, plus a matching resistance. A damage-type resistance pick and an unarmed-strike-form pick (claws, jaws, tails, and more) both ask inline the same way. <code>/tgchar ancestry_choice</code> re-asks any of these for a character built before this shipped, or to change a pick later.</p>
+        </div>
 
         <h3>The sheet</h3>
         <p>
@@ -1103,7 +1106,7 @@
           <div class="cmd-row"><div class="cmd">/tgchar weapon set <b>weapon</b> <span class="opt">[hand]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Equips a weapon already in your inventory to a hand. Real data decides one- vs two-handed &mdash; a Greatsword always takes both hands, a Bastard Sword can go either way. An empty main hand fills automatically; if it's already full and you don't say which hand, the bot asks with buttons instead of erroring. Equipping into an occupied hand unequips whatever was there.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar weapon edit <b>weapon</b> &middot; armor edit <b>armor</b></div><span class="badge b-self">self / gm</span>
-            <div class="desc">An interactive rune editor with real prices &mdash; Potency, Striking/Resilient, and add/remove property rune dropdowns, rebuilt fresh after every change. Upgrading a tier only charges the price <em>difference</em> from your current one (the real crafting rule). Already own a loose rune of that name? It shows "own x#" and applies for free, consumed from inventory. The item's name (and its linked Strike) auto-update to the real runed form, e.g. "+1 Striking Flaming Shortsword".</div></div>
+            <div class="desc">An interactive rune editor with real prices &mdash; Potency, Striking/Resilient, and add/remove property rune dropdowns, rebuilt fresh after every change. Upgrading a tier only charges the price <em>difference</em> from your current one (the real crafting rule). Already own a loose rune of that name? It shows "own x#" and applies for free, consumed from inventory. The item's name (and its linked Strike) auto-update to the real runed form, e.g. "+1 Striking Flaming Shortsword". Handwraps of Mighty Blows (worn, not wielded) rune-edit here too, even though it isn't a weapon &mdash; its runes benefit every unarmed Strike you have.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar weapon remove <b>weapon</b> &middot; armor remove <b>armor</b> <span class="opt">[sell] [keep_runes]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Deletes it from inventory, with a Yes/No confirmation first &mdash; also unequips it and deletes its linked Strike. Property runes return to your inventory by default (pass <code>keep_runes:True</code> to let them go with it). <code>sell:True</code> credits half the item's real value instead of just discarding it &mdash; fundamental runes always count toward that, a property rune only if you kept it on.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar strike new <b>weapon</b> <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
@@ -1112,6 +1115,9 @@
             <div class="desc">Rename a Strike, link it to an ability (for reference only &mdash; something like Devise a Stratagem still asks which Strike at cast time) or tag which hand it's held in (doesn't override a real weapon's own tracked hand). <code>remove</code> deletes the Strike outright without touching any linked weapon in inventory.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar resist <b>damage_type</b> <b>kind</b> <span class="opt">[amount]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Permanent resistance, weakness or immunity.</div></div>
+
+          <div class="cmd-row"><div class="cmd">/tgchar ancestry_choice <b>choice</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Answers a pending ancestry/heritage choice (a dragon type, a resistance, a strike form) for a character built before this shipped, or to change a pick later &mdash; the build wizard asks these inline for a fresh character. <code>choice</code> autocompletes to whatever's actually still open; Kobold's Draconic Benefactor shows once regardless of which of its 3 feats you hold.</div></div>
 
           <div class="cmd-row"><div class="cmd">/tgchar death_trigger <b>note</b> <span class="opt">[when] [alias]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">A reminder the bot posts when this character — or one of its thralls or summons — dies. PF2e has a great many death-triggered effects and most are feat-specific, so rather than pretend to know them all, you write the reminder and the bot shows it at the right moment. Necromancers are the obvious case. Pass <code>""</code> to clear it.</div></div>
