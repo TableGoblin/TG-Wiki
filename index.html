@@ -904,6 +904,9 @@
         <div class="note">
           <p><strong>Non-spell ancestry choices work the same way.</strong> Kobold's Draconic Benefactor — one shared choice of 40 dragons, made once no matter which of its 3 feats you take first — sets your breath weapon's real damage type, shape and save, plus a matching resistance. A damage-type resistance pick and an unarmed-strike-form pick (claws, jaws, tails, and more) both ask inline the same way. <code>/tgchar ancestry_choice</code> re-asks any of these for a character built before this shipped, or to change a pick later.</p>
         </div>
+        <div class="note">
+          <p><strong>Surki get one extra step: Magiphage.</strong> Every Surki's own automatic ancestry feature picks which tradition (arcane/divine/occult/primal) all of their spells and magical actions use — asked right after ancestry, since a Surki feat like Sequestered Spell depends on the answer. Yaoguai, Anadi and Kitsune builds also get a real, trackable shapeshift form — see <code>/tgchar shape</code> below.</p>
+        </div>
 
         <h3>The sheet</h3>
         <p>
@@ -1120,6 +1123,9 @@
 
           <div class="cmd-row"><div class="cmd">/tgchar ancestry_choice <b>choice</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Answers a pending ancestry/heritage choice (a dragon type, a resistance, a strike form) for a character built before this shipped, or to change a pick later &mdash; the build wizard asks these inline for a fresh character. <code>choice</code> autocompletes to whatever's actually still open; Kobold's Draconic Benefactor shows once regardless of which of its 3 feats you hold.</div></div>
+
+          <div class="cmd-row"><div class="cmd">/tgchar shape</div><span class="badge b-self">self / gm</span>
+            <div class="desc">Switches a shapeshifting ancestry between its own two real forms &mdash; Yaoguai's Humanoid/Natural, Anadi's Human/Spider, Kitsune's true/alternate form. Lists only what this character's own ancestry actually has. A Yaoguai's own Morphic Strike only shows up on the sheet while in natural form.</div></div>
 
           <div class="cmd-row"><div class="cmd">/tgchar death_trigger <b>note</b> <span class="opt">[when] [alias]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">A reminder the bot posts when this character — or one of its thralls or summons — dies. PF2e has a great many death-triggered effects and most are feat-specific, so rather than pretend to know them all, you write the reminder and the bot shows it at the right moment. Necromancers are the obvious case. Pass <code>""</code> to clear it.</div></div>
