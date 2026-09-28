@@ -811,6 +811,8 @@
             <div class="desc">Creates or updates an Inventor's Construct Innovation. Its tier (Prototype/Advanced/Incredible/Paragon) is read from the character's own feats, not asked here.</div></div>
           <div class="cmd-row"><div class="cmd">/tgcompanion set_follower <b>follower_alias</b> <b>name</b> <b>follower_type</b> <span class="opt">[alias] [player]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Creates or updates a Captain's follower. <b>follower_type</b> is Adept, Berserker, Medic, Scout, Sharpshooter, or Shieldbearer — run it again on the same <b>follower_alias</b> to change type later.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgcompanion active_follower <b>follower_alias</b> <span class="opt">[alias] [player]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Chooses which recruited follower fights alongside you right now — a Captain can build up several over time, but only one is active at once.</div></div>
         </div>
         <div class="note">
           <p><strong>An Eidolon is a two-step setup; a Familiar, Construct, or Follower isn't.</strong> <code>add</code> creates the Eidolon stub and reads its family from the Eidolon subclass you already picked, then <code>set_eidolon</code> configures it. <code>set_familiar</code>, <code>set_construct</code>, and <code>set_follower</code> each create <em>and</em> configure in one call.</p>
