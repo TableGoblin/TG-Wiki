@@ -831,6 +831,7 @@
           <strong>⚠️ Not proficient</strong> if you aren't trained in it yet (shields have no proficiency of their own to check) &mdash; each result also shows real stats
           (a weapon's damage die/category/group/traits, armor's AC/Dex cap/Str/type, a shield's AC/Hardness/HP) rather than just its price. Search each vendor, add matches to a cart,
           remove one with the cart's own "Remove an item" dropdown if you change your mind, and check out once at the end.
+          Ammunition is sold, priced, and tracked in packs of 10 (real Core Rulebook pricing) &mdash; each click is one pack, and the cart spells out the real round count.
         </p>
         <div class="cmds">
           <div class="cmd-row"><div class="cmd">/tgchar build <b>name</b> <b>alias</b> <span class="opt">[level] [assist_me]</span></div><span class="badge b-self">self / gm</span>
@@ -1590,7 +1591,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           <div class="cmd-row"><div class="cmd">/tgtown shop <b>shop</b></div><span class="badge b-player">player</span>
             <div class="desc">One shop's shelves — level, price and a one-line description for each item, linked to Archives of Nethys. Only ever shows shops in the campaign's <b>active town</b> (below); nobody knows every item by name, and nobody can browse a shop three towns away.</div></div>
           <div class="cmd-row"><div class="cmd">/tgtown buy <b>shop</b> <b>item</b> <span class="opt">[alias] [from_fund]</span></div><span class="badge b-player">player</span>
-            <div class="desc">Buys off the shelf, from your own purse or the party fund. The coin is taken first — if it can't be afforded, nothing moves. Same active-town scope as <code>shop</code> above.</div></div>
+            <div class="desc">Buys off the shelf, from your own purse or the party fund. The coin is taken first — if it can't be afforded, nothing moves. Same active-town scope as <code>shop</code> above. Ammunition is one pack of 10 rounds per purchase, matching its per-pack shelf price.</div></div>
           <div class="cmd-row"><div class="cmd">/tgtown set_active <b>town</b></div><span class="badge b-gm">gm only</span>
             <div class="desc">Sets which settlement the party can currently buy from. <code>shop</code>/<code>buy</code> only ever reach this one town.</div></div>
           <div class="cmd-row"><div class="cmd">/tgtown deactivate</div><span class="badge b-gm">gm only</span>
