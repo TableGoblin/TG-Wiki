@@ -803,8 +803,8 @@
           at creation, uses <code>/tgcompanion</code> instead.
         </p>
         <div class="cmds">
-          <div class="cmd-row"><div class="cmd">/tgcompanion add <b>companion_alias</b> <b>companion_name</b> <b>kind</b> <span class="opt">[alias] [player]</span></div><span class="badge b-self">self / gm</span>
-            <div class="desc">Attaches a bare stub to an existing character. <b>kind</b> is <code>Animal Companion</code> or <code>Eidolon</code> — a Familiar or Construct Innovation isn't created here, see <code>set_familiar</code>/<code>set_construct</code> below.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgcompanion add <b>kind</b> <span class="opt">[companion_alias] [companion_name] [alias] [player]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">The front door for all 6 companion kinds. <b>kind</b> <code>Animal Companion</code> or <code>Eidolon</code> attaches a bare stub directly here (needs <b>companion_alias</b>/<b>companion_name</b>). <code>Familiar</code>, <code>Construct</code>, <code>Follower</code>, or <code>Hireling</code> instead points you at that kind's own one-step command below — Discord can't collect each kind's different follow-up fields in a single command, so <code>add</code> just routes you there.</div></div>
           <div class="cmd-row"><div class="cmd">/tgcompanion set_eidolon <b>key_ability</b> <b>primary_strike_name</b> <b>primary_choice</b> <b>primary_damage_type</b> <b>secondary_strike_name</b> <b>secondary_damage_type</b> <span class="opt">[eidolon_alias] [player]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Configures an Eidolon already created with <code>add</code>: Strength- or Dexterity-based, and the shape of both unarmed attacks. Applies immediately — no separate sync needed.</div></div>
           <div class="cmd-row"><div class="cmd">/tgcompanion set_familiar <b>familiar_alias</b> <b>name</b> <b>ability_1</b> <b>ability_2</b> <span class="opt">[specific] [ability_3…6] [alias] [player]</span></div><span class="badge b-self">self / gm</span>
@@ -813,11 +813,13 @@
             <div class="desc">Creates or updates an Inventor's Construct Innovation. Its tier (Prototype/Advanced/Incredible/Paragon) is read from the character's own feats, not asked here.</div></div>
           <div class="cmd-row"><div class="cmd">/tgcompanion set_follower <b>follower_alias</b> <b>name</b> <b>follower_type</b> <span class="opt">[alias] [player]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Creates or updates a Captain's follower. <b>follower_type</b> is Adept, Berserker, Medic, Scout, Sharpshooter, or Shieldbearer — run it again on the same <b>follower_alias</b> to change type later.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgcompanion set_hireling <b>hireling_alias</b> <b>name</b> <b>skilled</b> <span class="opt">[skill] [alias] [player]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Creates or updates a hired downtime NPC (GM Core) — no combat stat block. Unskilled is untrained at everything; Skilled names one <b>skill</b> it's Expert in and stays untrained elsewhere.</div></div>
           <div class="cmd-row"><div class="cmd">/tgcompanion active_follower <b>follower_alias</b> <span class="opt">[alias] [player]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Chooses which recruited follower fights alongside you right now — a Captain can build up several over time, but only one is active at once.</div></div>
         </div>
         <div class="note">
-          <p><strong>An Eidolon is a two-step setup; a Familiar, Construct, or Follower isn't.</strong> <code>add</code> creates the Eidolon stub and reads its family from the Eidolon subclass you already picked, then <code>set_eidolon</code> configures it. <code>set_familiar</code>, <code>set_construct</code>, and <code>set_follower</code> each create <em>and</em> configure in one call.</p>
+          <p><strong>An Eidolon is a two-step setup; everything else isn't.</strong> <code>add</code> creates the Eidolon stub and reads its family from the Eidolon subclass you already picked, then <code>set_eidolon</code> configures it. <code>set_familiar</code>, <code>set_construct</code>, <code>set_follower</code>, and <code>set_hireling</code> each create <em>and</em> configure in one call.</p>
         </div>
 
         <h3>Building one from scratch</h3>
