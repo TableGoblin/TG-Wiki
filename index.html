@@ -1372,6 +1372,9 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         <div class="note">
           <p><strong>Two things it can't see.</strong> A Step triggers none of the movement reactions but looks like a 5-foot Stride, so every alert for movement says so. And conditions with no state behind them &mdash; a ranger's hunted prey, a thaumaturge's Exploit Vulnerability target, a necromancer's thralls &mdash; are shown in the alert for you to check.</p>
         </div>
+        <p>
+          <code>{reaction}</code> resolves one, right from chat: a dropdown of only the reactions above that <em>you</em> actually hold, kept separate from <code>{action}</code>'s own much longer list of everything else you can do. <code>{reaction: stand still}</code> (or any of their names) runs that one directly. Reactive Strike and Implement's Interruption also keep their original dedicated words (<code>{reactivestrike}</code>, <code>{interrupt}</code>) &mdash; <code>{reaction}</code> is a second way to reach the same roll, not a replacement for them.
+        </p>
 
         <h3>Degrees of success</h3>
         <p>The bot resolves the whole ladder rather than printing all four and leaving you to find the row:</p>
