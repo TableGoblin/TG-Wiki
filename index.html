@@ -1119,6 +1119,8 @@
             <div class="desc">Adds a spell outside Pathbuilder. Survives a routine <code>sync</code>.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar armor set <b>category</b> <b>armor_name</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Recomputes AC from the real armour entry. Switching from armor you own unequips it &mdash; it stays in your inventory, just no longer active.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgshield set <b>shield</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Which real shield your Shield Block reaction uses &mdash; its real Hardness and HP, for <em>any</em> class Shield Block works for, not just the two that grant it free. Needs the feat (or a class that grants it) first; its own root since <code>/tgchar</code> was already full.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar weapon set <b>weapon</b> <span class="opt">[hand]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Equips a weapon already in your inventory to a hand. Real data decides one- vs two-handed &mdash; a Greatsword always takes both hands, a Bastard Sword can go either way. An empty main hand fills automatically; if it's already full and you don't say which hand, the bot asks with buttons instead of erroring. Equipping into an occupied hand unequips whatever was there.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar weapon edit <b>weapon</b> &middot; armor edit <b>armor</b></div><span class="badge b-self">self / gm</span>
@@ -1348,6 +1350,56 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         </div>
 
 
+        <h3>Mounts &amp; vehicles</h3>
+        <p>
+          Riding is a plain Core Rulebook rule, not an archetype perk &mdash; any willing,
+          size-qualified character can be someone's mount. <code>/tgmount set</code> only
+          <em>designates</em> who's riding whom; the actual climb-on/off each round is the universal
+          <b>Mount or Dismount</b> action in <code>{action}</code>'s dropdown (or the sheet's Combat
+          tab), which drags the two tokens together and spends the real action.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgmount set <b>rider</b> <span class="opt">[target]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Links <code>rider</code> to <code>target</code> &mdash; leave <code>target</code> blank to clear the link. Either side's own controller, or the GM, can set or clear it.</div></div>
+        </div>
+        <p>
+          A vehicle works the same way, but for a crew instead of one rider: it's created once and
+          keeps its own HP and occupants from one session to the next, the way a party's own ship
+          would. Exactly one <b>pilot</b>; any number of <b>crew</b> (manning weapon mounts, aiding
+          checks) and <b>passengers</b> (just along for the ride) &mdash; a character holds at most
+          one of the three at a time.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgvehicle create <b>name</b> <b>vehicle_type</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc"><code>vehicle_type</code> autocompletes to a real stat block &mdash; AC, Hardness, HP, Speed, and its own collision and piloting DCs all come from there, not from anything typed in by hand.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgvehicle pilot <b>vehicle_name</b> <b>alias</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Takes the wheel. Already aboard something else? They're moved off it first &mdash; one vehicle at a time.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgvehicle crew <b>vehicle_name</b> <b>alias</b> · passenger <b>vehicle_name</b> <b>alias</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Boards as working crew or as a plain passenger. Re-running the other one switches which it is.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgvehicle dismount <b>alias</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Gets them off, whichever of the three roles they held.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgvehicle status <b>vehicle_name</b></div><span class="badge b-player">player</span>
+            <div class="desc">Its real stats, current HP, and who's currently pilot, crew, and passengers.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgvehicle destroy <b>vehicle_name</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Removes it for good.</div></div>
+        </div>
+        <p>
+          Once someone's piloting, <strong>Drive</strong> and <strong>Run Over</strong> show up in
+          <code>{action}</code> for anyone aboard &mdash; real core actions, no archetype needed.
+          A Trick Driver's own feats (<b>Drive-By Attack</b>, <b>Power Slide</b>, <b>Express Driver</b>)
+          show up the same way once they've taken them, substituting Driving Lore for the usual
+          piloting check.
+        </p>
+
+        <h3>Hazards</h3>
+        <p>A trap or hazard doesn't join the roster like a creature &mdash; it attacks or forces saves directly.</p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tghazard attack <b>hazard</b> <b>target_alias</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Rolls the hazard's own real Strike against someone.</div></div>
+          <div class="cmd-row"><div class="cmd">/tghazard save <b>hazard</b> <b>target_alias</b> <b>save_type</b> <b>dc</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Forces a save against its effect. Most hazards' own DC isn't clean structured data, so you read it off the stat block and supply it.</div></div>
+        </div>
+
         <h3>Reaction alerts</h3>
         <p>
           When someone acts in a way that can trigger a reaction &mdash; a <strong>manipulate</strong> or <strong>move</strong> action, a <strong>ranged attack</strong>,
@@ -1375,6 +1427,18 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         <p>
           <code>{reaction}</code> resolves one, right from chat: a dropdown of only the reactions above that <em>you</em> actually hold, kept separate from <code>{action}</code>'s own much longer list of everything else you can do. <code>{reaction: stand still}</code> (or any of their names) runs that one directly. Reactive Strike and Implement's Interruption also keep their original dedicated words (<code>{reactivestrike}</code>, <code>{interrupt}</code>) &mdash; <code>{reaction}</code> is a second way to reach the same roll, not a replacement for them.
         </p>
+
+        <h3>A roll for anything else</h3>
+        <p>
+          Not every DC in the game has a feat or command of its own behind it &mdash; a locked door's
+          Thievery, a rumor's Society check. <code>/tgcheck</code> rolls any named skill (or Perception,
+          or a specific Lore) against a DC you give it, using the same rank-based modifier every other
+          roll in this bot computes.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgcheck <b>skill</b> <b>dc</b> <span class="opt">[alias] [secret]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc"><code>secret:true</code> posts the real result to the GM's own channel only &mdash; the table just sees that a roll happened.</div></div>
+        </div>
 
         <h3>Degrees of success</h3>
         <p>The bot resolves the whole ladder rather than printing all four and leaving you to find the row:</p>
@@ -1477,6 +1541,19 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         </div>
         <div class="note">
           <p><strong>Flanking detection is deliberately conservative.</strong> It won't invent a flank it can't prove, but it can miss one made with a polearm, since it only knows size-based reach. Applying Off-Guard is still yours to do.</p>
+        </div>
+
+        <h3>Large+ creatures and squeezing</h3>
+        <p>
+          A Large or bigger token's own move checks its <strong>whole footprint</strong> against the
+          grid, not just the square it's anchored to. A 5-foot-wide gap it's too big to fully fit
+          through is still passable &mdash; it just costs real difficult terrain, the same as painted
+          terrain would (the two never stack). A space painted <b>narrow</b> is a genuine hard block
+          for everyone, even Medium creatures, until someone Squeezes through it.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgmap squeeze <b>alias</b> <b>dc</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Rolls the real Acrobatics check against a DC you set &mdash; the actual rules give no fixed number, so the GM calls it for the situation. Three real degrees: critical success and success both get the character through; critical failure leaves them stuck. A plain failure has no stated effect at all.</div></div>
         </div>
       </section>
 
