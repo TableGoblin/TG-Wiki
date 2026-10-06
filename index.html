@@ -167,12 +167,37 @@
   }
   .root-chip b { color: var(--brass); font-weight: 600; }
 
+  .hero-cta { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 22px; }
+
+  .discord-widget {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-family: "IBM Plex Sans", sans-serif; font-size: 12.5px; font-weight: 500;
+    padding: 7px 12px; border-radius: 6px;
+    background: var(--surface); border: 1px solid var(--line); color: var(--text-2);
+  }
+  .discord-widget[hidden] { display: none; }
+  .discord-widget .dw-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex: none;
+    background: #3BA55D; box-shadow: 0 0 0 3px rgba(59,165,93,.18);
+  }
+  .discord-widget .dw-avatars { display: flex; flex: none; }
+  .discord-widget .dw-avatars img {
+    width: 20px; height: 20px; border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--surface); margin-left: -6px; display: block;
+  }
+  .discord-widget .dw-avatars img:first-child { margin-left: 0; }
+  .discord-widget .dw-more {
+    font-family: "IBM Plex Mono", monospace; font-size: 10.5px; color: var(--text-3);
+    margin-left: 2px;
+  }
+  .discord-widget b { color: var(--text); font-weight: 600; }
+
   .discord-link {
     display: inline-flex; align-items: center; gap: 7px;
     font-family: "IBM Plex Sans", sans-serif; font-size: 13px; font-weight: 600;
     padding: 7px 14px; border-radius: 6px; text-decoration: none;
     background: var(--verdigris); color: #F5F7F0; border: 1px solid var(--verdigris);
-    box-shadow: var(--shadow); margin-top: 14px;
+    box-shadow: var(--shadow);
   }
   .discord-link:hover { filter: brightness(1.08); }
   .discord-link svg { width: 15px; height: 15px; fill: currentColor; flex: none; }
@@ -501,10 +526,17 @@
       <!-- ============ HERO ============ -->
       <header class="hero">
         <div class="eyebrow">A Pathfinder 2e bot for Discord</div>
-        <a class="discord-link" href="https://discord.gg/8HtRDWQCK" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24"><path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.211.375-.457.879-.626 1.278a18.27 18.27 0 0 0-5.518 0A12.76 12.76 0 0 0 9.115 3 19.736 19.736 0 0 0 4.68 4.372C1.727 8.75.929 13.028 1.328 17.244a19.9 19.9 0 0 0 5.993 3.03c.483-.66.914-1.36 1.285-2.098a12.87 12.87 0 0 1-2.024-.973c.17-.124.336-.253.497-.386 3.902 1.803 8.13 1.803 11.987 0 .162.133.329.262.497.386-.645.386-1.323.71-2.026.974.371.738.802 1.438 1.285 2.098a19.876 19.876 0 0 0 5.995-3.03c.468-4.891-.795-9.13-3.5-13.876ZM8.68 14.813c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Zm7.324 0c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Z"/></svg>
-          Join the Discord
-        </a>
+        <div class="hero-cta">
+          <div class="discord-widget" id="discordWidget" hidden aria-live="polite">
+            <span class="dw-dot"></span>
+            <span class="dw-avatars" id="dwAvatars"></span>
+            <span id="dwText"></span>
+          </div>
+          <a class="discord-link" href="https://discord.gg/8HtRDWQCK" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.211.375-.457.879-.626 1.278a18.27 18.27 0 0 0-5.518 0A12.76 12.76 0 0 0 9.115 3 19.736 19.736 0 0 0 4.68 4.372C1.727 8.75.929 13.028 1.328 17.244a19.9 19.9 0 0 0 5.993 3.03c.483-.66.914-1.36 1.285-2.098a12.87 12.87 0 0 1-2.024-.973c.17-.124.336-.253.497-.386 3.902 1.803 8.13 1.803 11.987 0 .162.133.329.262.497.386-.645.386-1.323.71-2.026.974.371.738.802 1.438 1.285 2.098a19.876 19.876 0 0 0 5.995-3.03c.468-4.891-.795-9.13-3.5-13.876ZM8.68 14.813c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Zm7.324 0c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Z"/></svg>
+            Join the Discord
+          </a>
+        </div>
         <h1>Your table has a goblin in it now.</h1>
         <p class="lede">
           It knows every class, archetype, item, and monster. It remembers
@@ -1819,5 +1851,44 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
       paint();
     }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
     sections.forEach(function (section) { observer.observe(section); });
+  })();
+</script>
+<script>
+  // Live server status above the hero's "Join the Discord" button, from
+  // Discord's own public widget.json (no auth, CORS-enabled). Stays hidden
+  // until a real response lands, and stays hidden on any failure -- the
+  // "Join the Discord" button is the real call to action either way, this
+  // is only a bonus.
+  (function () {
+    var box = document.getElementById('discordWidget');
+    if (!box) return;
+    fetch('https://discord.com/api/guilds/1541832648870076526/widget.json')
+      .then(function (r) { if (!r.ok) throw new Error('widget disabled'); return r.json(); })
+      .then(function (data) {
+        var avatarsEl = document.getElementById('dwAvatars');
+        var textEl = document.getElementById('dwText');
+        var members = Array.isArray(data.members) ? data.members : [];
+        var shown = members.slice(0, 5);
+        shown.forEach(function (m) {
+          if (!m.avatar_url) return;
+          var img = document.createElement('img');
+          img.src = m.avatar_url;
+          img.alt = '';
+          img.title = m.username || '';
+          img.loading = 'lazy';
+          avatarsEl.appendChild(img);
+        });
+        var extra = members.length - shown.length;
+        if (extra > 0) {
+          var more = document.createElement('span');
+          more.className = 'dw-more';
+          more.textContent = '+' + extra;
+          avatarsEl.appendChild(more);
+        }
+        var count = typeof data.presence_count === 'number' ? data.presence_count : members.length;
+        textEl.innerHTML = '<b>' + count + '</b> online' + (data.name ? ' in ' + data.name : '');
+        box.hidden = false;
+      })
+      .catch(function () { /* widget stays hidden -- Join the Discord link still works fine alone */ });
   })();
 </script>
