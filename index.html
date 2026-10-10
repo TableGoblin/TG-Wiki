@@ -818,10 +818,12 @@
         <div class="cmds">
           <div class="cmd-row"><div class="cmd">/tgchar create <b>player</b> <b>name</b> <b>alias</b> <span class="opt">[pathbuilder_id] […]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Creates the character. Give a <code>pathbuilder_id</code> and the whole sheet imports immediately. The <b>alias</b> is the short handle you'll use in every other command and in chat — keep it short and typeable.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgchar linkpathbuilder <b>alias</b> <b>pathbuilder_id</b></div><span class="badge b-self">self / gm</span>
-            <div class="desc">Imports Pathbuilder data into an existing alias and makes it your active character.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgchar sync <span class="opt">[alias] [force]</span></div><span class="badge b-self">self / gm</span>
-            <div class="desc">Re-imports after a level-up. Deliberately <em>preserves</em> live play data: your coin, items you found, spells learned in play, your current HP, and any manual GM corrections. <code>force: True</code> is the escape hatch — discards all of that and takes Pathbuilder's word for everything.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgchar import <b>source</b> <span class="opt">[alias] [file] [pathbuilder_id] [sync]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Brings a character in and makes it your active character. <b>Pathbuilder</b>: attach Pathbuilder's own <em>Export JSON</em> file (safest — no mix-ups with whatever is in your account's one export slot) or give its <code>pathbuilder_id</code>. <b>Table Goblin export</b>: attach a file from <code>/tgchar export</code> to bring that whole character, companions and all, into this campaign.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgchar import source:Pathbuilder <span class="opt">sync:Update existing…</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Re-imports after a level-up. <em>Keep my edits</em> deliberately preserves live play data: your coin, items you found, spells learned in play, your current HP, and any manual GM corrections. <em>Discard my edits</em> is the escape hatch — it throws all of that out and takes Pathbuilder's word for everything.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgchar export <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Sends you a file holding the whole character and its companions. Import it into any campaign with <code>/tgchar import source:Table Goblin export</code> — handy for moving a character between tables. A file edited after export can only be imported by the GM.</div></div>
         </div>
         <div class="note">
           <p><strong>Companions come along.</strong> Pass <code>companion_name</code>/<code>companion_alias</code> or <code>eidolon_name</code>/<code>eidolon_alias</code> at creation and they're linked to the character. An eidolon always displays its summoner's HP, because that's whose hit points it actually spends.</p>
