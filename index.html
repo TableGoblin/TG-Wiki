@@ -1322,6 +1322,14 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
             <div class="desc">The other direction.</div></div>
           <div class="cmd-row"><div class="cmd">/tge condition <b>alias</b> <b>name</b> <span class="opt">[value]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">Applies a PF2e condition, with its value where it has one.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge resist <b>alias</b> <b>damage_type</b> <b>kind</b> <b>duration</b> <span class="opt">[amount] [minutes] [owner_alias] [sustain_of]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">A fight-only resistance, weakness or immunity on top of the sheet's own &mdash; a spell's <i>resist energy</i>, a hazard's weakness. <code>duration</code> picks how long it lasts (end of turn, end of next turn, minutes, while a spell is sustained, until dismissed); choose <b>Remove it</b> with the same type and kind to take one off again.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge reload <b>alias</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Load a crossbow, firearm or sling (spending its reload actions), or ready a special arrow for a bow (free &mdash; it's nocked as part of the Strike). Pick the round from what you carry, and optionally coat it with an injury poison. The next Strike with that weapon fires it: its extra damage, persistent damage and splash are rolled for you (Rhino Shot's force, Garrote Bolt's bleed, Elemental Ammunition's fire), a round that changes the damage type changes it, and a poisoned round exposes the target on a hit.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge affliction expose <b>alias</b> <b>affliction</b> <span class="opt">[dc]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Expose a creature to a poison, disease or curse that didn't come from a hit &mdash; a trap's needle, a drink, filth fever from a sewer. <code>affliction</code> searches every poison and disease item and every affliction in the bestiaries. The bot rolls the save and, if it fails, tracks the stages (below). <code>dc</code> overrides the listed DC.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge affliction cure <b>alias</b> <b>affliction</b> · list <b>alias</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc"><code>cure</code> ends one early (Treat Poison, a cure, a counteracted curse) and removes its conditions; <code>list</code> shows what a creature has and its stage.</div></div>
           <div class="cmd-row"><div class="cmd">/tge status <span class="opt">[detail]</span></div><span class="badge b-player">player</span>
             <div class="desc">The current order, who's up, and everyone's state.</div></div>
           <div class="cmd-row"><div class="cmd">/tge environment</div><span class="badge b-gm">gm only</span>
@@ -1329,6 +1337,23 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           <div class="cmd-row"><div class="cmd">/tge end</div><span class="badge b-gm">gm only</span>
             <div class="desc">Ends the fight, reports the damage taken, banishes thralls and summons, and pays out the loot if you flagged it. Then asks — as its own Yes/No confirmation — whether to purge the fight's roster and map data; the fight stays in history either way, only its storage footprint is reclaimed.</div></div>
         </div>
+
+        <h3>Poisons, diseases and curses</h3>
+        <p>
+          Afflictions run themselves. A creature hit by a venomous Strike (a giant centipede's mandibles) or by a poisoned
+          round is exposed: it rolls the save, and on a failure lands on stage 1 (stage 2 on a critical failure), after
+          any onset. Each stage's damage is dealt and its conditions applied. Whenever a stage's interval passes &mdash;
+          counted at the end of that creature's turns &mdash; it saves again: a success lowers the stage (a critical
+          success by two), a failure raises it; stage 0 ends it, and so does the maximum duration. Diseases that move a
+          day at a time save during <code>/tgdailyprep run</code>. A character's current afflictions and stages are on
+          the sheet's Combat tab, and each turn's saves appear in the turn message.
+        </p>
+        <h3>Critical hits: Deadly and Fatal</h3>
+        <p>
+          A <b>Deadly</b> weapon adds its deadly die on a critical hit (two with greater striking, three with major), and
+          a <b>Fatal</b> weapon's dice become the fatal size on a critical hit, plus one more fatal die &mdash; both rolled
+          for you and shown in the damage line.
+        </p>
 
         <p class="dm-caption">A fight from start to first blood — mock-ups, not live screenshots.</p>
         <div class="dm-seq">
