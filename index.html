@@ -952,6 +952,9 @@
           <p><strong>A feat that grants an innate cantrip asks for it on the spot.</strong> Roughly 60 ancestry feats and heritages work this way — Open Mind lets a Kashrishi cast any occult cantrip, Arcane Tattoos lets a Human pick from seven named schools, Oracular Samsaran asks a tradition first and then a cantrip from it. Picking one immediately asks its own follow-up right there in the same step, the same way Assurance already asks for a skill.</p>
         </div>
         <div class="note">
+          <p><strong>Deity: type the name, pick the rest.</strong> A Cleric or Champion types their deity's name (✍️ Deity name) and picks what the deity decides from plain lists — the <b>favored weapon</b> (🔍 to search every base weapon, plus Fist, Claw and the other unarmed favorites), the <b>divine skill</b> (you become trained in it) and <b>sanctification</b> (the button cycles None → Holy → Unholy). A Cloistered Cleric also picks Domain Initiate's <b>domain</b> from all 64. The bot never lists deities. Forge-Blessed Dwarf asks which of its seven spells on the heritage step.</p>
+        </div>
+        <div class="note">
           <p><strong>Non-spell ancestry choices work the same way.</strong> Kobold's Draconic Benefactor — one shared choice of 40 dragons, made once no matter which of its 3 feats you take first — sets your breath weapon's real damage type, shape and save, plus a matching resistance. A damage-type resistance pick and an unarmed-strike-form pick (claws, jaws, tails, and more) both ask inline the same way. <code>/tgchar ancestry_choice</code> re-asks any of these for a character built before this shipped, or to change a pick later.</p>
         </div>
         <div class="note">
@@ -1834,6 +1837,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
             <div class="desc"><code>category</code> narrows the search to one bucket — useful once a name shows up in more than one place. Choices: <b>Class</b>, <b>Class Feat</b>, <b>Ancestry</b>, <b>Ancestry Feat</b>, <b>Background</b>, <b>General Feat</b>, <b>Spell</b>, <b>Weapon</b>, <b>Armor</b>, <b>Shield</b>, <b>Alchemical</b>, <b>Skill</b>.</div></div>
         </div>
         <div class="note">
+          <p><strong>Deities need the exact name.</strong> <code>/tglookup query:Abadar</code> shows a deity's mechanics — domains and favored weapon, no lore — only when the whole name matches; part of a name lists nothing.</p>
           <p><strong>Skill is different.</strong> It's a plain name match against the game's own skill list (Acrobatics, Arcana, ...) that jumps straight to that skill's AoN page — there's no bot-side skill data to search, so it skips the multi-category search entirely.</p>
         </div>
 
