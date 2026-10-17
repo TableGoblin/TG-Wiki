@@ -466,3 +466,11 @@ img { max-width: 100%; }
   .new-list { margin: 0 0 6px; }
   .coming-list { margin: 0 0 14px; }
   .site-footer { margin: 70px 0 0; padding-top: 18px; border-top: 1px solid var(--line); color: var(--text-3); font-size: 13.5px; }
+
+  /* ---------------- terrain swatches (wiki, Battle Maps) ---------------- */
+  .tswatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px 14px; margin: 6px 0 18px; }
+  .tswatch { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  .tswatch-box { flex: none; width: 46px; height: 46px; border-radius: 5px; border: 1px solid rgba(0, 0, 0, .35); }
+  .tswatch-text { display: flex; flex-direction: column; line-height: 1.3; font-size: 14px; }
+  .tswatch-text b { font-weight: 600; }
+  .tswatch-text span { color: var(--text-2); font-size: 12.5px; }
