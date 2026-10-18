@@ -335,60 +335,11 @@
           <p>The same build, shown to the whole table &mdash; for a GM walking a new player through it.</p>
         </div>
 
-        <p class="dm-caption">The first step, a later one, and the finish — mock-ups, not live screenshots.</p>
-        <div class="dm-seq">
-          <div class="dm-msg">
-            <div class="dm-used">↳ used <code>/tgchar build</code></div>
-            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 6:02 PM</span></div>
-            <div class="dm-embed">
-              <div class="dm-line">Building <b>Wren Alderfen</b>.</div>
-              <div class="dm-heading">🛠️ Wren Alderfen — Ancestry</div>
-              <div class="dm-line">Where does this character come from?</div>
-              <div class="dm-line"><em>Step 1 of 10</em></div>
-              <div class="dm-select">Choose ancestry... <span>▾</span></div>
-              <div class="dm-btnrow">
-                <span class="dm-btn dim">◀ Back</span>
-                <span class="dm-btn primary">Next ▶</span>
-              </div>
-            </div>
-          </div>
-          <div class="dm-msg">
-            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 6:07 PM</span></div>
-            <div class="dm-embed">
-              <div class="dm-heading">🛠️ Wren Alderfen — Class</div>
-              <div class="dm-line">What are they now?</div>
-              <div class="dm-line"><b>So far</b></div>
-              <div class="dm-line"><b>Ancestry:</b> Poppet &nbsp; <b>Heritage:</b> Clockwork Poppet &nbsp; <b>Background:</b> Artist</div>
-              <div class="dm-line"><em>Step 5 of 10</em></div>
-              <div class="dm-select">Choose class... <span>▾</span></div>
-              <div class="dm-btnrow">
-                <span class="dm-btn">◀ Back</span>
-                <span class="dm-btn primary">Next ▶</span>
-              </div>
-            </div>
-          </div>
-          <div class="dm-msg">
-            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 6:19 PM</span></div>
-            <div class="dm-embed">
-              <div class="dm-heading">🛠️ Wren Alderfen — Review</div>
-              <div class="dm-line">Everything so far. Finish to create the character.</div>
-              <div class="dm-line"><b>Ancestry:</b> Poppet &nbsp; <b>Heritage:</b> Clockwork Poppet &nbsp; <b>Background:</b> Artist</div>
-              <div class="dm-line"><b>Class:</b> Summoner &nbsp; <b>Eidolon:</b> Fey Eidolon</div>
-              <div class="dm-line"><b>Skills:</b> Deception, Intimidation, Nature, Stealth</div>
-              <div class="dm-line"><em>Step 13 of 13</em></div>
-              <div class="dm-btnrow">
-                <span class="dm-btn">◀ Back</span>
-                <span class="dm-btn success">✅ Create character</span>
-              </div>
-            </div>
-          </div>
-          <div class="dm-msg">
-            <div class="dm-used">↳ used <code>✅ Create character</code></div>
-            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 6:19 PM</span></div>
-            <div class="dm-embed">
-              <div class="dm-line">✅ <b>Wren Alderfen</b> created as <code>wren</code>. Open it with <code>/tgchar sheet alias:wren</code>.</div>
-            </div>
-          </div>
+        <p class="dm-caption">Three steps of the real builder.</p>
+        <div class="shots">
+          <figure><a href="char-build-class.png" target="_blank" rel="noopener"><img src="char-build-class.png" alt="The class step of the character builder" loading="lazy"></a><figcaption>Each step is one message that edits itself. Everything chosen so far is listed, with Back, Next and Abandon always in reach.</figcaption></figure>
+          <figure><a href="char-build-attribute-selected.png" target="_blank" rel="noopener"><img src="char-build-attribute-selected.png" alt="The attribute boosts step" loading="lazy"></a><figcaption>Boosts are spent from dropdowns, and the running scores update as you go.</figcaption></figure>
+          <figure><a href="char-build-spells.png" target="_blank" rel="noopener"><img src="char-build-spells.png" alt="The spells step of the character builder" loading="lazy"></a><figcaption>Cantrips and spells are picked from dropdowns that show how many are still to choose.</figcaption></figure>
         </div>
         <div class="note">
           <p><strong>A build resumes exactly where you left off.</strong> Run <code>/tgchar build</code> again with the same <b>name</b> and <b>alias</b> and it picks the draft back up — nothing is lost to a closed laptop or a bot restart.</p>
@@ -465,167 +416,12 @@
           applies any lasting buff or debuff, and attaches an <b>Uncast</b> button for a mis-click.
         </p>
 
-        <p class="dm-caption">Click a tab below — this is a mock-up of the real embed, not a live screenshot.</p>
-        <div class="sheet-mock">
-          <input type="radio" name="sheet-tab" id="st-ov" checked>
-          <input type="radio" name="sheet-tab" id="st-cb">
-          <input type="radio" name="sheet-tab" id="st-sp">
-          <input type="radio" name="sheet-tab" id="st-ge">
-          <input type="radio" name="sheet-tab" id="st-co">
-          <div class="dm-window">
-            <div class="dm-head">
-              <span class="dm-avatar"></span>
-              <span class="dm-name">Table Goblin</span>
-              <span class="dm-tag">APP</span>
-              <span class="dm-time">Today at 8:53 AM</span>
-            </div>
-
-            <div class="dm-embed" id="panel-ov">
-              <h4>📜 Wren Alderfen — Level 5 Poppet Summoner</h4>
-              <div class="dm-fields">
-                <div class="dm-f"><b>Owner</b><span>@Player</span></div>
-                <div class="dm-f"><b>Alias</b><span><code>wren</code></span></div>
-                <div class="dm-f"><b>Hit Points</b><span>58 / 58</span></div>
-              </div>
-              <div class="dm-heading">Class Choices</div>
-              <div class="dm-line">Eidolon: Fey Eidolon</div>
-              <div class="dm-cols">
-                <div>
-                  <div class="dm-heading">🛡️ Stats &amp; Vitals</div>
-                  <div class="dm-line"><b>AC:</b> 20 | <b>Speed:</b> 25 ft.</div>
-                  <div class="dm-line"><b>Coin:</b> 3 gp, 8 sp</div>
-                  <div class="dm-line">STR: 10 (+0) &nbsp; DEX: 18 (+4)</div>
-                  <div class="dm-line">CON: 14 (+2) &nbsp; INT: 10 (+0)</div>
-                  <div class="dm-line">WIS: 14 (+2) &nbsp; CHA: 18 (+4)</div>
-                </div>
-                <div>
-                  <div class="dm-heading">🎯 Skills &amp; Ranks</div>
-                  <div class="dm-line">Deception: (T) +9</div>
-                  <div class="dm-line">Intimidation: (E) +11</div>
-                  <div class="dm-line">Nature: (T) +8</div>
-                  <div class="dm-line">Stealth: (T) +9</div>
-                  <div class="dm-line">Fey Eidolon Lore: (T) +7</div>
-                </div>
-              </div>
-              <div class="dm-heading">📖 Feats</div>
-              <div class="dm-line">Class 2 · Archetype 1 · Ancestry 2 · Skill 2 · General 1 · Heritage 1 · Summoner Evolution 1</div>
-              <div class="dm-line">11 total, 1 with an action cost</div>
-              <div class="dm-line"><em>Archetypes:</em> Beastmaster (1/1)</div>
-              <div class="dm-heading">🐾 Companions</div>
-              <div class="dm-line"><b>Talon:</b> <code>talon</code> | <code>alt</code></div>
-              <div class="dm-line"><b>Birch:</b> <code>birch</code> | <code>alt2</code></div>
-              <div class="dm-tabbar">
-                <label class="dm-tab-btn" for="st-ov">📋 Overview</label>
-                <label class="dm-tab-btn" for="st-cb">⚔️ Combat</label>
-                <label class="dm-tab-btn" for="st-sp">📖 Spellbook</label>
-                <label class="dm-tab-btn" for="st-ge">🛡️ Gear</label>
-                <label class="dm-tab-btn" for="st-co">🐾 Companions</label>
-              </div>
-              <div class="dm-select">🎲 Roll a skill or Perception check... <span>▾</span></div>
-            </div>
-
-            <div class="dm-embed" id="panel-cb">
-              <h4>⚔️ Wren Alderfen — Combat</h4>
-              <div class="dm-heading">🛡️ Defenses</div>
-              <div class="dm-line"><b>AC:</b> 20 | <b>HP:</b> 58 / 58 | <b>Speed:</b> 25 ft.</div>
-              <div class="dm-cols">
-                <div>
-                  <div class="dm-heading">🪙 Saves</div>
-                  <div class="dm-line">Fort: (E) +9 | Ref: (T) +7 | Will: (E) +11</div>
-                </div>
-                <div>
-                  <div class="dm-heading">👁 Perception</div>
-                  <div class="dm-line">(E) +9</div>
-                </div>
-              </div>
-              <div class="dm-heading">✨ Feat Actions</div>
-              <div class="dm-line">◆ Battle Medicine</div>
-              <div class="dm-heading">🗡️ Strikes</div>
-              <div class="dm-line"><b>Rapier:</b> +11 to hit | <b>1d6+2 P</b> <em>(Finesse, Agile, Deadly d8)</em> | Range 10 ft | Reach 5 ft</div>
-              <div class="dm-tabbar">
-                <label class="dm-tab-btn" for="st-ov">📋 Overview</label>
-                <label class="dm-tab-btn" for="st-cb">⚔️ Combat</label>
-                <label class="dm-tab-btn" for="st-sp">📖 Spellbook</label>
-                <label class="dm-tab-btn" for="st-ge">🛡️ Gear</label>
-                <label class="dm-tab-btn" for="st-co">🐾 Companions</label>
-              </div>
-              <div class="dm-select">🎲 Roll a saving throw... <span>▾</span></div>
-              <div class="dm-select">🗡️ Roll an attack... <span>▾</span></div>
-              <div class="dm-select">Auto — count attacks this turn <span>▾</span></div>
-              <div class="dm-select">🧪 Throw something... <span>▾</span></div>
-            </div>
-
-            <div class="dm-embed" id="panel-sp">
-              <h4>📖 Wren Alderfen — Spellbook</h4>
-              <div class="dm-line"><b>Summoner</b> (Primal — DC 21 | Attack +13)</div>
-              <div class="dm-heading">Cantrips <em>(At Will)</em></div>
-              <div class="dm-line">◆◆ Detect Magic <em>(cantrip, concentrate, detection, manipulate)</em> — Area 30-foot emanation</div>
-              <div class="dm-line">◆◆ Electric Arc — Target 1–2 creatures, Range 30 feet, 2d4 electricity, Reflex save (basic)</div>
-              <div class="dm-line">◆ Guidance — Target 1 creature, +1 status bonus to a roll before the duration ends</div>
-              <div class="dm-heading">Rank 1 [●●] (2/2 slots)</div>
-              <div class="dm-line">◆/◆◆◆ Heal — Target 1 willing creature or undead, vitality</div>
-              <div class="dm-line">◆◆ Mystic Armor — +1 item bonus to AC, Dex cap +5</div>
-              <div class="dm-heading">Rank 2 [●●] (2/2 slots)</div>
-              <div class="dm-line">◆◆ Sudden Bolt — Range 60 feet, 4d12 electricity, Reflex save (basic)</div>
-              <div class="dm-heading">✨ Focus Pool [●] (1/1)</div>
-              <div class="dm-line">◆ Boost Eidolon <em>(At Will)</em> — +2 status bonus to your eidolon's unarmed damage</div>
-              <div class="dm-line">◆◆ Evolution Surge <em>(1 point each)</em> — grants a temporary evolution to your eidolon</div>
-              <div class="dm-tabbar">
-                <label class="dm-tab-btn" for="st-ov">📋 Overview</label>
-                <label class="dm-tab-btn" for="st-cb">⚔️ Combat</label>
-                <label class="dm-tab-btn" for="st-sp">📖 Spellbook</label>
-                <label class="dm-tab-btn" for="st-ge">🛡️ Gear</label>
-                <label class="dm-tab-btn" for="st-co">🐾 Companions</label>
-              </div>
-              <div class="dm-select">✨ Choose a spell rank... <span>▾</span></div>
-            </div>
-
-            <div class="dm-embed" id="panel-ge">
-              <h4>🛡️ Wren Alderfen — Gear &amp; Inventory</h4>
-              <div class="dm-heading">🗡️ Weapons</div>
-              <div class="dm-line">Rapier</div>
-              <div class="dm-heading">🛡️ Armor &amp; Protection</div>
-              <div class="dm-line">Leather Armor (AC +2)</div>
-              <div class="dm-heading">🎒 Inventory Items</div>
-              <div class="dm-line">Bandolier (x1) · Rations (x2) · Rope, 50 ft (x1)</div>
-              <div class="dm-line">Grappling Hook (x1) · Healer's Toolkit (x1)</div>
-              <div class="dm-line">Traveler's Clothing (x1) · Torch (x5)</div>
-              <div class="dm-line">Waterskin (x1) · Climbing Kit (x1)</div>
-              <div class="dm-tabbar">
-                <label class="dm-tab-btn" for="st-ov">📋 Overview</label>
-                <label class="dm-tab-btn" for="st-cb">⚔️ Combat</label>
-                <label class="dm-tab-btn" for="st-sp">📖 Spellbook</label>
-                <label class="dm-tab-btn" for="st-ge">🛡️ Gear</label>
-                <label class="dm-tab-btn" for="st-co">🐾 Companions</label>
-              </div>
-            </div>
-
-            <div class="dm-embed" id="panel-co">
-              <h4>🐾 Wren Alderfen — Companions &amp; Eidolons</h4>
-              <div class="dm-heading">✨ Eidolon: Talon (Fey Eidolon)</div>
-              <div class="dm-line"><b>AC:</b> 22 | <b>HP:</b> 58 / 58 | <b>Speed:</b> 25 ft. | <b>Size:</b> Medium</div>
-              <div class="dm-line"><b>Saves:</b> Fortitude +9 | Reflex +9 | Will +7</div>
-              <div class="dm-line"><b>Senses:</b> Perception +9, low-light vision</div>
-              <div class="dm-line"><b>Attacks:</b> Bogie Bash +11 (1d6+4 B, finesse), Bogie Bite +11 (1d6+4 P)</div>
-              <div class="dm-line"><b>Special:</b> Energy Heart — choose an energy type other than force; unarmed attacks deal that type and gain resistance to it.</div>
-              <div class="dm-heading">🦎 Companion: Birch</div>
-              <div class="dm-line"><b>AC:</b> 20 | <b>HP:</b> 50 / 50 | <b>Speed:</b> 30 ft. | <b>Size:</b> Large</div>
-              <div class="dm-line"><b>Senses:</b> Perception +10, low-light vision, scent (imprecise) 30 ft</div>
-              <div class="dm-line"><b>Attacks:</b> Jaws +10 (2d8+3 P, unarmed) Reach 10 ft</div>
-              <div class="dm-line"><b>Support:</b> distracts an adjacent foe until the start of your next turn.</div>
-              <div class="dm-heading">🦉 Familiar: Pip</div>
-              <div class="dm-line"><b>AC:</b> 20 | <b>HP:</b> 22 / 22 | <b>Speed:</b> 25 ft. | <b>Size:</b> Tiny</div>
-              <div class="dm-line"><b>Special:</b> Independent — gains 1 action each round if not commanded.</div>
-              <div class="dm-tabbar">
-                <label class="dm-tab-btn" for="st-ov">📋 Overview</label>
-                <label class="dm-tab-btn" for="st-cb">⚔️ Combat</label>
-                <label class="dm-tab-btn" for="st-sp">📖 Spellbook</label>
-                <label class="dm-tab-btn" for="st-ge">🛡️ Gear</label>
-                <label class="dm-tab-btn" for="st-co">🐾 Companions</label>
-              </div>
-              <div class="dm-select">🗡️ Roll a companion attack... <span>▾</span></div>
-            </div>
-          </div>
+        <p class="dm-caption">Four tabs of the real sheet.</p>
+        <div class="shots">
+          <figure><a href="char-sheet-overview.png" target="_blank" rel="noopener"><img src="char-sheet-overview.png" alt="The Overview tab of a character sheet" loading="lazy"></a><figcaption>Overview: the whole character at a glance, with a dropdown to roll any skill.</figcaption></figure>
+          <figure><a href="char-sheet-combat.png" target="_blank" rel="noopener"><img src="char-sheet-combat.png" alt="The Combat tab of a character sheet" loading="lazy"></a><figcaption>Combat: defenses, saves, Perception and strikes, with saving throws one click away.</figcaption></figure>
+          <figure><a href="char-sheet-spellbook.png" target="_blank" rel="noopener"><img src="char-sheet-spellbook.png" alt="The Spellbook tab of a character sheet" loading="lazy"></a><figcaption>Spellbook: ranks and spells, each one castable from a dropdown.</figcaption></figure>
+          <figure><a href="char-sheet-companion.png" target="_blank" rel="noopener"><img src="char-sheet-companion.png" alt="The Companions tab of a character sheet" loading="lazy"></a><figcaption>Companions: an eidolon, familiar or animal companion gets its own tab.</figcaption></figure>
         </div>
 
         <h3>Using, investing and giving gear</h3>
@@ -777,6 +573,13 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           <p><strong>Nothing happened?</strong> Chat triggers only work in a campaign's own channels, and stay <em>completely silent</em> anywhere else — even for a perfectly formed <code>pc::{strike}</code>. Because any <code>word::</code> counts as a candidate, the bot has to stay out of ordinary server conversation entirely. Also: <code>{strike}</code> and <code>{cast}</code> need a live encounter in that channel, since the target list comes from the roster.</p>
         </div>
 
+        <h3>What it looks like</h3>
+        <div class="shots">
+          <figure><a href="inchar-strike-choose.png" target="_blank" rel="noopener"><img src="inchar-strike-choose.png" alt="Choosing a strike from a dropdown" loading="lazy"></a><figcaption>Type <code>pc::{strike}</code> and pick the strike. It's rolled as your character.</figcaption></figure>
+          <figure><a href="inchar-cast-result.png" target="_blank" rel="noopener"><img src="inchar-cast-result.png" alt="The result of casting a spell" loading="lazy"></a><figcaption>Casting reports the spell's effect and puts any lasting bonus on the right character.</figcaption></figure>
+          <figure><a href="inchar-action-grapple-result.png" target="_blank" rel="noopener"><img src="inchar-action-grapple-result.png" alt="The result of a Grapple" loading="lazy"></a><figcaption>Skill actions like Grapple roll against the right defense and apply the result.</figcaption></figure>
+        </div>
+
         <h3>Maneuvers, grip and the action list</h3>
         <p>
           <code>{action}</code> opens a dropdown of everything your character can do beyond a plain Strike or spell, sorted A&ndash;Z with your starred favourites first. Once that list is longer than one page it
@@ -888,51 +691,12 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           for you and shown in the damage line.
         </p>
 
-        <p class="dm-caption">A fight from start to first blood — mock-ups, not live screenshots.</p>
-        <div class="dm-seq">
-          <div class="dm-msg">
-            <div class="dm-used">↳ used <code>/tge start</code></div>
-            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 7:39 AM</span></div>
-            <div class="dm-embed">
-              <div class="dm-line">⚔️ Encounter <b>3</b> started. Added: <b>Wren Alderfen, Ilyra Duskmere</b>. Roll initiative with <code>/tge roll</code>, then <code>/tge begin</code>.</div>
-            </div>
-          </div>
-          <div class="dm-msg">
-            <div class="dm-used">↳ used <code>/tge roll</code></div>
-            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 7:39 AM</span></div>
-            <div class="dm-embed">
-              <div class="dm-line">🎲 <em>@Player</em>, roll initiative for <b>Wren Alderfen</b>:</div>
-              <div class="dm-select">🎲 Roll initiative with... <span>▾</span></div>
-            </div>
-          </div>
-          <div class="dm-msg">
-            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Wren Alderfen</span><span class="dm-tag">APP</span><span class="dm-time">Today at 7:40 AM</span></div>
-            <div class="dm-line" style="margin-left:30px">🎲 Initiative (Perception): <b>18</b> = d20(9) +9</div>
-          </div>
-          <div class="dm-msg">
-            <div class="dm-used">↳ used <code>/tge begin</code></div>
-            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 7:42 AM</span></div>
-            <div class="dm-embed">
-              <div class="dm-line">⚔️ <b>Combat begins!</b></div>
-              <div class="dm-line"><em>@Player</em> It is your turn.</div>
-              <div class="dm-heading">⚔️ Encounter — Round 1</div>
-              <div class="dm-line">▶ <b>Current Turn</b></div>
-              <div class="dm-line">🛡️ <b>Wren Alderfen</b> — <em>@Player</em>, you're up.</div>
-              <div class="dm-line"><em>Next: Ilyra Duskmere</em></div>
-              <div class="dm-heading">Turn Order</div>
-              <div class="dm-line">▶ 🛡️ <b>Wren Alderfen</b> <code>wren</code> — init 18 — 58/58 HP</div>
-              <div class="dm-line">&nbsp;&nbsp;└ Talon <code>talon</code> — 58/58 HP</div>
-              <div class="dm-line">&nbsp;&nbsp;└ Birch <code>birch</code> — 50/50 HP</div>
-              <div class="dm-line">🛡️ <b>Ilyra Duskmere</b> <code>ilyra</code> — init 14 — 44/44 HP</div>
-            </div>
-          </div>
-          <div class="dm-msg">
-            <div class="dm-used">↳ used <code>/tge damage</code></div>
-            <div class="dm-head"><span class="dm-avatar"></span><span class="dm-name">Table Goblin</span><span class="dm-tag">APP</span><span class="dm-time">Today at 7:44 AM</span></div>
-            <div class="dm-embed">
-              <div class="dm-line">💥 <b>Ilyra Duskmere</b> takes 8 slashing damage — 36/44 HP</div>
-            </div>
-          </div>
+        <p class="dm-caption">From initiative to the first move.</p>
+        <div class="shots">
+          <figure><a href="roll-initiative.png" target="_blank" rel="noopener"><img src="roll-initiative.png" alt="Rolling initiative from a dropdown" loading="lazy"></a><figcaption>Initiative: pick Perception or any skill from the dropdown.</figcaption></figure>
+          <figure><a href="map-turn-start.png" target="_blank" rel="noopener"><img src="map-turn-start.png" alt="A turn announced with the battle map" loading="lazy"></a><figcaption>The turn comes with the map, whose gold ring is whoever's turn it is.</figcaption></figure>
+          <figure><a href="map-movement.png" target="_blank" rel="noopener"><img src="map-movement.png" alt="Planning a move on the battle map" loading="lazy"></a><figcaption>Moving: the shading shows what each step costs in actions, and Commit makes it real.</figcaption></figure>
+          <figure><a href="map-movement-wall-blocked.png" target="_blank" rel="noopener"><img src="map-movement-wall-blocked.png" alt="A move blocked by a wall" loading="lazy"></a><figcaption>Walls stop a move, and the bot says so.</figcaption></figure>
         </div>
 
         <h3>Thralls &amp; summons</h3>
@@ -1113,7 +877,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         </div>
 
         <h3>Terrain at a glance</h3>
-        <p>What <code>/tgmap terrain</code> can paint, drawn roughly as it looks over a map. The colours and patterns come from the same table the map uses. The
+        <p>What <code>/tgmap terrain</code> can paint, drawn roughly as it looks over a map. The colours and shapes come from the same code the map uses. The
           open, locked and pulled states are what <code>/tgmap interact</code> switches a painted door, window, chest or lever to.</p>
         <h4>The ground</h4>
         <div class="tswatches">
@@ -1129,23 +893,23 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         </div>
         <h4>Doors, windows and objects</h4>
         <div class="tswatches">
-          <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(140,90,40,0.75), rgba(140,90,40,0.75)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Door (closed)</b><span>Blocks movement and sight</span></span></div>
-          <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(140,90,40,0.24), rgba(140,90,40,0.24)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Door (open)</b><span>Plain floor: walk and see through</span></span></div>
-          <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(95,45,20,0.84), rgba(95,45,20,0.84)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Door (locked)</b><span>Blocks; GM unlocks</span></span></div>
-          <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(150,210,255,0.59), rgba(150,210,255,0.59)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Window (closed)</b><span>Blocks movement; see through</span></span></div>
-          <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(150,210,255,0.22), rgba(150,210,255,0.22)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Window (open)</b><span>Walk through</span></span></div>
-          <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(100,150,200,0.73), rgba(100,150,200,0.73)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Window (locked)</b><span>Blocks movement; GM unlocks</span></span></div>
-          <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(230,180,40,0.67), rgba(230,180,40,0.67)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Chest (closed)</b><span>Object; blocks nothing</span></span></div>
-          <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(230,180,40,0.27), rgba(230,180,40,0.27)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Chest (open)</b><span>Opened</span></span></div>
-          <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(150,110,20,0.80), rgba(150,110,20,0.80)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Chest (locked)</b><span>Locked</span></span></div>
-          <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(190,190,205,0.63), rgba(190,190,205,0.63)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Lever (up)</b><span>Up</span></span></div>
-          <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(110,110,125,0.73), rgba(110,110,125,0.73)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Lever (down)</b><span>Pulled down</span></span></div>
-          <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(160,120,90,0.49), rgba(160,120,90,0.49)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Ledge</b><span>Edge marker (no height rules yet)</span></span></div>
+          <div class="tswatch"><span class="tswatch-box" style="background:#d8d0b8" aria-hidden="true"><svg viewBox="0 0 100 100" width="46" height="46" aria-hidden="true"><rect x="5.0" y="5.0" width="90.0" height="90.0" fill="none" stroke="rgba(95,45,20,1.00)" stroke-width="10.0"/><rect x="32.5" y="16.5" width="35.0" height="67.0" fill="rgba(196,150,90,0.96)" stroke="rgba(0,0,0,1.00)" stroke-width="5.0"/></svg></span><span class="tswatch-text"><b>Door (closed)</b><span>Light brown: blocks movement and sight</span></span></div>
+          <div class="tswatch"><span class="tswatch-box" style="background:#d8d0b8" aria-hidden="true"><svg viewBox="0 0 100 100" width="46" height="46" aria-hidden="true"><rect x="5.0" y="5.0" width="90.0" height="90.0" fill="none" stroke="rgba(95,45,20,1.00)" stroke-width="10.0"/><rect x="32.5" y="16.5" width="35.0" height="67.0" fill="none" stroke="rgba(0,0,0,1.00)" stroke-width="5.0"/></svg></span><span class="tswatch-text"><b>Door (open)</b><span>Clear inside: walk and see through</span></span></div>
+          <div class="tswatch"><span class="tswatch-box" style="background:#d8d0b8" aria-hidden="true"><svg viewBox="0 0 100 100" width="46" height="46" aria-hidden="true"><rect x="5.0" y="5.0" width="90.0" height="90.0" fill="none" stroke="rgba(95,45,20,1.00)" stroke-width="10.0"/><rect x="32.5" y="16.5" width="35.0" height="67.0" fill="rgba(95,45,20,0.94)" stroke="rgba(0,0,0,1.00)" stroke-width="5.0"/></svg></span><span class="tswatch-text"><b>Door (locked)</b><span>Dark brown: blocks; GM unlocks</span></span></div>
+          <div class="tswatch"><span class="tswatch-box" style="background:#d8d0b8" aria-hidden="true"><svg viewBox="0 0 100 100" width="46" height="46" aria-hidden="true"><rect x="0.0" y="0.0" width="100.0" height="100.0" fill="rgba(150,210,255,0.43)" /><polyline points="12.0,52.0 52.0,12.0" fill="none" stroke="rgba(0,0,0,0.27)" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="12.0,82.0 82.0,12.0" fill="none" stroke="rgba(0,0,0,0.27)" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="48.0,88.0 88.0,48.0" fill="none" stroke="rgba(0,0,0,0.27)" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="12.0,52.0 52.0,12.0" fill="none" stroke="rgba(255,255,255,0.94)" stroke-width="5.0" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="12.0,82.0 82.0,12.0" fill="none" stroke="rgba(255,255,255,0.94)" stroke-width="5.0" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="48.0,88.0 88.0,48.0" fill="none" stroke="rgba(255,255,255,0.94)" stroke-width="5.0" stroke-linecap="round" stroke-linejoin="miter"/></svg></span><span class="tswatch-text"><b>Window (closed)</b><span>Glare lines: blocks movement, see through</span></span></div>
+          <div class="tswatch"><span class="tswatch-box" style="background:#d8d0b8" aria-hidden="true"><svg viewBox="0 0 100 100" width="46" height="46" aria-hidden="true"><polyline points="12.0,52.0 52.0,12.0" fill="none" stroke="rgba(0,0,0,0.27)" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="12.0,82.0 82.0,12.0" fill="none" stroke="rgba(0,0,0,0.27)" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="48.0,88.0 88.0,48.0" fill="none" stroke="rgba(0,0,0,0.27)" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="12.0,52.0 52.0,12.0" fill="none" stroke="rgba(255,255,255,0.94)" stroke-width="5.0" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="12.0,82.0 82.0,12.0" fill="none" stroke="rgba(255,255,255,0.94)" stroke-width="5.0" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="48.0,88.0 88.0,48.0" fill="none" stroke="rgba(255,255,255,0.94)" stroke-width="5.0" stroke-linecap="round" stroke-linejoin="miter"/></svg></span><span class="tswatch-text"><b>Window (open)</b><span>Walk through</span></span></div>
+          <div class="tswatch"><span class="tswatch-box" style="background:#d8d0b8" aria-hidden="true"><svg viewBox="0 0 100 100" width="46" height="46" aria-hidden="true"><rect x="0.0" y="0.0" width="100.0" height="100.0" fill="rgba(100,150,200,0.59)" /><polyline points="12.0,52.0 52.0,12.0" fill="none" stroke="rgba(0,0,0,0.27)" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="12.0,82.0 82.0,12.0" fill="none" stroke="rgba(0,0,0,0.27)" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="48.0,88.0 88.0,48.0" fill="none" stroke="rgba(0,0,0,0.27)" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="12.0,52.0 52.0,12.0" fill="none" stroke="rgba(255,255,255,0.94)" stroke-width="5.0" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="12.0,82.0 82.0,12.0" fill="none" stroke="rgba(255,255,255,0.94)" stroke-width="5.0" stroke-linecap="round" stroke-linejoin="miter"/><polyline points="48.0,88.0 88.0,48.0" fill="none" stroke="rgba(255,255,255,0.94)" stroke-width="5.0" stroke-linecap="round" stroke-linejoin="miter"/></svg></span><span class="tswatch-text"><b>Window (locked)</b><span>Darker blue: blocks movement; GM unlocks</span></span></div>
+          <div class="tswatch"><span class="tswatch-box" style="background:#d8d0b8" aria-hidden="true"><svg viewBox="0 0 100 100" width="46" height="46" aria-hidden="true"><rect x="5.0" y="5.0" width="90.0" height="90.0" fill="none" stroke="rgba(150,110,20,1.00)" stroke-width="10.0"/><rect x="16.5" y="32.5" width="67.0" height="35.0" fill="rgba(196,150,90,0.96)" stroke="rgba(0,0,0,1.00)" stroke-width="5.0"/></svg></span><span class="tswatch-text"><b>Chest (closed)</b><span>Light brown: object, blocks nothing</span></span></div>
+          <div class="tswatch"><span class="tswatch-box" style="background:#d8d0b8" aria-hidden="true"><svg viewBox="0 0 100 100" width="46" height="46" aria-hidden="true"><rect x="5.0" y="5.0" width="90.0" height="90.0" fill="none" stroke="rgba(150,110,20,1.00)" stroke-width="10.0"/><rect x="16.5" y="32.5" width="67.0" height="35.0" fill="none" stroke="rgba(0,0,0,1.00)" stroke-width="5.0"/></svg></span><span class="tswatch-text"><b>Chest (open)</b><span>Clear inside: opened</span></span></div>
+          <div class="tswatch"><span class="tswatch-box" style="background:#d8d0b8" aria-hidden="true"><svg viewBox="0 0 100 100" width="46" height="46" aria-hidden="true"><rect x="5.0" y="5.0" width="90.0" height="90.0" fill="none" stroke="rgba(150,110,20,1.00)" stroke-width="10.0"/><rect x="16.5" y="32.5" width="67.0" height="35.0" fill="rgba(95,45,20,0.94)" stroke="rgba(0,0,0,1.00)" stroke-width="5.0"/></svg></span><span class="tswatch-text"><b>Chest (locked)</b><span>Dark brown: locked</span></span></div>
+          <div class="tswatch"><span class="tswatch-box" style="background:#d8d0b8" aria-hidden="true"><svg viewBox="0 0 100 100" width="46" height="46" aria-hidden="true"><rect x="0.0" y="0.0" width="100.0" height="100.0" fill="rgba(190,190,205,0.63)" /><rect x="6.0" y="39.0" width="10.0" height="22.0" fill="rgba(50,50,60,1.00)" stroke="rgba(0,0,0,1.00)" stroke-width="2.0"/><polygon points="17.9,54.6 65.4,14.7 57.6,5.6 10.1,45.4" fill="rgba(40,40,48,1.00)" stroke="rgba(0,0,0,1.00)" stroke-width="2.5" stroke-linejoin="round"/></svg></span><span class="tswatch-text"><b>Lever (up)</b><span>Handle angled up</span></span></div>
+          <div class="tswatch"><span class="tswatch-box" style="background:#d8d0b8" aria-hidden="true"><svg viewBox="0 0 100 100" width="46" height="46" aria-hidden="true"><rect x="0.0" y="0.0" width="100.0" height="100.0" fill="rgba(110,110,125,0.73)" /><rect x="6.0" y="39.0" width="10.0" height="22.0" fill="rgba(50,50,60,1.00)" stroke="rgba(0,0,0,1.00)" stroke-width="2.0"/><polygon points="10.1,54.6 57.6,94.4 65.4,85.3 17.9,45.4" fill="rgba(40,40,48,1.00)" stroke="rgba(0,0,0,1.00)" stroke-width="2.5" stroke-linejoin="round"/></svg></span><span class="tswatch-text"><b>Lever (down)</b><span>Handle angled down (pulled)</span></span></div>
+          <div class="tswatch"><span class="tswatch-box" style="background:#d8d0b8" aria-hidden="true"><svg viewBox="0 0 100 100" width="46" height="46" aria-hidden="true"><rect x="0.0" y="0.0" width="100.0" height="100.0" fill="rgba(160,120,90,0.49)" /><polyline points="0.0,50.0 50.0,50.0 50.0,100.0" fill="none" stroke="rgba(0,0,0,1.00)" stroke-width="7.0" stroke-linecap="round" stroke-linejoin="miter"/></svg></span><span class="tswatch-text"><b>Ledge</b><span>Black edge marker (no height rules yet)</span></span></div>
         </div>
         <h4>Effects, hazards and light</h4>
         <div class="tswatches">
           <div class="tswatch"><span class="tswatch-box" style='background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22rgb%2840%2C200%2C70%29%22%20stroke-opacity%3D%220.92%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M7%207l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M7%2027l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M7%2047l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M27%207l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M27%2027l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M27%2047l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M47%207l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M47%2027l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M47%2047l6%206m0%20-6l-6%206%22/%3E%3C/svg%3E") center/100% 100% no-repeat, #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Area effect</b><span>Area effect; no cost</span></span></div>
-          <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(255,105,180,0.53), rgba(255,105,180,0.53)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Hazard (trap)</b><span>Hidden from players until found</span></span></div>
+          <div class="tswatch"><span class="tswatch-box" style='background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22rgb%28255%2C105%2C180%29%22%20stroke-opacity%3D%220.92%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M7%207l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M7%2027l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M7%2047l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M27%207l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M27%2027l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M27%2047l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M47%207l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M47%2027l6%206m0%20-6l-6%206%22/%3E%3Cpath%20d%3D%22M47%2047l6%206m0%20-6l-6%206%22/%3E%3C/svg%3E") center/100% 100% no-repeat, #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Hazard (trap)</b><span>Pink X's; hidden from players until found</span></span></div>
           <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(255,205,80,0.43), rgba(255,205,80,0.43)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Light: torch (20 ft bright, 40 dim)</b><span>Light: bright 20 ft, dim 40</span></span></div>
           <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(255,235,150,0.43), rgba(255,235,150,0.43)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Light: lamp (60 ft bright, 120 dim)</b><span>Light: bright 60 ft, dim 120</span></span></div>
           <div class="tswatch"><span class="tswatch-box" style='background:linear-gradient(rgba(200,160,255,0.55), rgba(200,160,255,0.55)), #d8d0b8' aria-hidden="true"></span><span class="tswatch-text"><b>Magical darkness</b><span>Magical darkness; darkvision sees</span></span></div>
