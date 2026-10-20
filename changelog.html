@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Change Log - Table Goblin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+        <img class="rail-logo" src="table-goblin.png" alt="Table Goblin logo">
+        <b>Table Goblin</b>
+        <span>Pathfinder 2e for Discord</span>
+        <a class="btn" href="https://discord.gg/cHMex5xFsV" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.211.375-.457.879-.626 1.278a18.27 18.27 0 0 0-5.518 0A12.76 12.76 0 0 0 9.115 3 19.736 19.736 0 0 0 4.68 4.372C1.727 8.75.929 13.028 1.328 17.244a19.9 19.9 0 0 0 5.993 3.03c.483-.66.914-1.36 1.285-2.098a12.87 12.87 0 0 1-2.024-.973c.17-.124.336-.253.497-.386 3.902 1.803 8.13 1.803 11.987 0 .162.133.329.262.497.386-.645.386-1.323.71-2.026.974.371.738.802 1.438 1.285 2.098a19.876 19.876 0 0 0 5.995-3.03c.468-4.891-.795-9.13-3.5-13.876ZM8.68 14.813c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Zm7.324 0c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Z"/></svg>
+          Join the Discord
+        </a>
+        <div class="discord-widget" id="discordWidget" hidden aria-live="polite">
+          <span class="dw-dot"></span>
+          <span class="dw-avatars" id="dwAvatars"></span>
+          <span id="dwText"></span>
+        </div>
+    </div>
+    <nav>
+      <a class="btn" href="https://discord.com/oauth2/authorize?client_id=1550867869066076263" target="_blank" rel="noopener">Install Table Goblin</a>
+      <a class="top" href="index.html"><span>Home</span></a>
+      <a class="top" href="changelog.html" aria-current="page"><span>Change Log</span></a>
+      <a class="top" href="wiki.html"><span>Wiki</span></a>
+      <div class="rail-sub">
+        <a href="wiki.html#start"><span>Getting Started</span></a>
+        <a href="wiki.html#gm"><span>GM Tools</span></a>
+        <a href="wiki.html#chars"><span>Characters</span></a>
+        <a href="wiki.html#chat"><span>Playing in Character</span></a>
+        <a href="wiki.html#npcs"><span>Creatures &amp; NPCs</span></a>
+        <a href="wiki.html#combat"><span>Encounters</span></a>
+        <a href="wiki.html#maps"><span>Battle Maps</span></a>
+        <a href="wiki.html#loot"><span>Loot &amp; the Purse</span></a>
+        <a href="wiki.html#towns"><span>Towns &amp; Shops</span></a>
+        <a href="wiki.html#lookup"><span>Reference Lookup</span></a>
+        <a href="wiki.html#coming"><span>Coming Features</span></a>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="wrap">
+      <header class="hero">
+        <h1>Change Log</h1>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="changelog.html" aria-current="page">Change Log</a></nav>
+        <p class="lede">Everything that has changed in Table Goblin, newest first. Jump to a month: <a href="#m-october-2026">October 2026</a></p>
+      </header>
+
+            <section id="m-october-2026" style="padding-top:34px">
+        <h2 class="new-head">October 2026</h2>
+        <h3 class="new-date">Oct 19, 2026</h3>
+        <ul class="new-list">
+          <li><strong>Ranged unarmed Strikes:</strong> any Strike a feat or ancestry gives you with a range (a Leshy's Seedpod, a spit, a ranged tail) now rolls with Dexterity, adds no Strength to damage, and carries the feat's name. Propulsive adds half a positive Strength; a thrown weapon adds its full Strength like a melee weapon, unless it has the splash trait. Existing characters are corrected the next time their sheet recalculates.</li>
+          <li><strong>Feat actions:</strong> Quick Draw and other "then Strike" feats now roll the Strike, and Trick Magic Item rolls its skill check against the DC the GM gives.</li>
+          <li><strong>Pathbuilder import:</strong> an imported character now gets its class and ancestry features (Sneak Attack, Darkvision, Overdrive...) with their text, its senses, its items inside the backpack they were in, and every spell slot per day. Run <code>/tgchar sync</code> on an older import to pick these up.</li>
+          <li><strong>NPC tokens:</strong> <code>/tgnpc set_avatar</code> gives an NPC a token image. It is kept in the GM channel, so players never see it in the Character Sheets channel.</li>
+          <li><strong>Adventurer's Pack:</strong> buying one now gives a backpack with its contents inside: bedroll, chalk, flint and steel, rope, rations, soap, torches and a waterskin.</li>
+          <li><strong>Warpriest and Battle Creed:</strong> a Warpriest now gets light and medium armor, expert Fortitude, martial weapons at 3rd and the rest of its doctrine by level; a Battle Creed cleric gets its own spell table, the battle font (Bless and Bane slots), its weapon and armor training, Reactive Strike at 9th, and Battle Harbinger Dedication at 2nd level. The deity's favored weapon climbs on its doctrine's schedule.</li>
+          <li><strong>Clerics and backgrounds:</strong> a Cleric's favored weapon is now trained, the build wizard asks for the Divine Font (Healing or Harmful), which adds the extra Heal or Harm slots, and a background that trains "a Lore skill" of your choosing now asks which one. Rebuilding a character no longer doubles its focus points.</li>
+          <li><strong>Shopping:</strong> <code>/tgtown shop buy</code> has a quantity option, and what you buy joins the matching stack in your pack (ten more arrows are 20 arrows, not a second entry).</li>
+          <li><strong>What you have equipped:</strong> the Gear tab shows the armor worn, the shield ready and the weapons in hand, marks each one, and has an Equip button to change them (equipping a weapon makes its Strike). Give, Drop and Stow now work for weapons, armor and shields; a backpack you give takes everything inside it.</li>
+          <li><strong>Stowing part of a stack:</strong> when you stow a stack of more than one, you choose how many to move; the rest stays where it was.</li>
+          <li><strong>Building a Rogue:</strong> the build wizard now has a Skill Feat step, since a Rogue gets one at 1st level.</li>
+          <li><strong>Feat actions:</strong> every feat that costs an action, a reaction or a free action is in the ability list with its cost and limits, and many now roll their own Strikes, saves and conditions: pick the Strike and the target and the bot applies the extra damage, the condition and the save result. Movement and positioning stay with the table.</li>
+        </ul>
+        <h3 class="new-date">Oct 17, 2026</h3>
+        <ul class="new-list">
+          <li><strong>Gear tab:</strong> use a consumable on yourself or an ally, invest magic items (only invested items give their bonuses), give gear to another character, affix talismans, and stow things in a pack. Bulk and encumbrance are tracked. <code>{item}</code> and <code>{give}</code> work from chat.</li>
+          <li><strong>Shops:</strong> <code>/tgshop</code> is now its own command, and you can sell loose gear back to a shop. The GM sets the sell rate in the campaign rules.</li>
+          <li><strong>Battle maps:</strong> doors, windows, chests and levers that open, close and lock with <code>/tgmap interact</code>. A window gives the far side cover. Ledges are drops of 10, 20 or 40 feet: end a move on one and you fall (half the distance in damage, taken for you, and Prone; Cat Fall softens it). Club, polearm and shield critical hits knock the target back on the map.</li>
+          <li><strong>Weapon runes and feats:</strong> Shock arcs to nearby enemies on a critical hit, Corrosive rolls the armor damage, Merciful leaves the target Fascinated, and the Invisibility armor rune is an ability. Lastwall Sentries can Shield Block for an ally. Diverse Recognition and Primadonna now keep to their once-per-round and once-per-hour limits. The sheet's skill dropdown has a skill-action picker. A creature you can't see or hear at all is Undetected, not just Hidden, and casting Darkness paints it on the map. Choirmasters can share a save with their student, Deft Cooperation pays off after an Aid, the sheet shows your shield's Hit Points, and feats that raise your Speed (Fleet, Monk Moves, Quick Climb...) now count. Worn armor's check and Speed penalties are finally applied (unless your Strength meets its entry), the Shadow rune helps Stealth, and gear that helps one action (Boots of Free Running, a Belt of Giant Strength, the Slick rune) now counts. Two dozen archetype actions that had nothing behind them are in, among them the Apocalypse Rider's mythic feats and the Infernal Knight's order features. Feats now give the numbers in their own rules: the Resiliency feats add Hit Points, resistances and senses land on the sheet, bonuses against fear or poison apply to those saves, and twenty more feats grant their innate spell. Every feat that costs an action, a reaction or a free action is now in the ability dropdown, with its cost, its once-per-day or per-round limit, any effect it links and the rule text, around a thousand class feats and four hundred ancestry feats that could only be played by hand before.</li>
+          <li><strong>Poison and talismans:</strong> coat a weapon with an injury poison from Use Item, and the next hit exposes the target. The Gear tab's Talismans button activates or removes one. Tools on the belt are capped at 2 Bulk, and a Bag of Holding works as a container.</li>
+          <li><strong>Encounters:</strong> casting Create Thrall, a Summon spell or Manifest Eidolon places the creature on the map. The turn message shows the map, <code>/tge start</code> takes a list of enemies, and <code>/tge end</code> offers to save the map.</li>
+          <li><strong>GM tools:</strong> set the party level (players can't level past it) and raise it with <code>/tgm levelup</code>. <code>/tgnpc add</code> is private and can apply the suggested stats for a level.</li>
+          <li><strong>Identify:</strong> Identify Alchemy for alchemical items, and Crafter's Appraisal lets Crafting identify magic items.</li>
+          <li><strong>Spellcasters:</strong> retrain a repertoire spell with <code>/tgretrain</code>; Bard and Beast Gunner archetypes get signature spells.</li>
+          <li><strong>Party fund:</strong> <code>/tg party</code> is now <code>/tgparty</code>.</li>
+          <li><strong>Characters:</strong> Wounded ends after a rest at full Hit Points. <code>/tgchar build</code> takes a <code>level</code> again: it builds at 1st level, then walks you through each level-up to the level you asked for.</li>
+        </ul>
+        <h3 class="new-date">Oct 16, 2026</h3>
+        <ul class="new-list">
+          <li><strong>Edit post:</strong> right-click something your character said, choose <em>Apps &rarr; Edit post</em>, and fix it within ten minutes.</li>
+          <li><strong>Signature spells:</strong> Bards, Oracles, Psychics, Sorcerers and Summoners pick them while building (3rd level and up), and get one free spell swap each level.</li>
+        </ul>
+        <h3 class="new-date">Oct 13, 2026</h3>
+        <ul class="new-list">
+          <li><strong>Battle map lighting:</strong> the first version of the new lighting system is live on maps. The aim is working torches and carried light sources that can be lit, dropped and picked up again, and senses such as low-light, darkvision, greater darkvision, scent and tremorsense that change what each character can see.</li>
+        </ul>
+        <h3 class="new-date">Oct 11, 2026</h3>
+        <ul class="new-list">
+          <li><strong>Game data:</strong> the PF2e system module was updated, adding the new Bugbear ancestry and the latest spells, backgrounds and items.</li>
+        </ul>
+        <h3 class="new-date">Oct 9, 2026</h3>
+        <ul class="new-list">
+          <li><strong>Database move:</strong> the move to a dedicated database host finished without issue. That takes the load off the bot's own host and frees its resources for the bot.</li>
+        </ul>
+        <h3 class="new-date">Oct 5, 2026</h3>
+        <ul class="new-list">
+          <li><strong>Reddit launch:</strong> Table Goblin was announced on Reddit, with a 25-person invite code to bring some new players into the Discord server. Welcome to everyone who joined! New features are still coming, and a backend upgrade for better performance is next.</li>
+        </ul>
+      </section>
+
+      <footer class="site-footer">
+        A reference, not a rules substitute &mdash; when in doubt, check Archives of Nethys.
+        Table Goblin is an unofficial tool and is not affiliated with Paizo Inc.
+        <a href="terms.html">Terms of Service</a> &middot; <a href="privacy.html">Privacy Policy</a>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Live server status under the left rail's "Join the Discord" link, from
+  // Discord's own public widget.json (no auth, CORS-enabled). Stays hidden
+  // until a real response lands, and stays hidden on any failure -- the
+  // "Join the Discord" link is the real call to action either way, this
+  // is only a bonus.
+  (function () {
+    var box = document.getElementById('discordWidget');
+    if (!box) return;
+    fetch('https://discord.com/api/guilds/1541832648870076526/widget.json')
+      .then(function (r) { if (!r.ok) throw new Error('widget disabled'); return r.json(); })
+      .then(function (data) {
+        var avatarsEl = document.getElementById('dwAvatars');
+        var textEl = document.getElementById('dwText');
+        var members = Array.isArray(data.members) ? data.members : [];
+        var shown = members.slice(0, 5);
+        shown.forEach(function (m) {
+          if (!m.avatar_url) return;
+          var img = document.createElement('img');
+          img.src = m.avatar_url;
+          img.alt = '';
+          img.title = m.username || '';
+          img.loading = 'lazy';
+          avatarsEl.appendChild(img);
+        });
+        var extra = members.length - shown.length;
+        if (extra > 0) {
+          var more = document.createElement('span');
+          more.className = 'dw-more';
+          more.textContent = '+' + extra;
+          avatarsEl.appendChild(more);
+        }
+        var count = typeof data.presence_count === 'number' ? data.presence_count : members.length;
+        textEl.innerHTML = '<b>' + count + '</b> online' + (data.name ? ' in ' + data.name : '');
+        box.hidden = false;
+      })
+      .catch(function () { /* widget stays hidden -- Join the Discord link still works fine alone */ });
+  })();
+</script>
+
+</body>
+</html>
