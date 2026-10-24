@@ -79,6 +79,20 @@
 
       <section id="recent" style="padding-top:34px">
         <h2 class="new-head">Recently added</h2>
+        <h3 class="new-date">Oct 24, 2026</h3>
+        <ul class="new-list">
+          <li><strong>Hardness and Broken Threshold:</strong> <code>/tgnpc add_custom</code> and <code>/tgnpc edit</code> take <code>hardness</code> and <code>break_threshold</code> for constructs and animated objects. Hardness reduces every hit's damage (after resistance and weakness), and at or below the Broken Threshold the creature is broken until it is back to full Hit Points. Constructs added from the bestiary get their Hardness and Construct Armor from the stat block: below half their Hit Points, or on a critical hit, their AC drops to the "when broken" value.</li>
+          <li><strong>Faster sheets after a restart:</strong> the first character sheet after the bot restarts used to take up to 20 seconds and stall the bot for everyone while it read the rules data. That data is now prepared ahead of time, so the first sheet takes about a second and nothing else waits.</li>
+          <li><strong>Safer renames:</strong> renaming a character's alias, then creating or importing a character under the old alias, no longer collides with (or overwrites) the renamed one.</li>
+          <li><strong>Creatures load the same everywhere:</strong> a creature's saves, rarity and traits are now the same however a command finds it. A rare creature loaded by some actions was treated as common for Recall Knowledge.</li>
+          <li><strong>Familiar Conduit</strong> now finds your familiar.</li>
+          <li><strong>Restart notices:</strong> the new <strong>#goblin-restarts</strong> channel announces a restart 5 minutes ahead and says when the bot is back.</li>
+        </ul>
+        <h3 class="new-date">Oct 23, 2026</h3>
+        <ul class="new-list">
+          <li><strong>Recall Knowledge fixes:</strong> the button no longer times out, a success now answers saves for creatures ("Goblin Skeleton 1 (Weakest Save) Fortitude +2"), and the GM's message is plain text with no secret-check spoiler.</li>
+          <li><strong>Recall Knowledge skills:</strong> the list shows only your trained skills that have the action (Arcana, Crafting, Nature, Occultism, Religion, Society) plus every Lore you're trained in, narrowed to the skills that suit the creature you picked.</li>
+        </ul>
         <h3 class="new-date">Oct 21, 2026</h3>
         <ul class="new-list">
           <li><strong>Class features on every sheet:</strong> characters built in the wizard now list their class's automatic features with their text (Rage, Reactive Strike, Hunt Prey, Flurry of Blows, Spellstrike...), at the level they unlock. Previously only a few classes did.</li>
