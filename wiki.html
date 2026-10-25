@@ -258,7 +258,7 @@
               <tr><td><b>Dual Class</b></td><td>Adds a <em>Second Class</em> step. The character gets both classes' features and specialisations, a class feat from each class that grants one at 1st, both key attribute boosts, the higher Hit Points, the better proficiencies, and both spellcastings if both classes cast.</td></tr>
               <tr><td><b>Keep the dedication rule</b></td><td>With Free Archetype, a character still needs two feats from an archetype before taking another dedication.</td></tr>
               <tr><td><b>Relaxed Mounting</b></td><td>Riding another PC, a familiar (not your own) or an Eidolon without Steed Form costs no extra action to remain mounted.</td></tr>
-              <tr><td><b>Boosted Reroll</b></td><td>A Hero Point reroll whose natural d20 is 10 or under counts as 11 instead of using the plain new result.</td></tr>
+              <tr><td><b>Boosted Reroll</b></td><td>A Hero Point reroll whose natural d20 comes up 10 or under gets +10 added to it: a 1 counts as 11, a 2 as 12, and so on up to a 10 counting as a natural 20 (which can be a critical success). A natural 11 or higher is used as rolled.</td></tr>
               <tr><td><b>Recall Knowledge to the GM</b></td><td>On by default. A Recall Knowledge result (<code>&#123;rk&#125;</code>) goes to the GM channel with the roll and which answer is true, and a <b>Send to player</b> button shares it when the GM is ready. Off: the player gets the answer privately and straight away, with no roll shown.</td></tr>
               <tr><td><b>Recall Knowledge from the GM persona</b></td><td>Off by default. When the GM presses <b>Send to player</b>, the answer is posted by the campaign's GM persona (the name and picture set with <code>/tgm persona</code>) instead of by Table Goblin. Without a GM persona it still comes from the bot.</td></tr>
             </tbody>
@@ -485,8 +485,8 @@
             <div class="desc">Sets which character <code>pc::</code> and bare commands mean.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar deity <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">A panel for a character's deity: the spells it adds to a cleric's list (search any tradition), the favored weapon and the sanctification. Use it after importing a Cleric from Pathbuilder, which has no field for deity spells.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgchar set_avatar <span class="opt">[image] [image_url]</span></div><span class="badge b-self">self / gm</span>
-            <div class="desc">The portrait on webhook posts and the token on the battle map. Upload a file or paste a link — both work.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgchar set_avatar <span class="opt">[image] [image_url] [form]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">The portrait on webhook posts and the token on the battle map. Upload a file or paste a link — both work. Add a <b>form</b> name (spider, rage, black bear&hellip;) to keep a separate image for a shape; it shows whenever your character is in that form, and the main one otherwise. Repeat the command with the same form to replace it, or <code>image_url:""</code> with the form to remove just that one.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar learn_spell <b>rank</b> <b>name</b> <b>spell_list</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Adds a spell outside Pathbuilder. Survives a routine <code>sync</code>.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar armor set <b>category</b> <b>armor_name</b></div><span class="badge b-self">self / gm</span>
@@ -659,7 +659,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         <h4>The named feat triggers</h4>
         <p>
           Many feats and class features have a trigger of their own, named after the feat with the spaces and punctuation removed. Each posts your character's usual line for that feat and then opens whatever it needs (a target, a Strike, a choice).
-          Anything not listed here is still reachable through <code>&#123;action: name&#125;</code>. The line shown is what your character says if you give no narration of your own.
+          Most of these feats are also in your <code>&#123;action&#125;</code> list (under <strong>Class Actions</strong>, found by the feat's own name), so you can pick them from the dropdown or the Combat tab and star them as favourites; the trigger is just the shortcut. The few without an entry in the list (class resources such as stances) keep the trigger only. The line shown is what your character says if you give no narration of your own.
         </p>
         <div class="t-wrap">
           <table>
@@ -823,8 +823,8 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
             <div class="desc">Inspect and adjust. <code>sheet</code> replies privately — the whole point of hiding creature HP from players would be lost otherwise.</div></div>
           <div class="cmd-row"><div class="cmd">/tgnpc tags <b>alias</b></div><span class="badge b-gm">gm only</span>
             <div class="desc">What a creature <i>is</i> for the few feats that care beyond its traits: <b>bat</b>, <b>rat</b>, <b>wolf</b>, <b>reptile</b>, <b>non-sapient dragon</b>, <b>politician</b>, <b>alghollthu</b> (and their servants). Speak with Bats, Voice of the Night, Reptile Rider, Friend of the Family and Striking Retribution then apply against it. Works on any character in the campaign, not just creatures. When you add a creature whose name sounds like one (a Giant Bat, a Dire Wolf), <code>/tgnpc add</code> offers the tag with one click &mdash; it's never applied without you.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgnpc set_avatar <b>alias</b> <span class="opt">[image] [image_url]</span></div><span class="badge b-gm">gm only</span>
-            <div class="desc">Sets an NPC's token image (the picture on the map and beside its speech). Kept in the <b>GM channel</b>, not the Character Sheets channel, so players never see it there; with no GM channel set up it stores nothing. <code>image_url:""</code> clears it.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgnpc set_avatar <b>alias</b> <span class="opt">[image] [image_url] [form]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Sets an NPC's token image (the picture on the map and beside its speech). Kept in the <b>GM channel</b>, not the Character Sheets channel, so players never see it there; with no GM channel set up it stores nothing. <code>image_url:""</code> clears it. Add a <b>form</b> (giant, raging&hellip;) for a separate token that shows when the creature is in that form (switch it with <code>/tgnpc edit form:</code>); repeat the command to replace it, or clear just that form.</div></div>
         </div>
       </section>
 
@@ -865,7 +865,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           <div class="cmd-row"><div class="cmd">/tge environment</div><span class="badge b-gm">gm only</span>
             <div class="desc">This fight's own surroundings, overriding the campaign's (<code>/tgm environment</code>) &mdash; the ambush in the swamp while the party is travelling through plains. Pick <i>Use the campaign's environment</i> to go back.</div></div>
           <div class="cmd-row"><div class="cmd">/tge end</div><span class="badge b-gm">gm only</span>
-            <div class="desc">Ends the fight, reports the damage taken, banishes thralls and summons, and pays out the loot if you flagged it. If the fight had a map, offers to save it to a library slot first (you pick the slot; a used one is replaced). Then asks — as its own Yes/No confirmation — whether to purge the fight's roster and map data; the fight stays in history either way, only its storage footprint is reclaimed.</div></div>
+            <div class="desc">Ends the fight, reports the damage taken, ends every spell and ability that lasts a minute or less (and the timed conditions left over; longer effects, persistent damage, Dying and Wounded stay), banishes thralls and summons, and pays out the loot if you flagged it. If the fight had a map, offers to save it to a library slot first (you pick the slot; a used one is replaced). Then asks — as its own Yes/No confirmation — whether to purge the fight's roster and map data; the fight stays in history either way, only its storage footprint is reclaimed.</div></div>
         </div>
 
         <h3>Poisons, diseases and curses</h3>
