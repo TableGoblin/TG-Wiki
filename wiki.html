@@ -256,6 +256,11 @@
               <tr><td><b>Ancestry Paragon</b></td><td>A second 1st-level ancestry feat in the builder, then another at every odd level.</td></tr>
               <tr><td><b>Skill Paragon</b></td><td>Adds a <em>Paragon Skill</em> step: the character is trained in it (or trains something else if they already were). At 3rd, 7th and 15th an extra increase for that skill is applied for you, and every common general feat requiring it is granted as they qualify.</td></tr>
               <tr><td><b>Dual Class</b></td><td>Adds a <em>Second Class</em> step. The character gets both classes' features and specialisations, a class feat from each class that grants one at 1st, both key attribute boosts, the higher Hit Points, the better proficiencies, and both spellcastings if both classes cast.</td></tr>
+              <tr><td><b>Keep the dedication rule</b></td><td>With Free Archetype, a character still needs two feats from an archetype before taking another dedication.</td></tr>
+              <tr><td><b>Relaxed Mounting</b></td><td>Riding another PC, a familiar (not your own) or an Eidolon without Steed Form costs no extra action to remain mounted.</td></tr>
+              <tr><td><b>Boosted Reroll</b></td><td>A Hero Point reroll whose natural d20 is 10 or under counts as 11 instead of using the plain new result.</td></tr>
+              <tr><td><b>Recall Knowledge to the GM</b></td><td>On by default. A Recall Knowledge result (<code>&#123;rk&#125;</code>) goes to the GM channel with the roll and which answer is true, and a <b>Send to player</b> button shares it when the GM is ready. Off: the player gets the answer privately and straight away, with no roll shown.</td></tr>
+              <tr><td><b>Recall Knowledge from the GM persona</b></td><td>Off by default. When the GM presses <b>Send to player</b>, the answer is posted by the campaign's GM persona (the name and picture set with <code>/tgm persona</code>) instead of by Table Goblin. Without a GM persona it still comes from the bot.</td></tr>
             </tbody>
           </table>
         </div>
@@ -620,6 +625,179 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         <div class="note">
           <p><strong>Why Change Grip exists.</strong> Trip, Shove, Disarm, Grapple and Combat Grab need a free hand, and the bot can't know what is in each hand until you say, so it asks you. It is <em>opt-in</em>: until you set a grip, nothing is warned. Once you have, a maneuver with no hand free tells you so instead of rolling &mdash; tick <em>The hand is free anyway</em> to override it. A weapon with the maneuver's own trait (a trip weapon can Trip, and so on) works with no hand free, and an agile one takes the smaller multiple attack penalty.</p>
         </div>
+        <h3 id="triggers">Every <code>&#123;&#125;</code> trigger</h3>
+        <p>
+          The word inside the braces is the trigger. Put it after your prefix (<code>pc::</code>, <code>alt2::</code>, an alias, <code>npc::Name::</code>) and, if you like, your own narration in quotes first.
+          A few triggers take a name after a colon to skip the dropdown; the rest open their own dropdown or just post. Triggers are not case-sensitive.
+        </p>
+        <div class="t-wrap">
+          <table>
+            <thead><tr><th>Trigger</th><th>What it does</th><th>Examples</th></tr></thead>
+            <tbody>
+              <tr><td><code>&#123;strike&#125;</code></td><td>Pick one of your Strikes and a target; rolled as a real Strike with your multiple attack penalty.</td><td><code>pc::&#123;strike&#125;</code> &middot; <code>pc::"lunges at the goblin"&#123;strike&#125;</code></td></tr>
+              <tr><td><code>&#123;cast&#125;</code></td><td>Pick a spell (cantrips, ranks, focus) and its targets; the spell's effect is applied and any lasting bonus lands on the right character.</td><td><code>pc::&#123;cast&#125;</code> &middot; <code>alt2::&#123;cast&#125;</code></td></tr>
+              <tr><td><code>&#123;action&#125;</code></td><td>Everything your character can do beyond a Strike or spell: skill actions, class and archetype actions (<strong>Class Actions</strong>), saved choices (<strong>Choices</strong>), feat actions. A name skips the dropdown.</td><td><code>pc::&#123;action&#125;</code> &middot; <code>pc::&#123;action: trip&#125;</code> &middot; <code>pc::&#123;action: Ferocious Charge&#125;</code> &middot; <code>pc::&#123;action: Rage&#125;</code></td></tr>
+              <tr><td><code>&#123;reaction&#125;</code></td><td>The same list, only reactions. A reaction alert from the bot tells you which to use.</td><td><code>pc::&#123;reaction&#125;</code> &middot; <code>pc::&#123;reaction: shield block&#125;</code> &middot; <code>pc::&#123;reaction: Reactive Strike&#125;</code></td></tr>
+              <tr><td><code>&#123;item&#125;</code></td><td>Use a consumable you carry: it is spent and its activation posted.</td><td><code>pc::&#123;item&#125;</code> &middot; <code>pc::&#123;item: healing potion&#125;</code></td></tr>
+              <tr><td><code>&#123;give&#125;</code></td><td>Hand loose gear to another party member: pick the stack, then who gets it. A name (and a count) skips the first step.</td><td><code>pc::&#123;give&#125;</code> &middot; <code>pc::&#123;give: rope&#125;</code> &middot; <code>pc::&#123;give: 3 rations&#125;</code></td></tr>
+              <tr><td><code>&#123;feint&#125;</code></td><td>Feint a foe (Deception, with your multiple attack penalty).</td><td><code>pc::"sizes up an opening"&#123;feint&#125;</code></td></tr>
+              <tr><td><code>&#123;step&#125;</code> &middot; <code>&#123;stride&#125;</code></td><td>Move your token on the encounter map (a Step is 5 feet and never draws a reaction; a Stride can). With no map or token it is a narrative line only.</td><td><code>pc::&#123;stride&#125;</code> &middot; <code>pc::"slips behind the pillar"&#123;step&#125;</code></td></tr>
+              <tr><td><code>&#123;rk&#125;</code></td><td>Recall Knowledge about a creature. See below.</td><td><code>pc::&#123;rk&#125;</code> &middot; <code>pc::"remembers an old story"&#123;rk&#125;</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4 id="rk"><code>&#123;rk&#125;</code> &mdash; Recall Knowledge</h4>
+        <p>
+          Type <code>pc::&#123;rk&#125;</code> (<code>&#123;recallknowledge&#125;</code> still works). You pick the creature and then the skill &mdash; only your trained skills that have the action (Arcana, Crafting, Nature, Occultism, Religion, Society and each Lore),
+          narrowed to the ones that suit that creature &mdash; and what you want to learn. You never see the roll, because knowing the number would tell you whether the answer was true.
+          By default the result goes to the GM's channel with a <strong>Send to player</strong> button; the GM shares it when ready. Two <a href="#gm">campaign rules</a> change that:
+          <strong>Recall Knowledge to the GM</strong> (on by default) turns that hand-off on or off, and <strong>Recall Knowledge from the GM persona</strong> makes the shared answer come from the campaign's GM persona
+          (the name and picture set with <code>/tgm persona</code>) instead of from Table Goblin. If the campaign has no GM persona yet, the answer still comes from the bot.
+        </p>
+
+        <h4>The named feat triggers</h4>
+        <p>
+          Many feats and class features have a trigger of their own, named after the feat with the spaces and punctuation removed. Each posts your character's usual line for that feat and then opens whatever it needs (a target, a Strike, a choice).
+          Anything not listed here is still reachable through <code>&#123;action: name&#125;</code>. The line shown is what your character says if you give no narration of your own.
+        </p>
+        <div class="t-wrap">
+          <table>
+            <thead><tr><th>Trigger</th><th>Feat or action, and the default line</th></tr></thead>
+            <tbody>
+              <tr><td><code>{abscissionshards}</code></td><td><b>Abscission Shards</b> &mdash; twists a claw, breaking off a shard.</td></tr>
+              <tr><td><code>{acknowledgefan}</code></td><td><b>Acknowledge Fan</b> &mdash; acknowledges a fan with a knowing look.</td></tr>
+              <tr><td><code>{aerialpiledriver}</code></td><td><b>Aerial Piledriver</b> &mdash; hurls itself and its foe into the air.</td></tr>
+              <tr><td><code>{aldoririposte}</code></td><td>ripostes with a graceful blade.</td></tr>
+              <tr><td><code>{aldoriswordlord}</code></td><td>channels the discipline of the Aldori Academy.</td></tr>
+              <tr><td><code>{allreturnstoslumber}</code></td><td><b>All Returns To Slumber</b> &mdash; lays the peace of deep sleep over the area.</td></tr>
+              <tr><td><code>{amulet}</code></td><td>raises their amulet.</td></tr>
+              <tr><td><code>{arcanecascade}</code></td><td>channels arcane power through their weapon.</td></tr>
+              <tr><td><code>{awakewitharoar}</code></td><td><b>Awake With a Roar</b> &mdash; lets out a mighty, world-waking yawp.</td></tr>
+              <tr><td><code>{bearhug}</code></td><td><b>Bear Hug</b> &mdash; wraps a foe in a crushing hug.</td></tr>
+              <tr><td><code>{blackpowderflash}</code></td><td><b>Black Powder Flash</b> &mdash; ignites a pinch of black powder.</td></tr>
+              <tr><td><code>{bladeoflaw}</code></td><td><b>Blade of Law</b> &mdash; calls upon the power of law.</td></tr>
+              <tr><td><code>{bladeofthecrimsonoath}</code></td><td><b>Blade of the Crimson Oath</b> &mdash; calls upon the Crimson Oath to smite an undead foe.</td></tr>
+              <tr><td><code>{bloodmagic}</code></td><td>feels their bloodline stir.</td></tr>
+              <tr><td><code>{breathofhungrydeath}</code></td><td><b>Breath of Hungry Death</b> &mdash; exhales a cloud of flesh-eating gas.</td></tr>
+              <tr><td><code>{catchandkill}</code></td><td><b>Catch and Kill</b> &mdash; lunges to catch a fleeing witness.</td></tr>
+              <tr><td><code>{chalice}</code></td><td>raises their chalice.</td></tr>
+              <tr><td><code>{championreaction}</code></td><td>stands ready to intervene.</td></tr>
+              <tr><td><code>{changeshape}</code></td><td>shifts between forms.</td></tr>
+              <tr><td><code>{chastise}</code></td><td><b>Chastise</b> &mdash; speaks a single word of divine rebuke.</td></tr>
+              <tr><td><code>{clawdancerstance}</code></td><td>shifts into a predatory stance.</td></tr>
+              <tr><td><code>{clinchstrike}</code></td><td><b>Clinch Strike</b> &mdash; punishes an escape attempt.</td></tr>
+              <tr><td><code>{competitiveeater}</code></td><td><b>Competitive Eater</b> &mdash; gorges on flesh until fully satiated.</td></tr>
+              <tr><td><code>{conjurehell}</code></td><td><b>Conjure Hell</b> &mdash; calls forth a brief burst of Hell&#x27;s fire.</td></tr>
+              <tr><td><code>{consumeflesh}</code></td><td>devours a chunk of a corpse.</td></tr>
+              <tr><td><code>{corneredanimal}</code></td><td><b>Cornered Animal</b> &mdash; lashes out at everyone nearby.</td></tr>
+              <tr><td><code>{corpsestench}</code></td><td><b>Corpse Stench</b> &mdash; exudes an overwhelming scent of decay.</td></tr>
+              <tr><td><code>{cursebound}</code></td><td>reaches for forbidden divine power.</td></tr>
+              <tr><td><code>{cutthemdown}</code></td><td>strikes to cut the rot from the land itself.</td></tr>
+              <tr><td><code>{deathroll}</code></td><td><b>Death Roll</b> &mdash; corkscrews its whole body.</td></tr>
+              <tr><td><code>{deathsdoor}</code></td><td><b>Death&#x27;s Door</b> &mdash; steels themselves against the killing blow.</td></tr>
+              <tr><td><code>{declareanathema}</code></td><td><b>Declare Anathema</b> &mdash; pronounces a divine judgment.</td></tr>
+              <tr><td><code>{decreeofexecution}</code></td><td><b>Decree of Execution</b> &mdash; speaks a decree of execution.</td></tr>
+              <tr><td><code>{defysorrow}</code></td><td><b>Defy Sorrow</b> &mdash; draws on spiritual pain to push their body further.</td></tr>
+              <tr><td><code>{devastatingduelist}</code></td><td><b>Devastating Duelist</b> &mdash; notes a foe&#x27;s deficiencies aloud.</td></tr>
+              <tr><td><code>{devise}</code></td><td>studies a foe&#x27;s weaknesses.</td></tr>
+              <tr><td><code>{dimensionalpilfer}</code></td><td><b>Dimensional Pilfer</b> &mdash; reaches into the space between to pilfer an object.</td></tr>
+              <tr><td><code>{discerningstrike}</code></td><td><b>Discerning Strike</b> &mdash; strikes at a known weakness.</td></tr>
+              <tr><td><code>{diveofthedivine}</code></td><td><b>Dive of the Divine</b> &mdash; takes to the sky, ready to dive.</td></tr>
+              <tr><td><code>{diverserecognition}</code></td><td><b>Diverse Recognition</b> &mdash; sizes up another kind of foe.</td></tr>
+              <tr><td><code>{doyouknowwhoiam}</code></td><td><b>Do You Know Who I Am?</b> &mdash; demands to know if you&#x27;re aware of their reputation.</td></tr>
+              <tr><td><code>{easetheburden}</code></td><td><b>Ease the Burden</b> &mdash; reaches out with a gentle, healing touch.</td></tr>
+              <tr><td><code>{echoingviolence}</code></td><td><b>Echoing Violence</b> &mdash; follows up a devastating hit.</td></tr>
+              <tr><td><code>{elbowbreaker}</code></td><td><b>Elbow Breaker</b> &mdash; bends a limb into an agonizing position.</td></tr>
+              <tr><td><code>{empyrealaura}</code></td><td><b>Empyreal Aura</b> &mdash; radiates a ward against evil.</td></tr>
+              <tr><td><code>{everyoneduck}</code></td><td><b>Everyone Duck!</b> &mdash; intentionally sets off the trap to shield everyone.</td></tr>
+              <tr><td><code>{exploit}</code></td><td>rummages through their esoterica.</td></tr>
+              <tr><td><code>{fearfulsymmetry}</code></td><td><b>Fearful Symmetry</b> &mdash; attacks with feline grace.</td></tr>
+              <tr><td><code>{featheredflechettes}</code></td><td><b>Feathered Flechettes</b> &mdash; snaps their wings open, scattering feathers.</td></tr>
+              <tr><td><code>{feedingfrenzy}</code></td><td><b>Feeding Frenzy</b> &mdash; tears into their prey with serrated teeth.</td></tr>
+              <tr><td><code>{feelingyouroats}</code></td><td><b>Feeling Your Oats</b> &mdash; lives the fantasy, impeccable and unshakeable.</td></tr>
+              <tr><td><code>{feralmending}</code></td><td><b>Feral Mending</b> &mdash; reshapes their flesh, mending as they go.</td></tr>
+              <tr><td><code>{fetchingbangles}</code></td><td>conjures pulling ribbons of light.</td></tr>
+              <tr><td><code>{feverishenzymes}</code></td><td><b>Feverish Enzymes</b> &mdash; strikes with infectious enzymes.</td></tr>
+              <tr><td><code>{fling}</code></td><td>charges their wand with crackling energy.</td></tr>
+              <tr><td><code>{flowerstreetinfamy}</code></td><td><b>Flower Street Infamy</b> &mdash; spins a tale of a past encounter.</td></tr>
+              <tr><td><code>{followingsmite}</code></td><td><b>Following Smite</b> &mdash; channels divine power through their weapon.</td></tr>
+              <tr><td><code>{forcefulshot}</code></td><td><b>Forceful Shot</b> &mdash; fires a forceful shot.</td></tr>
+              <tr><td><code>{gloryonhigh}</code></td><td><b>Glory on High</b> &mdash; rises into the air, radiant with divine power.</td></tr>
+              <tr><td><code>{gossamerblade}</code></td><td><b>Gossamer Blade</b> &mdash; leaves an echo of the blade resonating in a foe.</td></tr>
+              <tr><td><code>{grapple}</code></td><td><b>Grapple</b> &mdash; grabs hold of a foe.</td></tr>
+              <tr><td><code>{gravethreat}</code></td><td><b>Grave Threat</b> &mdash; uses their imposing demeanor to set up the undead for defeat.</td></tr>
+              <tr><td><code>{grievousblow}</code></td><td><b>Grievous Blow</b> &mdash; delivers a focused, powerful blow.</td></tr>
+              <tr><td><code>{grudgingcompliment}</code></td><td><b>Grudging Compliment</b> &mdash; compliments a foe&#x27;s form, unexpectedly.</td></tr>
+              <tr><td><code>{harryingstrike}</code></td><td><b>Harrying Strike</b> &mdash; strikes to slow a foe down.</td></tr>
+              <tr><td><code>{historyofviolence}</code></td><td><b>History of Violence</b> &mdash; calls forth echoes of previous battles.</td></tr>
+              <tr><td><code>{huntprey}</code></td><td><b>Hunt Prey</b> &mdash; marks a target as prey.</td></tr>
+              <tr><td><code>{hush}</code></td><td><b>Hush</b> &mdash; teleports in close to silence a foe.</td></tr>
+              <tr><td><code>{interrupt}</code></td><td>waits, weapon implement ready.</td></tr>
+              <tr><td><code>{interruptcharge}</code></td><td><b>Interrupt Charge</b> &mdash; snags a foe trying to flee.</td></tr>
+              <tr><td><code>{ivyplayhousestrike}</code></td><td><b>Ivy Playhouse Strike</b> &mdash; employs a bit of stage combat trickery.</td></tr>
+              <tr><td><code>{keepupthegoodfight}</code></td><td><b>Keep up the Good Fight</b> &mdash; refuses to fall.</td></tr>
+              <tr><td><code>{kneelbefore}</code></td><td>commands all who see them to kneel.</td></tr>
+              <tr><td><code>{lassoinglash}</code></td><td><b>Lassoing Lash</b> &mdash; wraps their lash around a foe and pulls.</td></tr>
+              <tr><td><code>{leverageanguish}</code></td><td><b>Leverage Anguish</b> &mdash; leverages emotional turmoil to mend their form.</td></tr>
+              <tr><td><code>{marchoflaw}</code></td><td><b>March of Law</b> &mdash; strides forward with unstoppable purpose.</td></tr>
+              <tr><td><code>{marshalstance}</code></td><td>settles into a commanding stance.</td></tr>
+              <tr><td><code>{mesmerizinggaze}</code></td><td><b>Mesmerizing Gaze</b> &mdash; meets a foe&#x27;s gaze, holding it captive.</td></tr>
+              <tr><td><code>{muckraking}</code></td><td><b>Muckraking</b> &mdash; reads scathing fan mail aloud to a foe&#x27;s face.</td></tr>
+              <tr><td><code>{oneonone}</code></td><td><b>One-On-One</b> &mdash; feints, then strikes.</td></tr>
+              <tr><td><code>{onewiththespirits}</code></td><td><b>One with the Spirits</b> &mdash; manifests spiritual fragments across their flesh.</td></tr>
+              <tr><td><code>{overdrive}</code></td><td>cranks their gizmos into overdrive.</td></tr>
+              <tr><td><code>{paralyzingslash}</code></td><td><b>Paralyzing Slash</b> &mdash; slashes with enzyme-coated claws.</td></tr>
+              <tr><td><code>{parttheveil}</code></td><td>phases into the interstices, veiling from physical reality.</td></tr>
+              <tr><td><code>{piercetheeye}</code></td><td><b>Pierce the Eye</b> &mdash; aims a shot directly at a foe&#x27;s eye.</td></tr>
+              <tr><td><code>{pressurechange}</code></td><td><b>Pressure Change</b> &mdash; sinks or rises rapidly, altering internal pressure.</td></tr>
+              <tr><td><code>{primadonna}</code></td><td><b>Primadonna</b> &mdash; draws every eye in the room.</td></tr>
+              <tr><td><code>{protectally}</code></td><td><b>Protect Ally</b> &mdash; places themselves between an ally and the enemy.</td></tr>
+              <tr><td><code>{rage}</code></td><td><b>Rage</b> &mdash; grits their teeth, fury rising.</td></tr>
+              <tr><td><code>{reactivestrike}</code></td><td><b>Reactive Strike</b> &mdash; watches for an opening.</td></tr>
+              <tr><td><code>{recognizethreat}</code></td><td><b>Recognize Threat</b> &mdash; quickly assesses the threat.</td></tr>
+              <tr><td><code>{reelemin}</code></td><td><b>Reel &#x27;Em In</b> &mdash; reels a hooked foe in.</td></tr>
+              <tr><td><code>{reflexivegrapple}</code></td><td><b>Reflexive Grapple</b> &mdash; lashes out, then grabs hold.</td></tr>
+              <tr><td><code>{rememberyourtraining}</code></td><td><b>Remember Your Training</b> &mdash; thinks back to their Pathfinder training.</td></tr>
+              <tr><td><code>{replenishingconsumption}</code></td><td><b>Replenishing Consumption</b> &mdash; devours a corpse&#x27;s flesh.</td></tr>
+              <tr><td><code>{retort}</code></td><td>keeps a steady hand on the trigger.</td></tr>
+              <tr><td><code>{ringbell}</code></td><td>reaches for their bell.</td></tr>
+              <tr><td><code>{scatteringshout}</code></td><td><b>Scattering Shout</b> &mdash; bellows a guttural, ear-splitting shout.</td></tr>
+              <tr><td><code>{shieldblock}</code></td><td><b>Shield Block</b> &mdash; braces behind their shield.</td></tr>
+              <tr><td><code>{shiftimmanence}</code></td><td>feels their divine spark stir.</td></tr>
+              <tr><td><code>{sickeningbite}</code></td><td><b>Sickening Bite</b> &mdash; bites with fever-inducing saliva.</td></tr>
+              <tr><td><code>{sonicstrafe}</code></td><td><b>Sonic Strafe</b> &mdash; takes flight at breakneck speed.</td></tr>
+              <tr><td><code>{spinebreaker}</code></td><td><b>Spinebreaker</b> &mdash; squeezes a foe in a vicious bear hug.</td></tr>
+              <tr><td><code>{spinningrelease}</code></td><td><b>Spinning Release</b> &mdash; spins a foe around and lets go.</td></tr>
+              <tr><td><code>{stance}</code></td><td>shifts into a martial stance.</td></tr>
+              <tr><td><code>{statementstrut}</code></td><td><b>Statement Strut</b> &mdash; strikes an unforgettable pose.</td></tr>
+              <tr><td><code>{stayhere}</code></td><td><b>Stay Here!</b> &mdash; topples a foe and strikes.</td></tr>
+              <tr><td><code>{stealtime}</code></td><td><b>Steal Time</b> &mdash; reaches into a foe&#x27;s timeline.</td></tr>
+              <tr><td><code>{strangle}</code></td><td><b>Strangle</b> &mdash; squeezes the breath out of a foe.</td></tr>
+              <tr><td><code>{submissionhold}</code></td><td><b>Submission Hold</b> &mdash; saps a foe&#x27;s strength with an iron grip.</td></tr>
+              <tr><td><code>{sunbirdglare}</code></td><td><b>Sunbird Glare</b> &mdash; catches the light across their wings.</td></tr>
+              <tr><td><code>{sundownstreetposturing}</code></td><td><b>Sundown Street Posturing</b> &mdash; captures everyone&#x27;s attention with a pose.</td></tr>
+              <tr><td><code>{suplex}</code></td><td><b>Suplex</b> &mdash; heaves a foe up and over.</td></tr>
+              <tr><td><code>{tailguard}</code></td><td><b>Tail Guard</b> &mdash; lashes out at a flanking foe.</td></tr>
+              <tr><td><code>{takeinthecatch}</code></td><td><b>Take in the Catch</b> &mdash; hauls in the catch.</td></tr>
+              <tr><td><code>{targetofopportunity}</code></td><td><b>Target of Opportunity</b> &mdash; capitalizes on the opening.</td></tr>
+              <tr><td><code>{taunt}</code></td><td>draws the enemy&#x27;s attention.</td></tr>
+              <tr><td><code>{teartendons}</code></td><td><b>Tear Tendons</b> &mdash; rakes in with two claws.</td></tr>
+              <tr><td><code>{terrifyingtransformation}</code></td><td><b>Terrifying Transformation</b> &mdash; warps and tears as they transform.</td></tr>
+              <tr><td><code>{thunderclap}</code></td><td><b>Thunder Clap</b> &mdash; slams their hands together.</td></tr>
+              <tr><td><code>{thunderouslanding}</code></td><td><b>Thunderous Landing</b> &mdash; descends with a shock wave of air.</td></tr>
+              <tr><td><code>{touchoflunacy}</code></td><td><b>Touch of Lunacy</b> &mdash; infects their prey with the curse.</td></tr>
+              <tr><td><code>{trip}</code></td><td><b>Trip</b> &mdash; tries to knock a foe to the ground.</td></tr>
+              <tr><td><code>{unleashpsyche}</code></td><td>lets their psychic power flood through.</td></tr>
+              <tr><td><code>{unnervingprowess}</code></td><td><b>Unnerving Prowess</b> &mdash; unnerves a foe with sheer skill.</td></tr>
+              <tr><td><code>{untamedshift}</code></td><td>feels their form begin to change.</td></tr>
+              <tr><td><code>{voicecoldasdeath}</code></td><td><b>Voice Cold as Death</b> &mdash; pronounces a threat in a tone so icy it freezes the blood.</td></tr>
+              <tr><td><code>{wakeandtremble}</code></td><td><b>Wake and Tremble</b> &mdash; shakes the ground with a great convulsion.</td></tr>
+              <tr><td><code>{watchandlearn}</code></td><td><b>Watch and Learn</b> &mdash; follows an ally&#x27;s example.</td></tr>
+              <tr><td><code>{witheraway}</code></td><td><b>Wither Away</b> &mdash; hastens the passage of time.</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <!-- ============ 05 CREATURES ============ -->
@@ -884,8 +1062,8 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
             <div class="desc">Arrow-key controls, or name a destination cell to jump straight there.</div></div>
           <div class="cmd-row"><div class="cmd">/tgmap terrain · terrain_clear <span class="opt">[slot]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">Paint walls, doors, windows, chests, levers, difficult terrain, hazards, water and fixed lights (torch, lamp) directly onto the grid. The same menu sets the whole map's light: bright, dim or darkness. On a dim or dark map, what each token carries also lights it (a lit torch &mdash; tick it in the sheet's Situational toggles &mdash; a lantern, the Light spell), darkvision and low-light vision work as in the rules, and an attack on a creature you see in dim light or darkness first rolls the Concealed (DC 5) or Hidden (DC 11) flat check; failing it, the attack doesn't happen. Strikes now also roll that check against a creature with the Concealed, Hidden or Invisible condition, and so do Grapple, Trip, Shove, Disarm, Reposition and spells that target creatures. Magical darkness (painted, rank 2 or 4+, shown light and medium purple) blocks light; darkvision sees in the lower one, greater darkvision in both. An area effect is drawn as a grid of small green X's. A <b>Hazard (trap)</b> is pink and hidden from the players' map until you pick <b>Hazards: show to players</b> in the same menu, or the party finds it with the explore panel's Search check (its report has a <b>Show found hazards on the map</b> button); your own copy always shows it. See the Unseen or truesight makes an Invisible creature only Concealed. In a fight, the Combat menu's Drop a light, Throw a light (20 ft) and Pick up a light put a lit torch or lantern down where it keeps shining.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgmap interact <b>action</b> <b>cell</b> <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
-            <div class="desc">Open, close, lock or unlock the door, window, chest or lever painted at a cell. <b>An open door is just floor</b>: movement and sight pass through and fog shows what's beyond. A closed window blocks movement but not sight. Players can open or close an unlocked one from the square next to it; the GM does anything from anywhere, including locking, since picking a lock is a skill check the GM runs.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap interact <b>cell</b> <span class="opt">[action] [alias]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Toggle (leave the action empty), open, close, lock or unlock the door, window, chest or lever painted at a cell; a cell with nothing togglable on it says so. <b>An open door is just floor</b>: movement and sight pass through and fog shows what's beyond. A closed window blocks movement but not sight. Players can open or close an unlocked one from the square next to it; the GM does anything from anywhere, including locking, since picking a lock is a skill check the GM runs.</div></div>
           <div class="cmd-row"><div class="cmd">/tgmap fog <b>enabled</b> <span class="opt">[radius] [reset] [slot]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">Fog of war, shared across the party. Explored ground stays remembered — but a creature standing in remembered territory is never revealed by memory alone. On a dim or dark map you need light (or darkvision) to see a cell; dim cells are shaded. <code>/tgmap show</code> draws your own character's view.</div></div>
           <div class="cmd-row"><div class="cmd">/tgmap show <span class="opt">[slot]</span> · status · distance</div><span class="badge b-player">player</span>
