@@ -51,10 +51,14 @@
   .steps li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 14px; color: var(--text-2); counter-increment: s; }
   .steps li::before { content: counter(s); font: 600 12px "IBM Plex Mono", monospace; color: var(--brass); display: block; margin-bottom: 2px; }
   .steps strong { color: var(--text); }
-  .app { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; }
-  @media (max-width: 860px) { .app { grid-template-columns: 1fr; } }
+  /* One column on a phone, in order: image, light, terrain, the map, save. On a wide screen the three setup panels stack on the left and the map sits to
+     the right with the save panel under it. */
+  .app { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start;
+         grid-template-areas: "image" "light" "terrain" "map"; }
+  @media (min-width: 861px) {
+    .app { grid-template-columns: 300px minmax(0, 1fr); gap: 14px 18px; grid-template-areas: "image map" "light map" "terrain map"; }
+  }
   .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; box-shadow: var(--shadow); }
-  .panel + .panel { margin-top: 14px; }
   .panel h2 { font-size: 15px; margin-bottom: 10px; }
   label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 8px; }
   input[type=number], input[type=text], select { width: 100%; padding: 7px 9px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--ground); color: var(--text); font: inherit; font-size: 14px; }
@@ -108,8 +112,7 @@
     </ol>
 
     <div class="app">
-      <aside>
-        <section class="panel">
+        <section class="panel" style="grid-area:image">
           <h2>1 · Map image</h2>
           <label>Image file<input type="file" id="imageFile" accept="image/png,image/jpeg,image/webp,image/gif"></label>
           <div class="seg" role="group" aria-label="How the grid is set">
@@ -132,8 +135,14 @@
           <div class="error" id="gridError" role="alert"></div>
         </section>
 
-        <section class="panel">
-          <h2>2 · Terrain</h2>
+        <section class="panel" style="grid-area:light">
+          <h2>2 · Light</h2>
+          <div class="seg" id="ambients" role="group" aria-label="Whole map light level"></div>
+          <p class="hint">The whole map's light level. Torches and lamps painted above light up their surroundings when the map is dim or dark. Fog of war is not saved here; it starts fresh when the encounter does.</p>
+        </section>
+
+        <section class="panel" style="grid-area:terrain">
+          <h2>3 · Terrain</h2>
           <div class="seg" role="group" aria-label="Brush shape">
             <button type="button" id="toolBrush" aria-pressed="true">Brush</button>
             <button type="button" id="toolRect" aria-pressed="false">Rectangle</button>
@@ -148,13 +157,16 @@
           <div class="counts" id="counts"></div>
         </section>
 
-        <section class="panel">
-          <h2>3 · Light</h2>
-          <div class="seg" id="ambients" role="group" aria-label="Whole map light level"></div>
-          <p class="hint">The whole map's light level. Torches and lamps painted above light up their surroundings when the map is dim or dark. Fog of war is not saved here; it starts fresh when the encounter does.</p>
-        </section>
+      <div class="mapcol" style="grid-area:map">
+      <section class="mapbox">
+        <div class="stage" id="stage">
+          <div class="empty" id="empty">Load a map image to start, or open a terrain file and paint on a blank grid.<br><button class="btn" id="blank" type="button" style="margin-top:12px">Use a blank grid</button></div>
+          <canvas id="map" hidden></canvas>
+        </div>
+        <div class="status"><span id="where">&nbsp;</span><label style="margin:0">Zoom <input type="range" id="zoom" min="20" max="300" value="100" style="vertical-align:middle"> <span id="zoomText">100%</span></label></div>
+      </section>
 
-        <section class="panel">
+        <section class="panel" style="margin-top:14px">
           <h2>4 · Save</h2>
           <label>Map name<input type="text" id="mapName" maxlength="60" placeholder="Goblin Cave" autocomplete="off"></label>
           <p class="hint" id="fileNameHint">The file will be named <code>map_20_x_15.json</code>.</p>
@@ -165,15 +177,7 @@
           <p class="hint">Open a file you saved earlier to keep editing it. Use the same grid size in the upload command.</p>
           <div class="error" id="fileError" role="alert"></div>
         </section>
-      </aside>
-
-      <section>
-        <div class="stage" id="stage">
-          <div class="empty" id="empty">Load a map image to start, or open a terrain file and paint on a blank grid.<br><button class="btn" id="blank" type="button" style="margin-top:12px">Use a blank grid</button></div>
-          <canvas id="map" hidden></canvas>
-        </div>
-        <div class="status"><span id="where">&nbsp;</span><label style="margin:0">Zoom <input type="range" id="zoom" min="20" max="300" value="100" style="vertical-align:middle"> <span id="zoomText">100%</span></label></div>
-      </section>
+      </div>
     </div>
 
     <footer>The colours, patterns and symbols come from the same table the bot draws with, so what you paint here looks the way it will in Discord. See the <a href="wiki.html#maps">Battle Maps</a> section of the handbook for the map commands.</footer>
