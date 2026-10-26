@@ -480,3 +480,7 @@ img { max-width: 100%; }
   .shots figure { margin: 0; }
   .shots img { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); background: #313338; }
   .shots figcaption { margin-top: 7px; font-size: 13.5px; line-height: 1.45; color: var(--text-2); }
+
+.usage { margin: 18px 0 0; font-size: 14px; color: var(--text-2); }
+.usage[hidden] { display: none; }
+.usage b { color: var(--text); font-weight: 600; }

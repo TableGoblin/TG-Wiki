@@ -10,6 +10,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="site.css">
 <link rel="stylesheet" href="tools.css">
+<script data-goatcounter="https://tablegoblin.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+<script src="events.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -440,8 +443,8 @@
       a.download = fileName().replace(/\.json$/, "") + (withLegends ? "_labels" : "_clean") + ".png"; document.body.appendChild(a); a.click(); a.remove();
     }, "image/png");
   }
-  $("pngLegend").addEventListener("click", function () { exportPng(true); });
-  $("pngClean").addEventListener("click", function () { exportPng(false); });
+  $("pngLegend").addEventListener("click", function () { tgEvent("map-png-with-labels"); exportPng(true); });
+  $("pngClean").addEventListener("click", function () { tgEvent("map-png-clean"); exportPng(false); });
   $("download").addEventListener("click", function () {
     if (!$("mapName").value.trim()) { $("fileError").textContent = "Give the map a name first; it becomes the file's name."; $("mapName").focus(); return; }
     var groups = {};
@@ -452,6 +455,7 @@
     var text = JSON.stringify({ format: DATA.format, version: DATA.version, columns: state.cols, rows: state.rows, ambient: state.ambient, cells: groups }, null, 1);
     var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
     a.download = fileName(); document.body.appendChild(a); a.click(); a.remove();
+    tgEvent("terrain-file-downloaded");
     $("fileError").textContent = "";
   });
   $("openFile").addEventListener("change", function () {

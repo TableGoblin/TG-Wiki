@@ -10,6 +10,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="site.css">
 <link rel="stylesheet" href="tools.css">
+<script data-goatcounter="https://tablegoblin.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+<script src="events.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -1027,6 +1030,7 @@
       var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 1)], { type: "application/json" }));
       var slug = payload.name.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "character";
       a.download = slug + ".recipe.json"; document.body.appendChild(a); a.click(); a.remove();
+      tgEvent("recipe-downloaded");
     });
   });
 

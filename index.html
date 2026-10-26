@@ -8,6 +8,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="site.css">
+<script data-goatcounter="https://tablegoblin.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+<script src="events.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -62,6 +65,7 @@
           <a class="btn" href="https://discord.com/oauth2/authorize?client_id=1550867869066076263" target="_blank" rel="noopener">Install Table Goblin</a>
           <a class="btn" href="wiki.html">Read the wiki</a>
         </div>
+        <p class="usage" id="usage" hidden></p>
       </header>
 
       <section id="what" style="padding-top:34px">
@@ -192,6 +196,25 @@
     </div>
   </main>
 </div>
+
+<script>
+  // Usage counts from stats.json, which the bot republishes every six hours: only three numbers, never a name. Stays hidden
+  // until a real response lands and on any failure, like the Discord widget below.
+  (function () {
+    var box = document.getElementById('usage');
+    if (!box) return;
+    fetch('https://storage.googleapis.com/tablegoblin-public-stats-80200350949/stats.json')
+      .then(function (r) { if (!r.ok) throw new Error('no stats'); return r.json(); })
+      .then(function (d) {
+        function part(n, one, many) { return typeof n === 'number' && n > 0 ? '<b>' + n.toLocaleString() + '</b> ' + (n === 1 ? one : many) : ''; }
+        var bits = [part(d.servers, 'server', 'servers'), part(d.campaigns, 'campaign', 'campaigns'), part(d.characters, 'character', 'characters')].filter(Boolean);
+        if (!bits.length) return;
+        box.innerHTML = 'Running at ' + bits.join(' &middot; ');
+        box.hidden = false;
+      })
+      .catch(function () { /* nothing shown */ });
+  })();
+</script>
 
 <script>
   // Live server status under the left rail's "Join the Discord" link, from
