@@ -411,7 +411,7 @@
     if (a) $("ancestryChosen").firstChild.textContent = a.name;
     showDetail($("ancestryDetail"), a ? a.name : "", "origins", function (t) { return t.ancestry[a.name]; }, "");
     $("heritageBox").hidden = !a;
-    if (a) renderPicker($("heritageList"), $("heritageFilter"), heritageEntries(), S.heritage, function (n) { S.heritage = n; refresh(); });
+    if (a) renderPicker($("heritageList"), $("heritageFilter"), heritageEntries(), S.heritage, function (n) { S.heritage = n; dropStaleAncestryFeats(); refresh(); });
     showDetail($("heritageDetail"), a && S.heritage ? S.heritage : "", "origins", function (t) { return t.heritage[a.name + "|" + S.heritage]; }, "");
     $("arrayBox").hidden = !a;
     if (!a) return;
@@ -498,14 +498,48 @@
     if (c && c.skillFeat) slots.push({ key: "skill", label: "Skill feat", cat: "skill" });
     return slots;
   }
+  function dropStaleAncestryFeats() {                                        /* changing the heritage takes its feats with it */
+    var keep = ancTraits(), stale = function (n) { var f = n && featInfo(n); return !!f && !f.traits.some(function (t) { return keep.indexOf(t) >= 0; }); };
+    ["ancestry", "ancestry2"].forEach(function (k) { if (stale(S.feats[k])) S.feats[k] = ""; });
+    if (!curClass()) return;
+    Object.keys(S.levels).forEach(function (L) {
+      var st = S.levels[L];
+      levelSlots(parseInt(L, 10)).forEach(function (slot) { if (slot.kind === "ancestry" && stale(st.feats[slot.id])) delete st.feats[slot.id]; });
+    });
+  }
+  function ancTraits() {                                                     /* the ancestry's traits, plus its versatile heritage's own name, which opens that heritage's feats in every ancestry feat slot */
+    var a = curAncestry(), out = a ? a.traits.slice() : [];
+    if (a && S.heritage) a.heritages.forEach(function (h) { if (h.versatile && h.name === S.heritage) (h.featTraits || []).forEach(function (t) { if (out.indexOf(t) < 0) out.push(t); }); });
+    return out;
+  }
+  var ALL_NAMES = null;
+  function nameKey(n) { return String(n).toLowerCase().replace(/[’']/g, "'"); }
+  function featNamePrereqMet(prereq, held) {                                /* "Brine May, Snow May, Veil May, or Virga May": met by holding one of them; anything that isn't a list of feat names is the bot's to check */
+    if (!ALL_NAMES) { ALL_NAMES = {}; ["ancestry", "class", "skill"].forEach(function (c) { D.feats[c].forEach(function (f) { ALL_NAMES[nameKey(f.name)] = true; }); }); if (FEATS) FEATS.forEach(function (f) { ALL_NAMES[nameKey(f.name)] = true; }); }
+    var have = {}; Object.keys(held).forEach(function (n) { have[nameKey(n)] = true; });
+    return String(prereq || "").split("; ").every(function (part) {
+      var alts = part.trim().split(/,\s*(?:or\s+)?|\s+or\s+/).map(function (x) { return x.trim(); }).filter(Boolean);
+      var readable = alts.length > 0 && alts.every(function (a) { return ALL_NAMES[nameKey(a)]; });
+      return !readable || alts.some(function (a) { return have[nameKey(a)]; });
+    });
+  }
+  function heldAtFirst(slot) {                                              /* what the character has at 1st level, for a feat that needs another feat first */
+    var t = {}; grantedFeats().forEach(function (n) { t[n] = true; });
+    ["ancestry", "ancestry2", "class", "skill"].forEach(function (k) { if (S.feats[k] && k !== slot.key) t[S.feats[k]] = true; });
+    return t;
+  }
   function featEntries(slot) {
-    var a = curAncestry(), c = curClass(), traits = a ? a.traits : [], ranks = {}, granted = grantedFeats();
+    var a = curAncestry(), c = curClass(), traits = ancTraits(), ranks = {}, granted = grantedFeats(), held = heldAtFirst(slot);
+    var otherInfo = null;
     fixedSkills().concat(S.skills).forEach(function (s) { ranks[s] = 1; });
     var other = slot.key === "ancestry" ? S.feats.ancestry2 : slot.key === "ancestry2" ? S.feats.ancestry : "";
     return D.feats[slot.cat].filter(function (f) {
       if (f.level > 1 || !allowed(f.rarity, slot.cat === "ancestry" && a ? a.name : "")) return false;
-      if (!skillPrereqMet(f.prereq, ranks) || !featureGateMet(f.prereq) || granted.indexOf(f.name) >= 0) return false;
-      if (slot.cat === "ancestry") { var hit = f.traits.some(function (t) { return traits.indexOf(t) >= 0; }); if (!hit) return false; }
+      if (!skillPrereqMet(f.prereq, ranks) || !featureGateMet(f.prereq) || !featNamePrereqMet(f.prereq, held) || granted.indexOf(f.name) >= 0) return false;
+      if (slot.cat === "ancestry") {
+        var hit = f.traits.some(function (t) { return traits.indexOf(t) >= 0; }); if (!hit) return false;
+        if (f.traits.indexOf("lineage") >= 0 && other && (featInfo(other) || { traits: [] }).traits.indexOf("lineage") >= 0) return false;      /* a character has one lineage feat */
+      }
       if (slot.cat === "class") { if (!c || f.traits.indexOf(c.name.toLowerCase()) < 0) return false; }
       if (other && f.name === other && !f.repeatable) return false;
       return true;
@@ -633,9 +667,9 @@
     featsLoading = true;
     var sc = document.createElement("script"); sc.src = "builder-feats.js";
     sc.onload = function () {
-      FEATS = window.TG_FEATS.map(function (r) { return { name: r[0], display: r[1] || r[0], level: r[2], cat: r[3], rarity: r[4], traits: r[5], arch: r[6], ded: !!r[7], prereq: r[8], summary: r[9], rep: !!r[10], trains: r[11] || [], lore: r[12] || "" }; });
+      FEATS = window.TG_FEATS.map(function (r) { return { name: r[0], display: r[1] || r[0], level: r[2], cat: r[3], rarity: r[4], traits: r[5], arch: r[6], ded: !!r[7], prereq: r[8], summary: r[9], rep: !!r[10], trains: r[11] || [], lore: r[12] || "", first: !!r[13] }; });
       FEATS.forEach(function (f) { FEAT_BY[f.name] = f; });
-      featsLoading = false; done();
+      ALL_NAMES = null; featsLoading = false; done();
     };
     sc.onerror = function () { featsLoading = false; $("levelsBox").textContent = "Couldn't load the feat list. Reload the page to try again."; };
     document.head.appendChild(sc);
@@ -686,11 +720,11 @@
     var a = curAncestry(), cls = curClass(), taken = takenNames(L), arches = takenArchetypes(L), q = query.trim().toLowerCase(), cname = cls.name.toLowerCase(), out = [], ranks = ranksBefore(L);
     FEATS.forEach(function (f) {
       if (f.level > L || (q && f.display.toLowerCase().indexOf(q) < 0 && f.name.toLowerCase().indexOf(q) < 0)) return;
-      if (!skillPrereqMet(f.prereq, ranks) || !featureGateMet(f.prereq)) return;
+      if (!skillPrereqMet(f.prereq, ranks) || !featureGateMet(f.prereq) || !featNamePrereqMet(f.prereq, taken)) return;
       if (!allowed(f.rarity, f.cat === "ancestry" && a ? a.name : "")) return;
       if (taken[f.name] && !f.rep) return;
       var k = slot.kind;
-      if (k === "ancestry") { if (f.cat !== "ancestry" || !a || !f.traits.some(function (t) { return a.traits.indexOf(t) >= 0; })) return; }
+      if (k === "ancestry") { if (f.cat !== "ancestry" || !a || f.first || !f.traits.some(function (t) { return ancTraits().indexOf(t) >= 0; })) return; }
       else if (k === "skill") { if (f.cat !== "skill") return; }
       else if (k === "general") { if (f.cat !== "general") return; }
       else {                                                                /* a class slot, or the free archetype slot */
