@@ -307,17 +307,25 @@
     b.flaws.forEach(function (a) { m[a] -= 1; });
     return m;
   }
-  function fixedSkills() {
+  function l1FeatNames() { return ["ancestry", "ancestry2", "class", "skill"].map(function (k) { return S.feats[k]; }).filter(Boolean); }
+  function grantList() {                                                      /* every skill something trains outright at 1st level, repeats included: class, background, and 1st-level feats (Dwarven Lore trains Crafting and Religion) */
     var out = [], cls = curClass(), bg = curBackground();
     if (cls) cls.skills.forEach(function (s) { out.push(s); });
     if (bg) bg.skills.forEach(function (s) { out.push(s); });
-    return out.filter(function (s, i) { return out.indexOf(s) === i; });
+    l1FeatNames().forEach(function (n) { var f = featInfo(n); if (f) (f.trains || []).forEach(function (s) { out.push(s); }); });
+    return out;
+  }
+  function fixedSkills() { var g = grantList(); return g.filter(function (s, i) { return g.indexOf(s) === i; }); }
+  function loreNames() {                                                      /* the Lores the background and any feat chosen so far train */
+    var out = [], bg = curBackground();
+    function add(n) { n = String(n || "").trim(); if (!n) return; if (!/lore$/i.test(n)) n += " Lore"; if (out.indexOf(n) < 0) out.push(n); }
+    if (bg) bg.lores.forEach(add);
+    l1FeatNames().concat(typeof pickedAt === "function" ? pickedAt(targetLevel()) : []).forEach(function (n) { var f = featInfo(n); if (f) add(f.lore); });
+    return out;
   }
   function skillAllowance() {
     var cls = curClass(); if (!cls) return 0;
-    var fixed = fixedSkills(); var overlap = 0;                                    /* a skill granted twice hands one pick back */
-    var cs = cls.skills, bs = curBackground() ? curBackground().skills : [];
-    cs.forEach(function (s) { if (bs.indexOf(s) >= 0) overlap++; });
+    var overlap = grantList().length - fixedSkills().length;                  /* a skill granted twice hands one pick back */
     return Math.max(0, cls.freeSkills + mods().int + overlap);
   }
 
@@ -622,7 +630,7 @@
     featsLoading = true;
     var sc = document.createElement("script"); sc.src = "builder-feats.js";
     sc.onload = function () {
-      FEATS = window.TG_FEATS.map(function (r) { return { name: r[0], display: r[1] || r[0], level: r[2], cat: r[3], rarity: r[4], traits: r[5], arch: r[6], ded: !!r[7], prereq: r[8], summary: r[9], rep: !!r[10] }; });
+      FEATS = window.TG_FEATS.map(function (r) { return { name: r[0], display: r[1] || r[0], level: r[2], cat: r[3], rarity: r[4], traits: r[5], arch: r[6], ded: !!r[7], prereq: r[8], summary: r[9], rep: !!r[10], trains: r[11] || [], lore: r[12] || "" }; });
       FEATS.forEach(function (f) { FEAT_BY[f.name] = f; });
       featsLoading = false; done();
     };
@@ -694,7 +702,11 @@
   }
   function ranksBefore(L) {
     var r = {}; fixedSkills().concat(S.skills).forEach(function (s) { r[s] = 1; });
-    for (var l = 2; l < L; l++) { var st = S.levels[l]; if (st && st.skill) r[st.skill] = (r[st.skill] || 0) + 1; }
+    for (var l = 2; l < L; l++) {
+      var st = S.levels[l]; if (!st) continue;
+      Object.keys(st.feats).forEach(function (id) { var f = featInfo(st.feats[id]); if (f) (f.trains || []).forEach(function (s) { if (!(r[s] > 0)) r[s] = 1; }); });   /* a feat taken at a level trains what it says */
+      if (st.skill) r[st.skill] = (r[st.skill] || 0) + 1;
+    }
     return r;
   }
   var RANK_NAMES = ["trained", "expert", "master", "legendary"], RANK_AT = [1, 3, 7, 15];
@@ -711,10 +723,21 @@
   }
   function grantedFeats() { var out = []; chosenOptions().forEach(function (o) { (o[3] || []).forEach(function (n) { if (out.indexOf(n) < 0) out.push(n); }); }); return out; }
   var FEATURE_NAMES = null;
-  function featureGateMet(prereq) {                                          /* "maestro muse", "animal instinct": met only by that choice */
+  function featureGateMet(prereq) {                                          /* "maestro muse", "animal instinct", "unbreakable goblin heritage": met only by that choice */
     FEATURE_NAMES = FEATURE_NAMES || new Set(D.featureNames);
     var have = new Set(); chosenOptions().forEach(function (o) { (o[2] || []).forEach(function (a) { have.add(a); }); });
-    return String(prereq || "").split("; ").every(function (part) { var p = part.trim().toLowerCase(); return !FEATURE_NAMES.has(p) || have.has(p); });
+    if (S.heritage) { var h = S.heritage.toLowerCase(); have.add(h); have.add(h + " heritage"); }
+    return String(prereq || "").split("; ").every(function (part) {
+      var alts = part.trim().toLowerCase().split(" or ");                     /* "X heritage or Y heritage", "irongut goblin or razortooth goblin heritage" */
+      var readable = alts.every(function (a) { return FEATURE_NAMES.has(a) || FEATURE_NAMES.has(a + " heritage"); });
+      return !readable || alts.some(function (a) { return have.has(a) || have.has(a + " heritage"); });
+    });
+  }
+  var L1_BY = null;
+  function featInfo(name) {
+    if (FEAT_BY[name]) return FEAT_BY[name];
+    if (!L1_BY) { L1_BY = {}; ["ancestry", "class", "skill"].forEach(function (c) { D.feats[c].forEach(function (f) { L1_BY[f.name] = f; }); }); }
+    return L1_BY[name] || null;
   }
   var RANK_WORDS = { trained: 1, expert: 2, master: 3, legendary: 4 };
   function skillPrereqMet(prereq, ranks) {                                  /* only "trained in Medicine" style requirements; the bot checks the rest on import */
@@ -881,7 +904,8 @@
     if (cls) {
       var prof = cls.prof[String(T)] || {}, ranks = ranksBefore(T + 1), keyMod = m[S.keyAttr || cls.keys[0]] || 0;
       var sk = summarySection("Skills");
-      sk.appendChild(profTable(D.skills.map(function (s) { var r = ranks[s] || 0, mod = m[D.skillAbility[s]] || 0; return [cap1(s), r, sign(profBonus(r, T) + mod)]; })));
+      sk.appendChild(profTable(D.skills.map(function (s) { var r = ranks[s] || 0, mod = m[D.skillAbility[s]] || 0; return [cap1(s), r, sign(profBonus(r, T) + mod)]; })
+        .concat(loreNames().map(function (n) { return [n, 1, sign(profBonus(1, T) + m.int)]; }))));
       box.appendChild(sk);
       var sv = summarySection("Saves and Perception");
       sv.appendChild(profTable([["Fortitude", prof.fortitude || 0, sign(profBonus(prof.fortitude || 0, T) + m.con)], ["Reflex", prof.reflex || 0, sign(profBonus(prof.reflex || 0, T) + m.dex)],
