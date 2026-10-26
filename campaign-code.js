@@ -7,6 +7,7 @@
 (function () {
   "use strict";
   var RULES_V1 = ["free_archetype", "ancestry_paragon", "dual_class", "skill_paragon", "fa_dedication_gate", "relaxed_mounting", "boosted_reroll", "recall_to_gm", "recall_as_gm"];
+  var RULES_V2 = RULES_V1.concat(["automatic_bonus_progression", "gradual_ability_boosts"]);
   var ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
   var enc = new TextEncoder();
 
@@ -51,8 +52,10 @@
         var acc = 0n; for (i = 0; i < body.length; i++) acc = (acc << 8n) | BigInt(body[i]);
         var bits = body.length * 8;
         function take(n) { bits -= n; return Number((acc >> BigInt(bits)) & ((1n << BigInt(n)) - 1n)); }
-        if (take(4) !== 1) throw new Error("That campaign code is from a newer version of Table Goblin.");
-        var rules = {}; RULES_V1.forEach(function (r) { rules[r] = take(1) === 1; });
+        var version = take(4);
+        if (version !== 1 && version !== 2) throw new Error("That campaign code is from a newer version of Table Goblin.");
+        var rules = {}; RULES_V2.forEach(function (r) { rules[r] = false; });
+        (version === 1 ? RULES_V1 : RULES_V2).forEach(function (r) { rules[r] = take(1) === 1; });
         var uncommon = take(1) === 1, rare = take(1) === 1, cap = take(5), count = take(6);
         if (bits < 12 * count) throw new Error("That campaign code is cut short.");
         var hashes = []; for (i = 0; i < count; i++) hashes.push(take(12));
@@ -61,5 +64,5 @@
     });
   }
 
-  window.TGCampaignCode = { decode: decode, nameHash: nameHash, rules: RULES_V1 };
+  window.TGCampaignCode = { decode: decode, nameHash: nameHash, rules: RULES_V2 };
 }());
