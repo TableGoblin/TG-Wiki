@@ -312,7 +312,7 @@
     var out = [], cls = curClass(), bg = curBackground();
     if (cls) cls.skills.forEach(function (s) { out.push(s); });
     if (bg) bg.skills.forEach(function (s) { out.push(s); });
-    l1FeatNames().forEach(function (n) { var f = featInfo(n); if (f) (f.trains || []).forEach(function (s) { out.push(s); }); });
+    l1FeatNames().concat(bg ? (bg.feats || []) : []).forEach(function (n) { var f = featInfo(n); if (f) (f.trains || []).forEach(function (s) { out.push(s); }); });
     return out;
   }
   function fixedSkills() { var g = grantList(); return g.filter(function (s, i) { return g.indexOf(s) === i; }); }
@@ -434,7 +434,7 @@
     renderBgAttrFilter();
     renderPicker($("bgList"), $("bgFilter"), backgroundEntries(), S.background, function (n) { if (n !== S.background) { S.background = n; S.bgBoosts = {}; } refresh(); }, 60);
     var bg = curBackground();
-    $("bgChosen").textContent = bg ? bg.name + (bg.skills.length ? " · trains " + bg.skills.join(", ") : "") + (bg.lores.length ? " · Lore: " + bg.lores.join(", ") : "") + (bg.freeLores ? " · and a Lore you name in Discord" : "") : "";
+    $("bgChosen").textContent = bg ? bg.name + (bg.skills.length ? " · trains " + bg.skills.join(", ") : "") + (bg.lores.length ? " · Lore: " + bg.lores.join(", ") : "") + ((bg.feats && bg.feats.length) ? " · feat: " + bg.feats.join(", ") : "") + (bg.freeLores ? " · and a Lore you name in Discord" : "") : "";
     showDetail($("bgDetail"), bg ? bg.name : "", "origins", function (t) { return t.background[bg.name]; }, bg ? bg.summary : "");
     var box = $("bgBoosts"); box.textContent = "";
     if (!bg) return;
@@ -458,7 +458,7 @@
     if (c && c.keys.length > 1) pills($("keyPills"), c.keys, S.keyAttr ? [S.keyAttr] : [], 1, function (o) { S.keyAttr = S.keyAttr === o ? "" : o; refresh(); }, function (o) { return NAMES[o]; });
     var box = $("groupBox"); box.textContent = "";
     if (!c) return;
-    var autoFeats = grantedFeats();
+    var autoFeats = optionGrants();
     if (autoFeats.length) { var gp = document.createElement("p"); gp.className = "hint"; gp.textContent = "Granted automatically: " + autoFeats.join(", ") + "."; box.appendChild(gp); }
     c.groups.forEach(function (g) {
       var h = document.createElement("h3"); h.textContent = g.feature; box.appendChild(h);
@@ -721,7 +721,12 @@
     if (cls) cls.groups.forEach(function (g) { g.options.forEach(function (o) { if (S.groups[g.feature] === o[0]) out.push(o); }); });
     return out;
   }
-  function grantedFeats() { var out = []; chosenOptions().forEach(function (o) { (o[3] || []).forEach(function (n) { if (out.indexOf(n) < 0) out.push(n); }); }); return out; }
+  function optionGrants() { var out = []; chosenOptions().forEach(function (o) { (o[3] || []).forEach(function (n) { if (out.indexOf(n) < 0) out.push(n); }); }); return out; }
+  function grantedFeats() {                                                  /* the feats chosen options and the background hand over outright (Lingering Composition, Hobnobber) */
+    var out = optionGrants(), bg = curBackground();
+    if (bg) (bg.feats || []).forEach(function (n) { if (out.indexOf(n) < 0) out.push(n); });
+    return out;
+  }
   var FEATURE_NAMES = null;
   function featureGateMet(prereq) {                                          /* "maestro muse", "animal instinct", "unbreakable goblin heritage": met only by that choice */
     FEATURE_NAMES = FEATURE_NAMES || new Set(D.featureNames);
