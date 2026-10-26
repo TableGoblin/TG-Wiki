@@ -74,6 +74,8 @@
             <label><input type="checkbox" id="allowUncommon"> Uncommon options allowed</label>
             <label><input type="checkbox" id="allowRare"> Rare options allowed</label>
           </div>
+          <label style="margin-top:8px">Party level: the highest level your campaign allows <input type="number" id="levelCap" min="1" max="20" placeholder="No limit"></label>
+          <p class="hint">A campaign code fills this in. Without one, set it yourself (leave it blank for no limit); it travels in the file so the bot knows how far your campaign has got, and the bot enforces the party level when you import anyway.</p>
           <p class="hint" id="exceptionHint"></p>
         </div>
 
@@ -280,9 +282,14 @@
   function syncRuleChecks() {
     Array.prototype.forEach.call($("ruleChecks").querySelectorAll("input"), function (c) { c.checked = !!S.rules[c.dataset.rule]; });
     $("allowUncommon").checked = S.allowUncommon; $("allowRare").checked = S.allowRare;
+    if (document.activeElement !== $("levelCap")) $("levelCap").value = S.levelCap || "";
     var names = Object.keys(S.exceptions);
     $("exceptionHint").textContent = names.length ? "Your campaign makes an exception for: " + names.join(", ") + "." : "";
   }
+  $("levelCap").addEventListener("input", function () {
+    var n = parseInt(this.value, 10);
+    S.levelCap = n >= 1 && n <= 20 ? n : null; S.code = ""; renderSummary();            /* a hand-set cap no longer matches the code that was typed */
+  });
   $("code").addEventListener("input", function () {
     var v = this.value.trim(); $("codeMsg").textContent = "";
     if (!v) { S.code = ""; return; }
