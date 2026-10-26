@@ -169,7 +169,7 @@
         <section class="panel" style="margin-top:14px">
           <h2>4 · Save</h2>
           <label>Map name<input type="text" id="mapName" maxlength="60" placeholder="Goblin Cave" autocomplete="off"></label>
-          <p class="hint" id="fileNameHint">The file will be named <code>map_15x20.json</code>.</p>
+          <p class="hint" id="fileNameHint">The file will be named <code>map_bright_15x20.json</code>.</p>
           <div class="btns" style="margin-top:10px">
             <button class="btn primary" id="download" type="button">Download terrain file</button>
             <label class="btn" style="margin:0;cursor:pointer">Open a file<input type="file" id="openFile" accept=".json,application/json" hidden></label>
@@ -393,7 +393,7 @@
     });
     markAmbient();
   }
-  function markAmbient() { Array.prototype.forEach.call($("ambients").children, function (b) { b.setAttribute("aria-pressed", b.dataset.level === state.ambient ? "true" : "false"); }); }
+  function markAmbient() { Array.prototype.forEach.call($("ambients").children, function (b) { b.setAttribute("aria-pressed", b.dataset.level === state.ambient ? "true" : "false"); }); showFileName(); }
 
   /* ---- inputs ---- */
   function readGrid() {
@@ -435,10 +435,10 @@
   $("blank").addEventListener("click", function () { state.blank = true; draw(); });
 
   /* ---- the terrain file (docs: map_terrain_file.py) ---- */
-  function fileName() {                       /* <map name>_<rows>x<columns>.json, as map_terrain_file.filename */
+  function fileName() {                       /* <map name>_<light>_<rows>x<columns>.json, as map_terrain_file.filename */
     var clean = $("mapName").value.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "map";
     clean = clean.slice(0, 60).replace(/^_+|_+$/g, "") || "map";
-    return clean + "_" + state.rows + "x" + state.cols + ".json";
+    return clean + "_" + state.ambient + "_" + state.rows + "x" + state.cols + ".json";
   }
   function showFileName() { $("fileNameHint").innerHTML = "The file will be named <code></code>."; $("fileNameHint").querySelector("code").textContent = fileName(); }
   $("mapName").addEventListener("input", showFileName);
