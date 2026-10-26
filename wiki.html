@@ -1052,10 +1052,12 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         </div>
 
         <div class="cmds">
-          <div class="cmd-row"><div class="cmd">/tgmap upload_gridless <b>image</b> <b>columns</b> <b>rows</b> <span class="opt">[slot] [name]</span></div><span class="badge b-gm">gm only</span>
+          <div class="cmd-row"><div class="cmd">/tgmap upload_gridless <b>image</b> <b>columns</b> <b>rows</b> <span class="opt">[slot] [name] [terrain_file]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">Give it a plain image and how many squares to overlay. With a <code>slot</code> it is saved to your map library under <code>name</code> instead of going onto the running encounter.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgmap upload_gridded <b>image</b> <b>columns</b> <b>rows</b> <b>cell_size</b> <span class="opt">[offset_x] [offset_y] [slot] [name]</span></div><span class="badge b-gm">gm only</span>
-            <div class="desc">For a map that already has a grid printed on it. <code>/tgmap calibrate</code> helps you line it up.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap upload_gridded <b>image</b> <b>columns</b> <b>rows</b> <b>cell_size</b> <span class="opt">[offset_x] [offset_y] [slot] [name] [terrain_file]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">For a map that already has a grid printed on it. <code>/tgmap calibrate</code> helps you line it up. Both uploads take an optional <code>terrain_file</code> made on the <a href="map-prep.html">Map prep</a> page: walls, water, doors, lights and the map's light level arrive with the image, and the grid size must match.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap export_terrain <span class="opt">[slot]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Sends back the map's terrain and light level as a file you can open on the <a href="map-prep.html">Map prep</a> page or give to an upload as <code>terrain_file</code>.</div></div>
           <div class="cmd-row"><div class="cmd">/tgmap place <b>alias</b> <b>cell</b> <span class="opt">[elevation]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">Puts a token down, e.g. <code>cell:H12</code>. Elevation is tracked and counted when distances are measured. A token you place at a height isn't treated as falling.</div></div>
           <div class="cmd-row"><div class="cmd">/tgmap move <span class="opt">[alias] [destination]</span></div><span class="badge b-self">self / gm</span>

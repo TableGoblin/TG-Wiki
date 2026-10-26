@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Table Goblin — Map Prep</title>
+<link rel="icon" href="table-goblin.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground: #F0F1EA; --surface: #FAFAF6; --surface-2: #EBEDE3; --line: #D2D5C6; --line-strong: #B4B9A4;
+    --text: #1B1F16; --text-2: #4C523F; --text-3: #6E7560; --brass: #9A6E1C; --brass-bright: #C08F2E; --brass-wash: #F3E7CC;
+    --verdigris: #2F6C5E; --verdigris-wash: #DDEAE5; --danger: #A23A2C;
+    --shadow: 0 1px 2px rgba(27,31,22,.06), 0 6px 18px rgba(27,31,22,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #12150E; --surface: #1A1E15; --surface-2: #222719; --line: #2E3427; --line-strong: #414937;
+      --text: #E8EADF; --text-2: #B0B6A2; --text-3: #878D77; --brass: #D9A945; --brass-bright: #EFC468; --brass-wash: #2A2312;
+      --verdigris: #6FBFA9; --verdigris-wash: #16241F; --danger: #E08A7C;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #12150E; --surface: #1A1E15; --surface-2: #222719; --line: #2E3427; --line-strong: #414937;
+    --text: #E8EADF; --text-2: #B0B6A2; --text-3: #878D77; --brass: #D9A945; --brass-bright: #EFC468; --brass-wash: #2A2312;
+    --verdigris: #6FBFA9; --verdigris-wash: #16241F; --danger: #E08A7C;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--text); font: 16px/1.55 "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  h1, h2, h3 { font-family: Fraunces, Georgia, serif; font-weight: 600; line-height: 1.2; margin: 0; }
+  a { color: var(--verdigris); }
+  a:hover { color: var(--brass); }
+  code, .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: .92em; }
+  :focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+  .topbar { border-bottom: 1px solid var(--line); background: var(--surface); padding: 14px 0; }
+  .topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .brand { font-family: Fraunces, Georgia, serif; font-weight: 700; font-size: 17px; text-decoration: none; color: var(--text); }
+  .brand span { color: var(--brass); }
+  .topnav { display: flex; gap: 18px; font-size: 14px; }
+  .topnav a[aria-current="page"] { color: var(--text); font-weight: 600; text-decoration: none; }
+  main { padding: 28px 0 70px; }
+  .eyebrow { font: 500 11.5px "IBM Plex Mono", monospace; letter-spacing: .16em; text-transform: uppercase; color: var(--brass); }
+  h1 { font-size: clamp(28px, 4vw, 38px); margin: 10px 0 8px; letter-spacing: -.02em; }
+  .lede { color: var(--text-2); max-width: 70ch; margin: 0 0 18px; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin: 0 0 22px; padding: 0; list-style: none; counter-reset: s; }
+  .steps li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 14px; color: var(--text-2); counter-increment: s; }
+  .steps li::before { content: counter(s); font: 600 12px "IBM Plex Mono", monospace; color: var(--brass); display: block; margin-bottom: 2px; }
+  .steps strong { color: var(--text); }
+  .app { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; }
+  @media (max-width: 860px) { .app { grid-template-columns: 1fr; } }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; box-shadow: var(--shadow); }
+  .panel + .panel { margin-top: 14px; }
+  .panel h2 { font-size: 15px; margin-bottom: 10px; }
+  label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 8px; }
+  input[type=number], input[type=text], select { width: 100%; padding: 7px 9px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--ground); color: var(--text); font: inherit; font-size: 14px; }
+  input[type=file] { width: 100%; font-size: 13px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .seg { display: flex; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; margin-bottom: 10px; }
+  .seg button { flex: 1; border: 0; background: var(--ground); color: var(--text-2); padding: 7px 4px; font: inherit; font-size: 13px; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--line-strong); }
+  .seg button[aria-pressed="true"] { background: var(--brass-wash); color: var(--text); font-weight: 600; }
+  button.btn { border: 1px solid var(--line-strong); background: var(--ground); color: var(--text); border-radius: 6px; padding: 7px 12px; font: inherit; font-size: 13.5px; cursor: pointer; }
+  button.btn:hover { border-color: var(--brass); }
+  button.btn:disabled { opacity: .45; cursor: default; }
+  button.primary { background: var(--verdigris); border-color: var(--verdigris); color: #fff; font-weight: 600; }
+  :root[data-theme="dark"] button.primary { color: #10150e; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) button.primary { color: #10150e; } }
+  .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .palette { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .pal { display: flex; align-items: center; gap: 8px; text-align: left; border: 1px solid var(--line); background: var(--ground); border-radius: 6px; padding: 5px 7px; cursor: pointer; color: var(--text); font: inherit; font-size: 12.5px; line-height: 1.25; }
+  .pal[aria-pressed="true"] { border-color: var(--brass-bright); box-shadow: 0 0 0 2px var(--brass-wash); }
+  .pal canvas { width: 30px; height: 30px; flex: none; border: 1px solid var(--line-strong); border-radius: 3px; background: #8a8a82; }
+  .hint { font-size: 12.5px; color: var(--text-3); margin: 8px 0 0; }
+  .note { border-left: 2px solid var(--brass); background: var(--brass-wash); padding: 9px 12px; border-radius: 0 6px 6px 0; font-size: 13.5px; color: var(--text-2); margin: 0 0 12px; }
+  .error { color: var(--danger); font-size: 13px; margin: 6px 0 0; min-height: 1em; }
+  .stage { position: relative; overflow: auto; max-height: 78vh; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+  canvas#map { display: block; touch-action: none; cursor: crosshair; }
+  .empty { padding: 60px 20px; text-align: center; color: var(--text-3); }
+  .status { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--text-2); margin: 8px 2px 0; }
+  .counts { font-size: 12.5px; color: var(--text-2); margin: 8px 0 0; }
+  footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--text-3); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html">Table <span>Goblin</span></a>
+    <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html" aria-current="page">Map prep</a><a href="changelog.html">Change Log</a></nav>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <div class="eyebrow">GM tool</div>
+    <h1>Map prep</h1>
+    <p class="lede">Paint a map's walls, water, doors and lighting here, at your own pace, then take the file to Discord with the image. Nothing you load or paint on this page is uploaded anywhere; it stays in your browser until you download the file.</p>
+    <ol class="steps">
+      <li><strong>Load your map image</strong> and tell the page how many columns and rows the grid has.</li>
+      <li><strong>Paint terrain</strong> the way <code>/tgmap terrain</code> does, and pick the whole map's light level.</li>
+      <li><strong>Download the terrain file</strong> (a small .json).</li>
+      <li><strong>In Discord</strong> run <code>/tgmap upload_gridless</code> or <code>upload_gridded</code> with your image and add the file as <code>terrain_file</code>.</li>
+    </ol>
+
+    <div class="app">
+      <aside>
+        <section class="panel">
+          <h2>1 · Map image</h2>
+          <label>Image file<input type="file" id="imageFile" accept="image/png,image/jpeg,image/webp,image/gif"></label>
+          <div class="seg" role="group" aria-label="How the grid is set">
+            <button type="button" id="modeGridless" aria-pressed="true">Gridless</button>
+            <button type="button" id="modeGridded" aria-pressed="false">Has a grid</button>
+          </div>
+          <div class="row2">
+            <label>Columns<input type="number" id="cols" min="1" value="20"></label>
+            <label>Rows<input type="number" id="rows" min="1" value="15"></label>
+          </div>
+          <div id="griddedFields" hidden>
+            <label>Cell size (pixels)<input type="number" id="cell" min="1" step="0.1" value="70"></label>
+            <div class="row2">
+              <label>Offset X<input type="number" id="offx" step="0.1" value="0"></label>
+              <label>Offset Y<input type="number" id="offy" step="0.1" value="0"></label>
+            </div>
+            <p class="hint">The same numbers you give <code>upload_gridded</code>. Adjust them until the lines sit on the printed grid.</p>
+          </div>
+          <p class="hint" id="gridHint">Gridless: the grid is fitted to the image and centred, exactly as <code>upload_gridless</code> does.</p>
+          <div class="error" id="gridError" role="alert"></div>
+        </section>
+
+        <section class="panel">
+          <h2>2 · Terrain</h2>
+          <div class="seg" role="group" aria-label="Brush shape">
+            <button type="button" id="toolBrush" aria-pressed="true">Brush</button>
+            <button type="button" id="toolRect" aria-pressed="false">Rectangle</button>
+          </div>
+          <div class="palette" id="palette"></div>
+          <p class="hint" id="terrainHint"></p>
+          <div class="btns" style="margin-top:10px">
+            <button class="btn" id="undo" type="button" disabled>Undo</button>
+            <button class="btn" id="redo" type="button" disabled>Redo</button>
+            <button class="btn" id="clear" type="button">Clear all</button>
+          </div>
+          <div class="counts" id="counts"></div>
+        </section>
+
+        <section class="panel">
+          <h2>3 · Light</h2>
+          <div class="seg" id="ambients" role="group" aria-label="Whole map light level"></div>
+          <p class="hint">The whole map's light level. Torches and lamps painted above light up their surroundings when the map is dim or dark. Fog of war is not saved here; it starts fresh when the encounter does.</p>
+        </section>
+
+        <section class="panel">
+          <h2>4 · Save</h2>
+          <label>Map name<input type="text" id="mapName" maxlength="60" placeholder="Goblin Cave" autocomplete="off"></label>
+          <p class="hint" id="fileNameHint">The file will be named <code>map_20_x_15.json</code>.</p>
+          <div class="btns" style="margin-top:10px">
+            <button class="btn primary" id="download" type="button">Download terrain file</button>
+            <label class="btn" style="margin:0;cursor:pointer">Open a file<input type="file" id="openFile" accept=".json,application/json" hidden></label>
+          </div>
+          <p class="hint">Open a file you saved earlier to keep editing it. Use the same grid size in the upload command.</p>
+          <div class="error" id="fileError" role="alert"></div>
+        </section>
+      </aside>
+
+      <section>
+        <div class="stage" id="stage">
+          <div class="empty" id="empty">Load a map image to start, or open a terrain file and paint on a blank grid.<br><button class="btn" id="blank" type="button" style="margin-top:12px">Use a blank grid</button></div>
+          <canvas id="map" hidden></canvas>
+        </div>
+        <div class="status"><span id="where">&nbsp;</span><label style="margin:0">Zoom <input type="range" id="zoom" min="20" max="300" value="100" style="vertical-align:middle"> <span id="zoomText">100%</span></label></div>
+      </section>
+    </div>
+
+    <footer>The colours, patterns and symbols come from the same table the bot draws with, so what you paint here looks the way it will in Discord. See the <a href="wiki.html#maps">Battle Maps</a> section of the handbook for the map commands.</footer>
+  </div>
+</main>
+
+<script src="terrain-data.js"></script>
+<script>
+(function () {
+  "use strict";
+  var DATA = window.TG_TERRAIN;
+  var $ = function (id) { return document.getElementById(id); };
+  var BY_KEY = {};
+  DATA.types.forEach(function (t) { BY_KEY[t.key] = t; });
+
+  var state = {
+    img: null, mode: "gridless", cols: 20, rows: 15, cell: 70, offx: 0, offy: 0,
+    cells: {}, ambient: DATA.defaultAmbient, key: "wall", tool: "brush", zoom: 1, undo: [], redo: [], blank: false
+  };
+  var MARGIN = 26;
+
+  function colLetter(n) { var s = ""; while (n > 0) { var r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = Math.floor((n - 1) / 26); } return s; }
+  function colIndex(s) { var n = 0; for (var i = 0; i < s.length; i++) n = n * 26 + (s.charCodeAt(i) - 64); return n; }
+  function cellLabel(c, r) { return colLetter(c) + r; }
+  function rgba(a) { return "rgba(" + a[0] + "," + a[1] + "," + a[2] + "," + (a[3] / 255).toFixed(3) + ")"; }
+
+  /* ---- the bot's tile drawing (map_render.pattern_tile), on a canvas ---- */
+  var tileCache = {};
+  function tileFor(t, size) {
+    size = Math.max(4, Math.round(size));
+    var ck = t.key + "@" + size;
+    if (tileCache[ck]) return tileCache[ck];
+    var cv = document.createElement("canvas"); cv.width = size; cv.height = size;
+    var g = cv.getContext("2d");
+    if (t.tint) { g.fillStyle = rgba(t.tint); g.fillRect(0, 0, size, size); }
+    if (t.waves) {
+      var bands = t.waves[1], step = size / bands, amp = step * 0.22, period = size / 1.5;
+      g.strokeStyle = rgba(t.waves[0]); g.lineWidth = Math.max(2, Math.floor(step * 0.42)); g.lineJoin = "round";
+      for (var k = 0; k <= bands; k++) {
+        var y0 = (k + 0.25) * step;
+        g.beginPath();
+        for (var x = -2; x <= size + 2; x += 2) { var y = y0 + amp * Math.sin(2 * Math.PI * x / period); if (x === -2) g.moveTo(x, y); else g.lineTo(x, y); }
+        g.stroke();
+      }
+    }
+    if (t.crosses) {
+      var st = size / 3, arm = st * 0.24;
+      g.strokeStyle = rgba(t.crosses); g.lineWidth = Math.max(1, Math.round(size / 24));
+      for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++) {
+        var cx = (i + 0.5) * st, cy = (j + 0.5) * st;
+        g.beginPath(); g.moveTo(cx - arm, cy - arm); g.lineTo(cx + arm, cy + arm); g.moveTo(cx - arm, cy + arm); g.lineTo(cx + arm, cy - arm); g.stroke();
+      }
+    }
+    if (t.shapes) t.shapes.forEach(function (sh) {
+      var kind = sh[0];
+      if (kind === "rect") {
+        var b = sh[1], fill = sh[2], outline = sh[3], w = Math.max(1, Math.round(sh[4] * size));
+        var x0 = b[0] * size, y0 = b[1] * size, x1 = b[2] * size, y1 = b[3] * size;
+        if (fill) { g.fillStyle = rgba(fill); g.fillRect(x0, y0, x1 - x0, y1 - y0); }
+        if (outline) { g.strokeStyle = rgba(outline); g.lineWidth = w; g.strokeRect(x0 + w / 2, y0 + w / 2, x1 - x0 - w, y1 - y0 - w); }
+      } else if (kind === "poly") {
+        g.beginPath(); sh[1].forEach(function (p, n) { if (n) g.lineTo(p[0] * size, p[1] * size); else g.moveTo(p[0] * size, p[1] * size); }); g.closePath();
+        if (sh[2]) { g.fillStyle = rgba(sh[2]); g.fill(); }
+        if (sh[3]) { g.strokeStyle = rgba(sh[3]); g.lineWidth = Math.max(1, Math.round(sh[4] * size)); g.lineJoin = "round"; g.stroke(); }
+      } else {
+        g.beginPath(); sh[1].forEach(function (p, n) { if (n) g.lineTo(p[0] * size, p[1] * size); else g.moveTo(p[0] * size, p[1] * size); });
+        g.strokeStyle = rgba(sh[2]); g.lineWidth = Math.max(1, Math.round(sh[3] * size)); g.lineCap = "round"; g.stroke();
+      }
+    });
+    tileCache[ck] = cv;
+    return cv;
+  }
+
+  /* ---- geometry ---- */
+  function imgSize() { return state.img ? { w: state.img.naturalWidth, h: state.img.naturalHeight } : { w: state.cols * state.cell, h: state.rows * state.cell }; }
+  function layout() {
+    var s = imgSize();
+    if (state.mode === "gridless" && state.img) {
+      var cs = Math.min(s.w / state.cols, s.h / state.rows);
+      return { cs: cs, ox: (s.w - cs * state.cols) / 2, oy: (s.h - cs * state.rows) / 2, w: s.w, h: s.h };
+    }
+    return { cs: state.cell, ox: state.mode === "gridded" && state.img ? state.offx : 0, oy: state.mode === "gridded" && state.img ? state.offy : 0, w: s.w, h: s.h };
+  }
+  function baseScale() {                       /* fit the width of the stage at 100% */
+    var l = layout(), room = Math.max(300, $("stage").clientWidth - MARGIN - 6);
+    return Math.min(2, room / l.w);
+  }
+  function k() { return baseScale() * state.zoom; }
+
+  function draw() {
+    var cv = $("map");
+    if (!state.img && !state.blank) { cv.hidden = true; $("empty").hidden = false; return; }
+    var l = layout(), sc = k();
+    cv.hidden = false; $("empty").hidden = true;
+    cv.width = Math.round(l.w * sc + MARGIN); cv.height = Math.round(l.h * sc + MARGIN);
+    var g = cv.getContext("2d");
+    var dark = getComputedStyle(document.body).backgroundColor;
+    g.fillStyle = dark; g.fillRect(0, 0, cv.width, cv.height);
+    g.save(); g.translate(MARGIN, MARGIN);
+    if (state.img) g.drawImage(state.img, 0, 0, l.w * sc, l.h * sc); else { g.fillStyle = "#cfcfc4"; g.fillRect(0, 0, l.w * sc, l.h * sc); }
+    var cs = l.cs * sc, ox = l.ox * sc, oy = l.oy * sc;
+    Object.keys(state.cells).forEach(function (id) {
+      var t = BY_KEY[state.cells[id]]; if (!t) return;
+      var p = id.split(","), x = ox + (p[0] - 1) * cs, y = oy + (p[1] - 1) * cs;
+      g.drawImage(tileFor(t, cs), x, y, cs, cs);
+      if (t.hidden) { g.strokeStyle = "rgba(255,255,255,.8)"; g.setLineDash([3, 3]); g.strokeRect(x + 1, y + 1, cs - 2, cs - 2); g.setLineDash([]); }
+    });
+    g.strokeStyle = "rgba(0,0,0,.45)"; g.lineWidth = 1; g.beginPath();
+    for (var c = 0; c <= state.cols; c++) { var gx = Math.round(ox + c * cs) + .5; g.moveTo(gx, oy); g.lineTo(gx, oy + state.rows * cs); }
+    for (var r = 0; r <= state.rows; r++) { var gy = Math.round(oy + r * cs) + .5; g.moveTo(ox, gy); g.lineTo(ox + state.cols * cs, gy); }
+    g.stroke();
+    if (drag && drag.rect) {
+      var a = drag.rect; var rx = ox + (Math.min(a.c0, a.c1) - 1) * cs, ry = oy + (Math.min(a.r0, a.r1) - 1) * cs;
+      g.strokeStyle = "#ffd24a"; g.lineWidth = 2; g.strokeRect(rx, ry, (Math.abs(a.c1 - a.c0) + 1) * cs, (Math.abs(a.r1 - a.r0) + 1) * cs);
+    }
+    g.restore();
+    g.fillStyle = getComputedStyle(document.body).color; g.font = "11px 'IBM Plex Mono', monospace"; g.textAlign = "center"; g.textBaseline = "middle";
+    var every = cs < 18 ? 2 : 1;
+    for (var cc = 1; cc <= state.cols; cc += every) g.fillText(colLetter(cc), MARGIN + ox + (cc - .5) * cs, MARGIN / 2);
+    for (var rr = 1; rr <= state.rows; rr += every) g.fillText(String(rr), MARGIN / 2, MARGIN + oy + (rr - .5) * cs);
+  }
+
+  /* ---- painting ---- */
+  var drag = null;
+  function cellAt(ev) {
+    var cv = $("map"), rect = cv.getBoundingClientRect(), l = layout(), sc = k();
+    var x = (ev.clientX - rect.left) * (cv.width / rect.width) - MARGIN, y = (ev.clientY - rect.top) * (cv.height / rect.height) - MARGIN;
+    var c = Math.floor((x / sc - l.ox) / l.cs) + 1, r = Math.floor((y / sc - l.oy) / l.cs) + 1;
+    if (c < 1 || r < 1 || c > state.cols || r > state.rows) return null;
+    return { c: c, r: r };
+  }
+  function setCell(c, r, key) { var id = c + "," + r; if (key === DATA.floor) delete state.cells[id]; else state.cells[id] = key; }
+  function snapshot() { state.undo.push(JSON.stringify(state.cells)); if (state.undo.length > 100) state.undo.shift(); state.redo = []; syncButtons(); }
+  function line(c0, r0, c1, r1, fn) {
+    var dc = Math.abs(c1 - c0), dr = -Math.abs(r1 - r0), sc = c0 < c1 ? 1 : -1, sr = r0 < r1 ? 1 : -1, err = dc + dr;
+    for (;;) { fn(c0, r0); if (c0 === c1 && r0 === r1) break; var e2 = 2 * err; if (e2 >= dr) { err += dr; c0 += sc; } if (e2 <= dc) { err += dc; r0 += sr; } }
+  }
+  var mapEl = $("map");
+  mapEl.addEventListener("pointerdown", function (ev) {
+    var cell = cellAt(ev); if (!cell) return;
+    mapEl.setPointerCapture(ev.pointerId); snapshot();
+    var erase = ev.button === 2 || ev.altKey, key = erase ? DATA.floor : state.key;
+    if (state.tool === "rect") drag = { rect: { c0: cell.c, r0: cell.r, c1: cell.c, r1: cell.r }, key: key };
+    else { drag = { last: cell, key: key }; setCell(cell.c, cell.r, key); }
+    draw(); counts();
+  });
+  mapEl.addEventListener("pointermove", function (ev) {
+    var cell = cellAt(ev);
+    $("where").textContent = cell ? "Cell " + cellLabel(cell.c, cell.r) + (state.cells[cell.c + "," + cell.r] ? " — " + BY_KEY[state.cells[cell.c + "," + cell.r]].label : "") : " ";
+    if (!drag || !cell) return;
+    if (drag.rect) { drag.rect.c1 = cell.c; drag.rect.r1 = cell.r; }
+    else { line(drag.last.c, drag.last.r, cell.c, cell.r, function (c, r) { setCell(c, r, drag.key); }); drag.last = cell; counts(); }
+    draw();
+  });
+  function finish() {
+    if (drag && drag.rect) {
+      var a = drag.rect;
+      for (var c = Math.min(a.c0, a.c1); c <= Math.max(a.c0, a.c1); c++) for (var r = Math.min(a.r0, a.r1); r <= Math.max(a.r0, a.r1); r++) setCell(c, r, drag.key);
+    }
+    drag = null; draw(); counts();
+  }
+  mapEl.addEventListener("pointerup", finish);
+  mapEl.addEventListener("pointercancel", finish);
+  mapEl.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+
+  function restore(json) { state.cells = JSON.parse(json); draw(); counts(); syncButtons(); }
+  $("undo").addEventListener("click", function () { if (!state.undo.length) return; state.redo.push(JSON.stringify(state.cells)); restore(state.undo.pop()); });
+  $("redo").addEventListener("click", function () { if (!state.redo.length) return; state.undo.push(JSON.stringify(state.cells)); restore(state.redo.pop()); });
+  $("clear").addEventListener("click", function () { if (!Object.keys(state.cells).length) return; snapshot(); state.cells = {}; draw(); counts(); });
+  function syncButtons() { $("undo").disabled = !state.undo.length; $("redo").disabled = !state.redo.length; }
+  document.addEventListener("keydown", function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !/input|textarea/i.test(e.target.tagName)) { e.preventDefault(); $(e.shiftKey ? "redo" : "undo").click(); }
+  });
+
+  function counts() {
+    var n = {}, total = 0;
+    Object.keys(state.cells).forEach(function (id) { var key = state.cells[id]; n[key] = (n[key] || 0) + 1; total++; });
+    $("counts").textContent = total ? total + " cells: " + Object.keys(n).sort(function (a, b) { return n[b] - n[a]; }).map(function (key) { return n[key] + " " + BY_KEY[key].label.toLowerCase(); }).join(", ") : "No terrain yet.";
+  }
+
+  /* ---- palette, light ---- */
+  function describe(t) {
+    var bits = [];
+    if (t.blocksMove && t.blocksSight) bits.push("blocks movement and sight"); else if (t.blocksMove) bits.push("blocks movement");
+    if (t.costExtra) bits.push("+" + t.costExtra + " ft per square");
+    if (t.hidden) bits.push("hidden from players until shown or found");
+    return t.label + (bits.length ? " — " + bits.join(", ") : "");
+  }
+  function buildPalette() {
+    var pal = $("palette");
+    DATA.types.forEach(function (t) {
+      var b = document.createElement("button"); b.type = "button"; b.className = "pal"; b.dataset.key = t.key; b.title = describe(t);
+      var sw = document.createElement("canvas"); sw.width = 30; sw.height = 30;
+      var g = sw.getContext("2d"); g.fillStyle = "#8a8a82"; g.fillRect(0, 0, 30, 30);
+      if (t.key !== DATA.floor) g.drawImage(tileFor(t, 30), 0, 0);
+      var span = document.createElement("span"); span.textContent = t.label;
+      b.appendChild(sw); b.appendChild(span);
+      b.addEventListener("click", function () { state.key = t.key; markPalette(); });
+      pal.appendChild(b);
+    });
+    markPalette();
+  }
+  function markPalette() {
+    Array.prototype.forEach.call($("palette").children, function (b) { b.setAttribute("aria-pressed", b.dataset.key === state.key ? "true" : "false"); });
+    $("terrainHint").textContent = describe(BY_KEY[state.key]) + ". Right-click or hold Alt to erase.";
+  }
+  function buildAmbients() {
+    var box = $("ambients");
+    DATA.ambients.forEach(function (a) {
+      var b = document.createElement("button"); b.type = "button"; b.dataset.level = a.level; b.textContent = a.emoji + " " + a.label.replace(" light", "");
+      b.addEventListener("click", function () { state.ambient = a.level; markAmbient(); });
+      box.appendChild(b);
+    });
+    markAmbient();
+  }
+  function markAmbient() { Array.prototype.forEach.call($("ambients").children, function (b) { b.setAttribute("aria-pressed", b.dataset.level === state.ambient ? "true" : "false"); }); }
+
+  /* ---- inputs ---- */
+  function readGrid() {
+    var c = parseInt($("cols").value, 10), r = parseInt($("rows").value, 10), msg = "";
+    if (!(c >= 1 && r >= 1)) msg = "Columns and rows must be at least 1.";
+    else if (c > DATA.maxColumns || r > DATA.maxRows) msg = "The grid can be at most " + DATA.maxColumns + " x " + DATA.maxRows + ".";
+    $("gridError").textContent = msg;
+    if (msg) return;
+    state.cols = c; state.rows = r;
+    state.cell = parseFloat($("cell").value) > 0 ? parseFloat($("cell").value) : state.cell;
+    state.offx = parseFloat($("offx").value) || 0; state.offy = parseFloat($("offy").value) || 0;
+    Object.keys(state.cells).forEach(function (id) { var p = id.split(","); if (+p[0] > c || +p[1] > r) delete state.cells[id]; });
+    draw(); counts(); showFileName();
+  }
+  ["cols", "rows", "cell", "offx", "offy"].forEach(function (id) { $(id).addEventListener("input", readGrid); });
+  function setMode(m) {
+    state.mode = m;
+    $("modeGridless").setAttribute("aria-pressed", m === "gridless"); $("modeGridded").setAttribute("aria-pressed", m === "gridded");
+    $("griddedFields").hidden = m !== "gridded";
+    $("gridHint").hidden = m !== "gridless"; draw();
+  }
+  $("modeGridless").addEventListener("click", function () { setMode("gridless"); });
+  $("modeGridded").addEventListener("click", function () { setMode("gridded"); });
+  function setTool(t) { state.tool = t; $("toolBrush").setAttribute("aria-pressed", t === "brush"); $("toolRect").setAttribute("aria-pressed", t === "rect"); }
+  $("toolBrush").addEventListener("click", function () { setTool("brush"); });
+  $("toolRect").addEventListener("click", function () { setTool("rect"); });
+  $("zoom").addEventListener("input", function () { state.zoom = $("zoom").value / 100; $("zoomText").textContent = $("zoom").value + "%"; draw(); });
+  window.addEventListener("resize", draw);
+  if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+
+  $("imageFile").addEventListener("change", function () {
+    var f = this.files[0]; if (!f) return;
+    var img = new Image(), url = URL.createObjectURL(f);
+    if (!$("mapName").value) { $("mapName").value = f.name.replace(/\.[^.]*$/, "").replace(/[_-]+/g, " ").slice(0, 60); showFileName(); }
+    img.onload = function () { state.img = img; state.blank = false; if (state.mode === "gridded" && !(+$("cell").value > 0)) $("cell").value = 70; draw(); };
+    img.onerror = function () { $("gridError").textContent = "That file couldn't be read as an image."; };
+    img.src = url;
+  });
+  $("blank").addEventListener("click", function () { state.blank = true; draw(); });
+
+  /* ---- the terrain file (docs: map_terrain_file.py) ---- */
+  function fileName() {                       /* <map name>_<columns>_x_<rows>.json, as map_terrain_file.filename */
+    var clean = $("mapName").value.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "map";
+    clean = clean.slice(0, 60).replace(/^_+|_+$/g, "") || "map";
+    return clean + "_" + state.cols + "_x_" + state.rows + ".json";
+  }
+  function showFileName() { $("fileNameHint").innerHTML = "The file will be named <code></code>."; $("fileNameHint").querySelector("code").textContent = fileName(); }
+  $("mapName").addEventListener("input", showFileName);
+  $("download").addEventListener("click", function () {
+    if (!$("mapName").value.trim()) { $("fileError").textContent = "Give the map a name first; it becomes the file's name."; $("mapName").focus(); return; }
+    var groups = {};
+    Object.keys(state.cells).sort(function (a, b) {
+      var pa = a.split(","), pb = b.split(","), ka = state.cells[a], kb = state.cells[b];
+      return ka < kb ? -1 : ka > kb ? 1 : (pa[1] - pb[1]) || (pa[0] - pb[0]);
+    }).forEach(function (id) { var p = id.split(","), key = state.cells[id]; (groups[key] = groups[key] || []).push(cellLabel(+p[0], +p[1])); });
+    var text = JSON.stringify({ format: DATA.format, version: DATA.version, columns: state.cols, rows: state.rows, ambient: state.ambient, cells: groups }, null, 1);
+    var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+    a.download = fileName(); document.body.appendChild(a); a.click(); a.remove();
+    $("fileError").textContent = "";
+  });
+  $("openFile").addEventListener("change", function () {
+    var f = this.files[0]; if (!f) return; var input = this;
+    f.text().then(function (text) {
+      var d; try { d = JSON.parse(text); } catch (e) { throw new Error("That isn't a valid JSON file."); }
+      if (!d || d.format !== DATA.format) throw new Error("That isn't a Table Goblin terrain file.");
+      if (d.version !== DATA.version) throw new Error("That file is version " + d.version + "; this page writes version " + DATA.version + ".");
+      var cells = {};
+      Object.keys(d.cells || {}).forEach(function (key) {
+        if (!BY_KEY[key]) throw new Error("The file uses `" + key + "`, which the editor doesn't have.");
+        (d.cells[key] || []).forEach(function (label) {
+          var m = /^([A-Za-z]+)(\d+)$/.exec(String(label)); if (!m) throw new Error(label + " isn't a cell like D7.");
+          cells[colIndex(m[1].toUpperCase()) + "," + parseInt(m[2], 10)] = key;
+        });
+      });
+      if (!(d.columns >= 1 && d.rows >= 1 && d.columns <= DATA.maxColumns && d.rows <= DATA.maxRows)) throw new Error("The file's grid size isn't valid.");
+      snapshot();
+      $("cols").value = d.columns; $("rows").value = d.rows; state.cols = d.columns; state.rows = d.rows;
+      state.cells = cells; if (DATA.ambients.some(function (a) { return a.level === d.ambient; })) state.ambient = d.ambient;
+      if (!state.img) state.blank = true;
+      markAmbient(); readGrid(); $("fileError").textContent = "";
+    }).catch(function (e) { $("fileError").textContent = e.message; }).then(function () { input.value = ""; });
+  });
+
+  buildPalette(); buildAmbients(); setMode("gridless"); counts(); draw();
+}());
+</script>
+</body>
+</html>

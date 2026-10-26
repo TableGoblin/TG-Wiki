@@ -51,7 +51,7 @@
     <div class="wrap">
       <header class="hero">
         <h1>Change Log</h1>
-        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="changelog.html" aria-current="page">Change Log</a></nav>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="changelog.html" aria-current="page">Change Log</a></nav>
         <p class="lede">Everything that has changed in Table Goblin, newest first. Jump to a month: <a href="#m-october-2026">October 2026</a></p>
       </header>
 
@@ -59,6 +59,9 @@
         <h2 class="new-head">October 2026</h2>
         <h3 class="new-date">Oct 25, 2026</h3>
         <ul class="new-list">
+          <li><strong>Map prep page:</strong> a new page on the wiki where you load a map image, paint walls, water, doors, windows, lights and the like exactly as <code>/tgmap terrain</code> does, pick the map's light level, and download a small terrain file. Add it to <code>/tgmap upload_gridless</code> or <code>upload_gridded</code> as <code>terrain_file</code> and the terrain and lighting arrive with the map. Nothing you paint is uploaded until you send the file to Discord. The page uses the bot's own colours and symbols.</li>
+          <li><strong><code>/tgmap export_terrain</code>:</strong> sends back the terrain and light level of the running map or a library <code>slot</code> as that same file, to edit on the Map prep page or reuse.</li>
+          <li><strong>Animal companions advance on their own:</strong> when you take Mature Animal Companion, Incredible Companion or Specialized Companion (and the Beastmaster and Animal Trainer versions), your companion is rebuilt at the new tier with the same Hit Points, and it keeps up with your level. A wolf that grows from Small to Medium gets a bigger token too. Companions you imported from Pathbuilder are not touched.</li>
           <li><strong>Class and archetype actions on your sheet and in chat:</strong> the actions that used to be slash-only (<code>/tgbeastmaster</code>, <code>/tgspiritwarrior</code>, <code>/tgsnipingduo</code>, <code>/tgspelltrickster</code>, <code>/tglivingnexus</code> and the other per-class commands) now appear in your <strong>Combat</strong> list under <strong>Class Actions</strong>, and the choices those commands save (implement benefits, instinct picks, Hedge Mage setup and so on) under <strong>Choices</strong>. Use them from the sheet or with <code>{action: name}</code> in chat. The slash commands still work.</li>
           <li><strong>Search in long lists:</strong> an ability that offers more than 25 options (Practical Magic's catalysts, for one) used to cut the list off at 25. It now has a <strong>Search options</strong> button.</li>
           <li><strong>Rupture Stomp</strong> is once per day, or once per hour if you took the feat a second time, as the feat says.</li>
