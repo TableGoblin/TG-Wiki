@@ -8,111 +8,67 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
-<style>
-  :root {
-    --ground: #F0F1EA; --surface: #FAFAF6; --surface-2: #EBEDE3; --line: #D2D5C6; --line-strong: #B4B9A4;
-    --text: #1B1F16; --text-2: #4C523F; --text-3: #6E7560; --brass: #9A6E1C; --brass-bright: #C08F2E; --brass-wash: #F3E7CC;
-    --verdigris: #2F6C5E; --verdigris-wash: #DDEAE5; --danger: #A23A2C;
-    --shadow: 0 1px 2px rgba(27,31,22,.06), 0 6px 18px rgba(27,31,22,.05);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --ground: #12150E; --surface: #1A1E15; --surface-2: #222719; --line: #2E3427; --line-strong: #414937;
-      --text: #E8EADF; --text-2: #B0B6A2; --text-3: #878D77; --brass: #D9A945; --brass-bright: #EFC468; --brass-wash: #2A2312;
-      --verdigris: #6FBFA9; --verdigris-wash: #16241F; --danger: #E08A7C;
-      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
-    }
-  }
-  :root[data-theme="dark"] {
-    --ground: #12150E; --surface: #1A1E15; --surface-2: #222719; --line: #2E3427; --line-strong: #414937;
-    --text: #E8EADF; --text-2: #B0B6A2; --text-3: #878D77; --brass: #D9A945; --brass-bright: #EFC468; --brass-wash: #2A2312;
-    --verdigris: #6FBFA9; --verdigris-wash: #16241F; --danger: #E08A7C;
-    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--ground); color: var(--text); font: 16px/1.55 "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
-  h1, h2, h3 { font-family: Fraunces, Georgia, serif; font-weight: 600; line-height: 1.2; margin: 0; }
-  a { color: var(--verdigris); }
-  a:hover { color: var(--brass); }
-  code, .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: .92em; }
-  :focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
-  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
-  .topbar { border-bottom: 1px solid var(--line); background: var(--surface); padding: 14px 0; }
-  .topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-  .brand { font-family: Fraunces, Georgia, serif; font-weight: 700; font-size: 17px; text-decoration: none; color: var(--text); }
-  .brand span { color: var(--brass); }
-  .topnav { display: flex; gap: 18px; font-size: 14px; }
-  .topnav a[aria-current="page"] { color: var(--text); font-weight: 600; text-decoration: none; }
-  main { padding: 28px 0 70px; }
-  .eyebrow { font: 500 11.5px "IBM Plex Mono", monospace; letter-spacing: .16em; text-transform: uppercase; color: var(--brass); }
-  h1 { font-size: clamp(28px, 4vw, 38px); margin: 10px 0 8px; letter-spacing: -.02em; }
-  .lede { color: var(--text-2); max-width: 70ch; margin: 0 0 18px; }
-  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin: 0 0 22px; padding: 0; list-style: none; counter-reset: s; }
-  .steps li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 14px; color: var(--text-2); counter-increment: s; }
-  .steps li::before { content: counter(s); font: 600 12px "IBM Plex Mono", monospace; color: var(--brass); display: block; margin-bottom: 2px; }
-  .steps strong { color: var(--text); }
-  /* One column on a phone, in order: image, light, terrain, the map, save. On a wide screen the three setup panels stack on the left and the map sits to
-     the right with the save panel under it. */
-  .app { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start;
-         grid-template-areas: "image" "light" "terrain" "map"; }
-  @media (min-width: 861px) {
-    .app { grid-template-columns: 300px minmax(0, 1fr); gap: 14px 18px; grid-template-areas: "image map" "light map" "terrain map"; }
-  }
-  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; box-shadow: var(--shadow); }
-  .panel h2 { font-size: 15px; margin-bottom: 10px; }
-  label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 8px; }
-  input[type=number], input[type=text], select { width: 100%; padding: 7px 9px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--ground); color: var(--text); font: inherit; font-size: 14px; }
-  input[type=file] { width: 100%; font-size: 13px; }
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .seg { display: flex; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; margin-bottom: 10px; }
-  .seg button { flex: 1; border: 0; background: var(--ground); color: var(--text-2); padding: 7px 4px; font: inherit; font-size: 13px; cursor: pointer; }
-  .seg button + button { border-left: 1px solid var(--line-strong); }
-  .seg button[aria-pressed="true"] { background: var(--brass-wash); color: var(--text); font-weight: 600; }
-  button.btn { border: 1px solid var(--line-strong); background: var(--ground); color: var(--text); border-radius: 6px; padding: 7px 12px; font: inherit; font-size: 13.5px; cursor: pointer; }
-  button.btn:hover { border-color: var(--brass); }
-  button.btn:disabled { opacity: .45; cursor: default; }
-  button.primary { background: var(--verdigris); border-color: var(--verdigris); color: #fff; font-weight: 600; }
-  :root[data-theme="dark"] button.primary { color: #10150e; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) button.primary { color: #10150e; } }
-  .btns { display: flex; flex-wrap: wrap; gap: 6px; }
-  .palette { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .pal { display: flex; align-items: center; gap: 8px; text-align: left; border: 1px solid var(--line); background: var(--ground); border-radius: 6px; padding: 5px 7px; cursor: pointer; color: var(--text); font: inherit; font-size: 12.5px; line-height: 1.25; }
-  .pal[aria-pressed="true"] { border-color: var(--brass-bright); box-shadow: 0 0 0 2px var(--brass-wash); }
-  .pal canvas { width: 30px; height: 30px; flex: none; border: 1px solid var(--line-strong); border-radius: 3px; background: #8a8a82; }
-  .hint { font-size: 12.5px; color: var(--text-3); margin: 8px 0 0; }
-  .note { border-left: 2px solid var(--brass); background: var(--brass-wash); padding: 9px 12px; border-radius: 0 6px 6px 0; font-size: 13.5px; color: var(--text-2); margin: 0 0 12px; }
-  .error { color: var(--danger); font-size: 13px; margin: 6px 0 0; min-height: 1em; }
-  .stage { position: relative; overflow: auto; max-height: 78vh; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
-  canvas#map { display: block; touch-action: none; cursor: crosshair; }
-  .empty { padding: 60px 20px; text-align: center; color: var(--text-3); }
-  .status { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--text-2); margin: 8px 2px 0; }
-  .counts { font-size: 12.5px; color: var(--text-2); margin: 8px 0 0; }
-  footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--text-3); }
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-</style>
+<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="tools.css">
 </head>
 <body>
-<div class="topbar">
-  <div class="wrap">
-    <a class="brand" href="index.html">Table <span>Goblin</span></a>
-    <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html" aria-current="page">Map prep</a><a href="changelog.html">Change Log</a></nav>
-  </div>
-</div>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+        <img class="rail-logo" src="table-goblin.png" alt="Table Goblin logo">
+        <b>Table Goblin</b>
+        <span>Pathfinder 2e for Discord</span>
+        <a class="btn" href="https://discord.gg/cHMex5xFsV" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.211.375-.457.879-.626 1.278a18.27 18.27 0 0 0-5.518 0A12.76 12.76 0 0 0 9.115 3 19.736 19.736 0 0 0 4.68 4.372C1.727 8.75.929 13.028 1.328 17.244a19.9 19.9 0 0 0 5.993 3.03c.483-.66.914-1.36 1.285-2.098a12.87 12.87 0 0 1-2.024-.973c.17-.124.336-.253.497-.386 3.902 1.803 8.13 1.803 11.987 0 .162.133.329.262.497.386-.645.386-1.323.71-2.026.974.371.738.802 1.438 1.285 2.098a19.876 19.876 0 0 0 5.995-3.03c.468-4.891-.795-9.13-3.5-13.876ZM8.68 14.813c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Zm7.324 0c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Z"/></svg>
+          Join the Discord
+        </a>
+        <div class="discord-widget" id="discordWidget" hidden aria-live="polite">
+          <span class="dw-dot"></span>
+          <span class="dw-avatars" id="dwAvatars"></span>
+          <span id="dwText"></span>
+        </div>
+    </div>
+    <nav>
+      <a class="btn" href="https://discord.com/oauth2/authorize?client_id=1550867869066076263" target="_blank" rel="noopener">Install Table Goblin</a>
+      <a class="top" href="index.html"><span>Home</span></a>
+      <a class="top" href="changelog.html"><span>Change Log</span></a>
+      <a class="top" href="wiki.html"><span>Wiki</span></a>
+      <div class="rail-sub">
+        <a href="wiki.html#start"><span>Getting Started</span></a>
+        <a href="wiki.html#gm"><span>GM Tools</span></a>
+        <a href="wiki.html#chars"><span>Characters</span></a>
+        <a href="wiki.html#chat"><span>Playing in Character</span></a>
+        <a href="wiki.html#npcs"><span>Creatures &amp; NPCs</span></a>
+        <a href="wiki.html#combat"><span>Encounters</span></a>
+        <a href="wiki.html#maps"><span>Battle Maps</span></a>
+        <a href="wiki.html#loot"><span>Loot &amp; the Purse</span></a>
+        <a href="wiki.html#towns"><span>Towns &amp; Shops</span></a>
+        <a href="wiki.html#lookup"><span>Reference Lookup</span></a>
+        <a href="wiki.html#coming"><span>Coming Features</span></a>
+      </div>
+      <a class="top" href="map-prep.html" aria-current="page"><span>Map prep</span></a>
+      <a class="top" href="builder.html"><span>Character builder</span></a>
+    </nav>
+  </aside>
 
-<main>
-  <div class="wrap">
-    <div class="eyebrow">GM tool</div>
-    <h1>Map prep</h1>
-    <p class="lede">Paint a map's walls, water, doors and lighting here, at your own pace, then take the file to Discord with the image. Nothing you load or paint on this page is uploaded anywhere; it stays in your browser until you download the file.</p>
-    <ol class="steps">
+  <main class="tool-page">
+    <div class="wrap">
+      <header class="hero tool-hero">
+        <div class="eyebrow">GM tool</div>
+        <h1>Map prep</h1>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html" aria-current="page">Map prep</a><a href="builder.html">Character builder</a><a href="changelog.html">Change Log</a></nav>
+        <p class="lede">Paint a map's walls, water, doors and lighting here, at your own pace, then take the file to Discord with the image. Nothing you load or paint on this page is uploaded anywhere; it stays in your browser until you download the file.</p>
+        <ol class="steps">
       <li><strong>Load your map image</strong> and tell the page how many columns and rows the grid has.</li>
       <li><strong>Paint terrain</strong> the way <code>/tgmap terrain</code> does, and pick the whole map's light level.</li>
       <li><strong>Download the terrain file</strong> (a small .json).</li>
       <li><strong>In Discord</strong> run <code>/tgmap upload_gridless</code> or <code>upload_gridded</code> with your image and add the file as <code>terrain_file</code>.</li>
     </ol>
+      </header>
 
-    <div class="app">
-        <section class="panel" style="grid-area:image">
+      <div class="tool-body">
+        <div class="app">
+        <div class="panel" style="grid-area:image">
           <h2>1 · Map image</h2>
           <label>Image file<input type="file" id="imageFile" accept="image/png,image/jpeg,image/webp,image/gif"></label>
           <div class="seg" role="group" aria-label="How the grid is set">
@@ -133,15 +89,15 @@
           </div>
           <p class="hint" id="gridHint">Gridless: the grid is fitted to the image and centred, exactly as <code>upload_gridless</code> does.</p>
           <div class="error" id="gridError" role="alert"></div>
-        </section>
+        </div>
 
-        <section class="panel" style="grid-area:light">
+        <div class="panel" style="grid-area:light">
           <h2>2 · Light</h2>
           <div class="seg" id="ambients" role="group" aria-label="Whole map light level"></div>
           <p class="hint">The whole map's light level. Torches and lamps painted above light up their surroundings when the map is dim or dark. Fog of war is not saved here; it starts fresh when the encounter does.</p>
-        </section>
+        </div>
 
-        <section class="panel" style="grid-area:terrain">
+        <div class="panel" style="grid-area:terrain">
           <h2>3 · Terrain</h2>
           <div class="seg" role="group" aria-label="Brush shape">
             <button type="button" id="toolBrush" aria-pressed="true">Brush</button>
@@ -150,39 +106,51 @@
           <div class="palette" id="palette"></div>
           <p class="hint" id="terrainHint"></p>
           <div class="btns" style="margin-top:10px">
-            <button class="btn" id="undo" type="button" disabled>Undo</button>
-            <button class="btn" id="redo" type="button" disabled>Redo</button>
-            <button class="btn" id="clear" type="button">Clear all</button>
+            <button class="tbtn" id="undo" type="button" disabled>Undo</button>
+            <button class="tbtn" id="redo" type="button" disabled>Redo</button>
+            <button class="tbtn" id="clear" type="button">Clear all</button>
           </div>
           <div class="counts" id="counts"></div>
-        </section>
+        </div>
 
       <div class="mapcol" style="grid-area:map">
-      <section class="mapbox">
+      <div class="mapbox">
         <div class="stage" id="stage">
-          <div class="empty" id="empty">Load a map image to start, or open a terrain file and paint on a blank grid.<br><button class="btn" id="blank" type="button" style="margin-top:12px">Use a blank grid</button></div>
+          <div class="empty" id="empty">Load a map image to start, or open a terrain file and paint on a blank grid.<br><button class="tbtn" id="blank" type="button" style="margin-top:12px">Use a blank grid</button></div>
           <canvas id="map" hidden></canvas>
         </div>
         <div class="status"><span id="where">&nbsp;</span><label style="margin:0">Zoom <input type="range" id="zoom" min="20" max="300" value="100" style="vertical-align:middle"> <span id="zoomText">100%</span></label></div>
-      </section>
+      </div>
 
-        <section class="panel" style="margin-top:14px">
+        <div class="panel" style="margin-top:14px">
           <h2>4 · Save</h2>
           <label>Map name<input type="text" id="mapName" maxlength="60" placeholder="Goblin Cave" autocomplete="off"></label>
           <p class="hint" id="fileNameHint">The file will be named <code>map_bright_15x20.json</code>.</p>
           <div class="btns" style="margin-top:10px">
-            <button class="btn primary" id="download" type="button">Download terrain file</button>
-            <label class="btn" style="margin:0;cursor:pointer">Open a file<input type="file" id="openFile" accept=".json,application/json" hidden></label>
+            <button class="tbtn primary" id="download" type="button">Download terrain file</button>
+            <label class="tbtn" style="margin:0;cursor:pointer">Open a file<input type="file" id="openFile" accept=".json,application/json" hidden></label>
           </div>
           <p class="hint">Open a file you saved earlier to keep editing it. Use the same grid size in the upload command.</p>
-          <div class="error" id="fileError" role="alert"></div>
-        </section>
+          <h3 style="margin-top:14px">The map as a picture</h3>
+          <div class="btns">
+            <button class="tbtn" id="pngLegend" type="button">Download PNG with grid labels</button>
+            <button class="tbtn" id="pngClean" type="button">Download PNG without labels</button>
+          </div>
+          <p class="hint" id="pngHint">Your map image with the terrain painted on and the grid lines drawn, at the image's own size. The labelled version adds the column letters and row numbers around the edge, as Discord shows them. Hidden hazards (traps) are left off, so either picture can be shared with players. Load an image first.</p>
+          <div class="error" id="pngError" role="alert"></div>
+        </div>
       </div>
     </div>
+      </div>
 
-    <footer>The colours, patterns and symbols come from the same table the bot draws with, so what you paint here looks the way it will in Discord. See the <a href="wiki.html#maps">Battle Maps</a> section of the handbook for the map commands.</footer>
-  </div>
-</main>
+      <footer class="site-footer">
+        A reference, not a rules substitute &mdash; when in doubt, check Archives of Nethys.
+        Table Goblin is an unofficial tool and is not affiliated with Paizo Inc.
+        <a href="terms.html">Terms of Service</a> &middot; <a href="privacy.html">Privacy Policy</a>
+      </footer>
+    </div>
+  </main>
+</div>
 
 <script src="terrain-data.js"></script>
 <script>
@@ -442,6 +410,38 @@
   }
   function showFileName() { $("fileNameHint").innerHTML = "The file will be named <code></code>."; $("fileNameHint").querySelector("code").textContent = fileName(); }
   $("mapName").addEventListener("input", showFileName);
+
+  /* ---- the finished map as a PNG: terrain and grid on the picture, with or without the labels round the edge ---- */
+  function exportPng(withLegends) {
+    $("pngError").textContent = "";
+    if (!state.img) { $("pngError").textContent = "Load a map image first; the picture is made from it."; return; }
+    var l = layout(), cs = l.cs, M = withLegends ? Math.round(Math.max(28, cs * 0.55)) : 0;
+    var cv = document.createElement("canvas"); cv.width = Math.round(l.w + 2 * M); cv.height = Math.round(l.h + 2 * M);
+    var g = cv.getContext("2d");
+    if (withLegends) { g.fillStyle = "#f4f4ee"; g.fillRect(0, 0, cv.width, cv.height); }
+    g.drawImage(state.img, M, M, l.w, l.h);
+    Object.keys(state.cells).forEach(function (id) {
+      var t = BY_KEY[state.cells[id]]; if (!t || t.hidden) return;
+      var p = id.split(",");
+      g.drawImage(tileFor(t, cs), M + l.ox + (p[0] - 1) * cs, M + l.oy + (p[1] - 1) * cs, cs, cs);
+    });
+    g.strokeStyle = "rgba(0,0,0,.5)"; g.lineWidth = Math.max(1, cs / 40); g.beginPath();
+    for (var c = 0; c <= state.cols; c++) { var x = M + l.ox + c * cs; g.moveTo(x, M + l.oy); g.lineTo(x, M + l.oy + state.rows * cs); }
+    for (var r = 0; r <= state.rows; r++) { var y = M + l.oy + r * cs; g.moveTo(M + l.ox, y); g.lineTo(M + l.ox + state.cols * cs, y); }
+    g.stroke();
+    if (withLegends) {
+      g.fillStyle = "#1b1f16"; g.textAlign = "center"; g.textBaseline = "middle"; g.font = "600 " + Math.round(Math.min(28, Math.max(12, cs * 0.34))) + "px 'IBM Plex Sans', sans-serif";
+      for (var cc = 1; cc <= state.cols; cc++) { var lx = M + l.ox + (cc - .5) * cs; g.fillText(colLetter(cc), lx, M / 2); g.fillText(colLetter(cc), lx, cv.height - M / 2); }
+      for (var rr = 1; rr <= state.rows; rr++) { var ly = M + l.oy + (rr - .5) * cs; g.fillText(String(rr), M / 2, ly); g.fillText(String(rr), cv.width - M / 2, ly); }
+    }
+    cv.toBlob(function (blob) {
+      if (!blob) { $("pngError").textContent = "The picture is too large for this browser to make. Try a smaller image."; return; }
+      var a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+      a.download = fileName().replace(/\.json$/, "") + (withLegends ? "_labels" : "_clean") + ".png"; document.body.appendChild(a); a.click(); a.remove();
+    }, "image/png");
+  }
+  $("pngLegend").addEventListener("click", function () { exportPng(true); });
+  $("pngClean").addEventListener("click", function () { exportPng(false); });
   $("download").addEventListener("click", function () {
     if (!$("mapName").value.trim()) { $("fileError").textContent = "Give the map a name first; it becomes the file's name."; $("mapName").focus(); return; }
     var groups = {};
@@ -479,6 +479,45 @@
 
   buildPalette(); buildAmbients(); setMode("gridless"); counts(); draw();
 }());
+</script>
+<script>
+  // Live server status under the left rail's "Join the Discord" link, from
+  // Discord's own public widget.json (no auth, CORS-enabled). Stays hidden
+  // until a real response lands, and stays hidden on any failure -- the
+  // "Join the Discord" link is the real call to action either way, this
+  // is only a bonus.
+  (function () {
+    var box = document.getElementById('discordWidget');
+    if (!box) return;
+    fetch('https://discord.com/api/guilds/1541832648870076526/widget.json')
+      .then(function (r) { if (!r.ok) throw new Error('widget disabled'); return r.json(); })
+      .then(function (data) {
+        var avatarsEl = document.getElementById('dwAvatars');
+        var textEl = document.getElementById('dwText');
+        var members = Array.isArray(data.members) ? data.members : [];
+        var shown = members.slice(0, 5);
+        shown.forEach(function (m) {
+          if (!m.avatar_url) return;
+          var img = document.createElement('img');
+          img.src = m.avatar_url;
+          img.alt = '';
+          img.title = m.username || '';
+          img.loading = 'lazy';
+          avatarsEl.appendChild(img);
+        });
+        var extra = members.length - shown.length;
+        if (extra > 0) {
+          var more = document.createElement('span');
+          more.className = 'dw-more';
+          more.textContent = '+' + extra;
+          avatarsEl.appendChild(more);
+        }
+        var count = typeof data.presence_count === 'number' ? data.presence_count : members.length;
+        textEl.innerHTML = '<b>' + count + '</b> online' + (data.name ? ' in ' + data.name : '');
+        box.hidden = false;
+      })
+      .catch(function () { /* widget stays hidden -- Join the Discord link still works fine alone */ });
+  })();
 </script>
 </body>
 </html>

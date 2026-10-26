@@ -45,6 +45,7 @@
         <a href="wiki.html#coming"><span>Coming Features</span></a>
       </div>
       <a class="top" href="map-prep.html"><span>Map prep</span></a>
+      <a class="top" href="builder.html"><span>Character builder</span></a>
     </nav>
   </aside>
 
@@ -52,7 +53,7 @@
     <div class="wrap">
       <header class="hero">
         <h1>Your table has a goblin in it now.</h1>
-        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html" aria-current="page">Wiki</a><a href="changelog.html">Change Log</a></nav>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html" aria-current="page">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="changelog.html">Change Log</a></nav>
         <p class="lede">Every command, what it does, and how the pieces fit together.</p>
       </header>
 
@@ -331,8 +332,8 @@
           Ammunition is sold, priced, and tracked in packs of 10 (real Core Rulebook pricing) &mdash; each click is one pack, and the cart spells out the real round count.
         </p>
         <div class="cmds">
-          <div class="cmd-row"><div class="cmd">/tgchar build <b>name</b> <b>alias</b> <span class="opt">[assist_me] [level]</span></div><span class="badge b-self">self / gm</span>
-            <div class="desc">Starts a build, or resumes one already in progress under the same <b>name</b>/<b>alias</b>. <code>assist_me</code> makes the wizard visible to the whole table instead of just you, for a GM walking a new player through their first build. <code>level</code> (1&ndash;20) builds a higher-level character: after the 1st-level build, the bot walks you through levels 2 to that level, one level-up at a time, within the party level your GM has set. <strong>What you are offered follows the campaign's rules</strong> (<code>/tgm campaign_rules</code>) — common always, uncommon and rare where your GM allows them, and whichever optional rules your table runs add their own steps.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgchar build <b>name</b> <b>alias</b> <span class="opt">[assist_me] [level] [tg_file]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Starts a build, or resumes one already in progress under the same <b>name</b>/<b>alias</b>. Attach a recipe from the <a href="builder.html">Character builder</a> page as <b>tg_file</b> to start with its choices already in; the bot checks them against your campaign's rules and asks you for anything missing. <code>assist_me</code> makes the wizard visible to the whole table instead of just you, for a GM walking a new player through their first build. <code>level</code> (1&ndash;20) builds a higher-level character: after the 1st-level build, the bot walks you through levels 2 to that level, one level-up at a time, within the party level your GM has set. <strong>What you are offered follows the campaign's rules</strong> (<code>/tgm campaign_rules</code>) — common always, uncommon and rare where your GM allows them, and whichever optional rules your table runs add their own steps.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar starting_gear <span class="opt">[alias] [player]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Reopens your still-open starting-gear shopping trip if it closed early or timed out — no GM needed. Only works while it's genuinely still open; once you check out or click Done shopping, this refuses and points to <code>/tgm starting_gear</code> for a real re-do.</div></div>
         </div>

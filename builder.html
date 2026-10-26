@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Table Goblin — Character Builder</title>
+<link rel="icon" href="table-goblin.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="tools.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+        <img class="rail-logo" src="table-goblin.png" alt="Table Goblin logo">
+        <b>Table Goblin</b>
+        <span>Pathfinder 2e for Discord</span>
+        <a class="btn" href="https://discord.gg/cHMex5xFsV" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.211.375-.457.879-.626 1.278a18.27 18.27 0 0 0-5.518 0A12.76 12.76 0 0 0 9.115 3 19.736 19.736 0 0 0 4.68 4.372C1.727 8.75.929 13.028 1.328 17.244a19.9 19.9 0 0 0 5.993 3.03c.483-.66.914-1.36 1.285-2.098a12.87 12.87 0 0 1-2.024-.973c.17-.124.336-.253.497-.386 3.902 1.803 8.13 1.803 11.987 0 .162.133.329.262.497.386-.645.386-1.323.71-2.026.974.371.738.802 1.438 1.285 2.098a19.876 19.876 0 0 0 5.995-3.03c.468-4.891-.795-9.13-3.5-13.876ZM8.68 14.813c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Zm7.324 0c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Z"/></svg>
+          Join the Discord
+        </a>
+        <div class="discord-widget" id="discordWidget" hidden aria-live="polite">
+          <span class="dw-dot"></span>
+          <span class="dw-avatars" id="dwAvatars"></span>
+          <span id="dwText"></span>
+        </div>
+    </div>
+    <nav>
+      <a class="btn" href="https://discord.com/oauth2/authorize?client_id=1550867869066076263" target="_blank" rel="noopener">Install Table Goblin</a>
+      <a class="top" href="index.html"><span>Home</span></a>
+      <a class="top" href="changelog.html"><span>Change Log</span></a>
+      <a class="top" href="wiki.html"><span>Wiki</span></a>
+      <div class="rail-sub">
+        <a href="wiki.html#start"><span>Getting Started</span></a>
+        <a href="wiki.html#gm"><span>GM Tools</span></a>
+        <a href="wiki.html#chars"><span>Characters</span></a>
+        <a href="wiki.html#chat"><span>Playing in Character</span></a>
+        <a href="wiki.html#npcs"><span>Creatures &amp; NPCs</span></a>
+        <a href="wiki.html#combat"><span>Encounters</span></a>
+        <a href="wiki.html#maps"><span>Battle Maps</span></a>
+        <a href="wiki.html#loot"><span>Loot &amp; the Purse</span></a>
+        <a href="wiki.html#towns"><span>Towns &amp; Shops</span></a>
+        <a href="wiki.html#lookup"><span>Reference Lookup</span></a>
+        <a href="wiki.html#coming"><span>Coming Features</span></a>
+      </div>
+      <a class="top" href="map-prep.html"><span>Map prep</span></a>
+      <a class="top" href="builder.html" aria-current="page"><span>Character builder</span></a>
+    </nav>
+  </aside>
+
+  <main class="tool-page">
+    <div class="wrap">
+      <header class="hero tool-hero">
+        <div class="eyebrow">Player tool</div>
+        <h1>Character builder</h1>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html" aria-current="page">Character builder</a><a href="changelog.html">Change Log</a></nav>
+        <p class="lede">Plan a 1st-level character and its starting gear here, where searching for equipment is easy, then download a recipe file. In Discord, give it to <code>/tgchar build</code> as <code>tg_file</code>: the bot checks every choice against your campaign's rules, works out the sheet itself, and asks you for anything this page doesn't cover. Nothing you choose here is uploaded anywhere.</p>
+        
+      </header>
+
+      <div class="tool-body">
+        <div class="layout">
+      <div>
+        <div class="panel">
+          <h2><span class="num">1</span>Your campaign's rules</h2>
+          <label>Campaign code <input type="text" id="code" placeholder="TG-XXXXX-XXXXX-XXXXX" autocomplete="off" spellcheck="false"></label>
+          <div class="error" id="codeMsg" role="alert"></div>
+          <p class="hint">Your GM can give you the code (it is pinned in the character channel). Or tick the rules by hand:</p>
+          <div class="checks" id="ruleChecks"></div>
+          <div class="checks">
+            <label><input type="checkbox" id="allowUncommon"> Uncommon options allowed</label>
+            <label><input type="checkbox" id="allowRare"> Rare options allowed</label>
+          </div>
+          <p class="hint" id="exceptionHint"></p>
+        </div>
+
+        <div class="panel">
+          <h2><span class="num">2</span>Character</h2>
+          <label>Name <input type="text" id="charName" maxlength="60" placeholder="Rurik"></label>
+        </div>
+
+        <div class="panel">
+          <h2><span class="num">3</span>Ancestry</h2>
+          <div class="picker"><input type="text" id="ancestryFilter" placeholder="Search ancestries…"><div class="plist" id="ancestryList"></div></div>
+          <div class="chosen" id="ancestryChosen"></div>
+          <div id="heritageBox" hidden>
+            <h3>Heritage</h3>
+            <div class="picker"><input type="text" id="heritageFilter" placeholder="Search heritages…"><div class="plist" id="heritageList"></div></div>
+          </div>
+          <div id="arrayBox" hidden>
+            <h3>Attribute boosts</h3>
+            <div class="pills" id="arrayPills"></div>
+            <div id="ancestryFree"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2><span class="num">4</span>Background</h2>
+          <div class="picker"><input type="text" id="bgFilter" placeholder="Search backgrounds…"><div class="plist" id="bgList"></div></div>
+          <div class="chosen" id="bgChosen"></div>
+          <div id="bgBoosts"></div>
+        </div>
+
+        <div class="panel">
+          <h2><span class="num">5</span>Class</h2>
+          <div class="picker"><input type="text" id="classFilter" placeholder="Search classes…"><div class="plist" id="classList"></div></div>
+          <div class="chosen" id="classChosen"></div>
+          <div id="keyBox" hidden><h3>Key attribute</h3><div class="pills" id="keyPills"></div></div>
+          <div id="groupBox"></div>
+        </div>
+
+        <div class="panel">
+          <h2><span class="num">6</span>Attribute boosts</h2>
+          <p class="hint" style="margin-top:0">Four free boosts, each on a different attribute.</p>
+          <div class="pills" id="freePills"></div>
+          <div class="mods" id="mods"></div>
+        </div>
+
+        <div class="panel">
+          <h2><span class="num">7</span>Skills</h2>
+          <div id="skillInfo" class="hint" style="margin-top:0"></div>
+          <div class="pills" id="skillPills"></div>
+        </div>
+
+        <div class="panel">
+          <h2><span class="num">8</span>1st-level feats</h2>
+          <div id="featBoxes"></div>
+          <p class="hint">Prerequisites are checked by the bot when you import; a feat you don't qualify for is removed and you are asked to choose again.</p>
+        </div>
+
+        <div class="panel">
+          <h2><span class="num">9</span>Starting gear</h2>
+          <p class="hint" style="margin-top:0">You start with 15 gp. Search the catalog, add what you want, and what's left is saved as your coins.</p>
+          <div class="picker"><input type="text" id="itemFilter" placeholder="Search equipment (e.g. longsword, backpack, healing potion)…"><div class="plist" id="itemList"></div></div>
+          <div class="row2" style="margin-top:8px">
+            <label>Show <select id="itemKind"><option value="">Everything</option><option value="weapon">Weapons</option><option value="armor">Armor</option><option value="gear">Gear</option><option value="consumable">Consumables</option><option value="ammo">Ammunition</option></select></label>
+            <label>Up to level <select id="itemLevel"><option>0</option><option selected>1</option><option>2</option><option>3</option><option>5</option><option>10</option><option>20</option></select></label>
+          </div>
+          <table class="gear" id="gearTable"><tbody></tbody></table>
+          <div class="chosen" id="gearTotal"></div>
+        </div>
+      </div>
+
+      <aside class="side">
+        <div class="panel">
+          <h2>Summary</h2>
+          <dl class="sum" id="summary"></dl>
+          <div class="error" id="problems" role="alert"></div>
+          <div style="margin-top:12px"><button class="tbtn primary" id="download" type="button">Download recipe</button></div>
+          <p class="hint">Then, in Discord: <code>/tgchar build tg_file:</code> and attach it.</p>
+        </div>
+      </aside>
+    </div>
+      </div>
+
+      <footer class="site-footer">
+        A reference, not a rules substitute &mdash; when in doubt, check Archives of Nethys.
+        Table Goblin is an unofficial tool and is not affiliated with Paizo Inc.
+        <a href="terms.html">Terms of Service</a> &middot; <a href="privacy.html">Privacy Policy</a>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<script src="builder-data.js"></script>
+<script src="builder-items.js"></script>
+<script src="campaign-code.js"></script>
+<script>
+(function () {
+  "use strict";
+  var D = window.TG_BUILDER, ITEMS = window.TG_ITEMS;
+  var $ = function (id) { return document.getElementById(id); };
+  var RULE_LABELS = { free_archetype: "Free Archetype", ancestry_paragon: "Ancestry Paragon", dual_class: "Dual Class", skill_paragon: "Skill Paragon" };
+  var ATTR = D.attributes, NAMES = D.attributeNames;
+  var byName = function (list, name) { for (var i = 0; i < list.length; i++) if (list[i].name === name) return list[i]; return null; };
+
+  var S = {
+    rules: { free_archetype: false, ancestry_paragon: false, dual_class: false, skill_paragon: false },
+    allowUncommon: false, allowRare: false, exceptions: {}, levelCap: null, code: "",
+    name: "", ancestry: "", heritage: "", arrayKey: "", ancestryFree: [], background: "", bgBoosts: {}, cls: "", keyAttr: "", groups: {},
+    free: [], skills: [], feats: {}, gear: []
+  };
+
+  /* ---------------------------------------------------------------- rarity */
+  function allowed(rarity, ancestryName) {
+    if (rarity === "common" || !rarity) return true;
+    if (ancestryName && S.exceptions[ancestryName]) return true;
+    return rarity === "uncommon" ? S.allowUncommon : rarity === "rare" ? S.allowRare : false;
+  }
+
+  /* ---------------------------------------------------------------- generic picker */
+  function renderPicker(listEl, filterEl, entries, selected, onPick, limit) {
+    var q = filterEl.value.trim().toLowerCase(), shown = 0;
+    listEl.textContent = "";
+    entries.forEach(function (e) {
+      if (q && e.name.toLowerCase().indexOf(q) < 0) return;
+      if (shown >= (limit || 80)) return;
+      shown++;
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt"; b.setAttribute("aria-pressed", e.name === selected ? "true" : "false");
+      var t = document.createElement("span"); t.textContent = e.label || e.name; b.appendChild(t);
+      if (e.rarity && e.rarity !== "common") { var tag = document.createElement("span"); tag.className = "tag"; tag.textContent = e.rarity; b.appendChild(tag); }
+      if (e.note) { var s = document.createElement("small"); s.textContent = e.note; b.appendChild(s); }
+      b.addEventListener("click", function () { onPick(e.name); });
+      listEl.appendChild(b);
+    });
+    if (!shown) { var none = document.createElement("div"); none.className = "opt"; none.textContent = "Nothing matches."; listEl.appendChild(none); }
+  }
+
+  function pills(el, options, picked, max, onToggle, labelOf) {
+    el.textContent = "";
+    options.forEach(function (o) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "pill"; b.textContent = labelOf ? labelOf(o) : o;
+      var on = picked.indexOf(o) >= 0; b.setAttribute("aria-pressed", on ? "true" : "false");
+      if (!on && picked.length >= max) b.disabled = true;
+      b.addEventListener("click", function () { onToggle(o); });
+      el.appendChild(b);
+    });
+  }
+  function toggle(list, value) { var i = list.indexOf(value); if (i >= 0) list.splice(i, 1); else list.push(value); }
+
+  /* ---------------------------------------------------------------- derived */
+  function curAncestry() { return byName(D.ancestries, S.ancestry); }
+  function curBackground() { return byName(D.backgrounds, S.background); }
+  function curClass() { return byName(D.classes, S.cls); }
+  function curArray() {
+    var a = curAncestry(); if (!a) return null;
+    for (var i = 0; i < a.arrays.length; i++) if (a.arrays[i].key === S.arrayKey) return a.arrays[i];
+    return a.arrays[0] || null;
+  }
+  function isFree(slot) { return slot.length === ATTR.length; }
+  function fixedAncestry(array) { var out = []; (array ? array.boosts : []).forEach(function (s) { if (!isFree(s)) out.push(s[0]); }); return out; }
+  function freeSlots(array) { var n = 0; (array ? array.boosts : []).forEach(function (s) { if (isFree(s)) n++; }); return n; }
+  function bgPicks() {
+    var bg = curBackground(), out = [];
+    (bg ? bg.groups : []).forEach(function (g) { (S.bgBoosts[g.subkey] || []).forEach(function (a) { out.push(a); }); });
+    return out;
+  }
+  function boostSets() {
+    var array = curArray(), cls = curClass();
+    var sets = { ancestry: fixedAncestry(array).concat(S.ancestryFree), background: bgPicks(), cls: cls ? (cls.keys.length === 1 ? cls.keys : (S.keyAttr ? [S.keyAttr] : [])) : [], free: S.free };
+    return { sets: sets, flaws: array ? array.flaws : [] };
+  }
+  function mods() {
+    var b = boostSets(), m = {};
+    ATTR.forEach(function (a) { m[a] = 0; });
+    ["ancestry", "background", "cls", "free"].forEach(function (k) { b.sets[k].forEach(function (a) { m[a] += 1; }); });
+    b.flaws.forEach(function (a) { m[a] -= 1; });
+    return m;
+  }
+  function fixedSkills() {
+    var out = [], cls = curClass(), bg = curBackground();
+    if (cls) cls.skills.forEach(function (s) { out.push(s); });
+    if (bg) bg.skills.forEach(function (s) { out.push(s); });
+    return out.filter(function (s, i) { return out.indexOf(s) === i; });
+  }
+  function skillAllowance() {
+    var cls = curClass(); if (!cls) return 0;
+    var fixed = fixedSkills(); var overlap = 0;                                    /* a skill granted twice hands one pick back */
+    var cs = cls.skills, bs = curBackground() ? curBackground().skills : [];
+    cs.forEach(function (s) { if (bs.indexOf(s) >= 0) overlap++; });
+    return Math.max(0, cls.freeSkills + mods().int + overlap);
+  }
+
+  /* ---------------------------------------------------------------- rules */
+  function buildRuleChecks() {
+    var box = $("ruleChecks");
+    Object.keys(RULE_LABELS).forEach(function (k) {
+      var l = document.createElement("label"), c = document.createElement("input"); c.type = "checkbox"; c.dataset.rule = k;
+      c.addEventListener("change", function () { S.rules[k] = c.checked; S.code = ""; refresh(); });
+      l.appendChild(c); l.appendChild(document.createTextNode(" " + RULE_LABELS[k])); box.appendChild(l);
+    });
+    $("allowUncommon").addEventListener("change", function () { S.allowUncommon = this.checked; refresh(); });
+    $("allowRare").addEventListener("change", function () { S.allowRare = this.checked; refresh(); });
+  }
+  function syncRuleChecks() {
+    Array.prototype.forEach.call($("ruleChecks").querySelectorAll("input"), function (c) { c.checked = !!S.rules[c.dataset.rule]; });
+    $("allowUncommon").checked = S.allowUncommon; $("allowRare").checked = S.allowRare;
+    var names = Object.keys(S.exceptions);
+    $("exceptionHint").textContent = names.length ? "Your campaign makes an exception for: " + names.join(", ") + "." : "";
+  }
+  $("code").addEventListener("input", function () {
+    var v = this.value.trim(); $("codeMsg").textContent = "";
+    if (!v) { S.code = ""; return; }
+    if (!window.crypto || !crypto.subtle) { $("codeMsg").textContent = "This browser can't read a code here; tick the rules by hand."; return; }
+    TGCampaignCode.decode(v).then(function (c) {
+      S.rules.free_archetype = c.rules.free_archetype; S.rules.ancestry_paragon = c.rules.ancestry_paragon; S.rules.dual_class = c.rules.dual_class; S.rules.skill_paragon = c.rules.skill_paragon;
+      S.allowUncommon = c.allowUncommon; S.allowRare = c.allowRare; S.levelCap = c.levelCap; S.code = v.toUpperCase();
+      S.variants = c.rules; S.exceptions = {};
+      return Promise.all(D.ancestries.map(function (a) { return TGCampaignCode.nameHash(a.name).then(function (h) { if (c.exceptionHashes.indexOf(h) >= 0) S.exceptions[a.name] = true; }); }));
+    }).then(function () { syncRuleChecks(); refresh(); $("codeMsg").textContent = ""; })
+      .catch(function (e) { $("codeMsg").textContent = e.message; });
+  });
+
+  /* ---------------------------------------------------------------- sections */
+  function ancestryEntries() {
+    return D.ancestries.filter(function (a) { return allowed(a.rarity, a.name); }).map(function (a) { return { name: a.name, rarity: a.rarity, note: a.summary }; });
+  }
+  function heritageEntries() {
+    var a = curAncestry(); if (!a) return [];
+    return a.heritages.filter(function (h) { return allowed(h.rarity, a.name); }).map(function (h) { return { name: h.name, rarity: h.rarity, note: (h.versatile ? "versatile — " : "") + h.summary }; });
+  }
+  function backgroundEntries() {
+    return D.backgrounds.filter(function (b) { return allowed(b.rarity); }).map(function (b) { return { name: b.name, rarity: b.rarity, note: b.summary }; });
+  }
+  function classEntries() { return D.classes.map(function (c) { return { name: c.name, note: c.hp + " HP · trains " + c.skills.length + "+" + c.freeSkills + " skills · key " + c.keys.map(function (k) { return NAMES[k]; }).join("/") }; }); }
+
+  function renderAncestry() {
+    renderPicker($("ancestryList"), $("ancestryFilter"), ancestryEntries(), S.ancestry, function (n) {
+      if (n !== S.ancestry) { S.ancestry = n; S.heritage = ""; S.arrayKey = ""; S.ancestryFree = []; S.feats.ancestry = ""; S.feats.ancestry2 = ""; }
+      refresh();
+    });
+    var a = curAncestry();
+    $("ancestryChosen").innerHTML = a ? "<strong></strong> · " + a.hp + " HP · " + a.size + " · " + a.speed + " ft" : "";
+    if (a) $("ancestryChosen").firstChild.textContent = a.name;
+    $("heritageBox").hidden = !a;
+    if (a) renderPicker($("heritageList"), $("heritageFilter"), heritageEntries(), S.heritage, function (n) { S.heritage = n; refresh(); });
+    $("arrayBox").hidden = !a;
+    if (!a) return;
+    var arrays = a.arrays, array = curArray();
+    var box = $("arrayPills"); box.textContent = "";
+    arrays.forEach(function (arr) {
+      var b = document.createElement("button"); b.type = "button"; b.className = "pill"; b.textContent = arr.label;
+      b.setAttribute("aria-pressed", arr === array ? "true" : "false");
+      b.addEventListener("click", function () { S.arrayKey = arr.key; S.ancestryFree = []; refresh(); });
+      box.appendChild(b);
+    });
+    var n = freeSlots(array), fixed = fixedAncestry(array);
+    var opts = ATTR.filter(function (x) { return fixed.indexOf(x) < 0; });
+    var holder = $("ancestryFree"); holder.textContent = "";
+    var info = document.createElement("p"); info.className = "hint";
+    info.textContent = "Fixed: " + (fixed.map(function (x) { return NAMES[x]; }).join(", ") || "none") + (array && array.flaws.length ? " · flaw: " + array.flaws.map(function (x) { return NAMES[x]; }).join(", ") : "") + (n ? " · choose " + n + " free:" : "");
+    holder.appendChild(info);
+    if (n) { var p = document.createElement("div"); p.className = "pills"; holder.appendChild(p);
+      pills(p, opts, S.ancestryFree, n, function (o) { toggle(S.ancestryFree, o); refresh(); }, function (o) { return NAMES[o]; }); }
+  }
+
+  function renderBackground() {
+    renderPicker($("bgList"), $("bgFilter"), backgroundEntries(), S.background, function (n) { if (n !== S.background) { S.background = n; S.bgBoosts = {}; } refresh(); }, 60);
+    var bg = curBackground();
+    $("bgChosen").textContent = bg ? bg.name + (bg.skills.length ? " · trains " + bg.skills.join(", ") : "") + (bg.lores.length ? " · Lore: " + bg.lores.join(", ") : "") + (bg.freeLores ? " · and a Lore you name in Discord" : "") : "";
+    var box = $("bgBoosts"); box.textContent = "";
+    if (!bg) return;
+    var taken = [];
+    bg.groups.forEach(function (g) {
+      var h = document.createElement("h3"); h.textContent = "Background boost (" + g.label + (g.count > 1 ? ", pick " + g.count : "") + ")"; box.appendChild(h);
+      var p = document.createElement("div"); p.className = "pills"; box.appendChild(p);
+      var picked = S.bgBoosts[g.subkey] = (S.bgBoosts[g.subkey] || []).filter(function (a) { return g.options.indexOf(a) >= 0; });
+      var others = taken.slice(), opts = g.options.filter(function (o) { return others.indexOf(o) < 0; });
+      pills(p, opts, picked, g.count, function (o) { toggle(S.bgBoosts[g.subkey], o); refresh(); }, function (o) { return NAMES[o]; });
+      taken = taken.concat(picked);
+    });
+    if (bg.choices) { var n = document.createElement("p"); n.className = "hint"; n.textContent = "This background has a choice of its own; the bot asks you in Discord."; box.appendChild(n); }
+  }
+
+  function renderClass() {
+    renderPicker($("classList"), $("classFilter"), classEntries(), S.cls, function (n) { if (n !== S.cls) { S.cls = n; S.keyAttr = ""; S.groups = {}; S.skills = []; S.feats.class = ""; S.feats.skill = ""; } refresh(); });
+    var c = curClass();
+    $("classChosen").textContent = c ? c.name + " · " + c.hp + " HP" + (c.casts ? " · casts spells (the bot asks for them in Discord)" : "") + (c.deity ? " · needs a deity (asked in Discord)" : "") : "";
+    $("keyBox").hidden = !(c && c.keys.length > 1);
+    if (c && c.keys.length > 1) pills($("keyPills"), c.keys, S.keyAttr ? [S.keyAttr] : [], 1, function (o) { S.keyAttr = S.keyAttr === o ? "" : o; refresh(); }, function (o) { return NAMES[o]; });
+    var box = $("groupBox"); box.textContent = "";
+    if (!c) return;
+    c.groups.forEach(function (g) {
+      var h = document.createElement("h3"); h.textContent = g.feature; box.appendChild(h);
+      var p = document.createElement("div"); p.className = "pills"; box.appendChild(p);
+      g.options.forEach(function (o) {
+        var b = document.createElement("button"); b.type = "button"; b.className = "pill"; b.textContent = o[0]; b.title = o[1];
+        b.setAttribute("aria-pressed", S.groups[g.feature] === o[0] ? "true" : "false");
+        b.addEventListener("click", function () { if (S.groups[g.feature] === o[0]) delete S.groups[g.feature]; else S.groups[g.feature] = o[0]; refresh(); });
+        p.appendChild(b);
+      });
+    });
+  }
+
+  function renderFree() {
+    pills($("freePills"), ATTR, S.free, D.freeBoosts, function (o) { toggle(S.free, o); refresh(); }, function (o) { return NAMES[o]; });
+    var m = mods(), box = $("mods"); box.textContent = "";
+    ATTR.forEach(function (a) { var d = document.createElement("div"); d.innerHTML = NAMES[a].slice(0, 3) + "<b></b>"; d.querySelector("b").textContent = (m[a] >= 0 ? "+" : "") + m[a]; box.appendChild(d); });
+  }
+
+  function renderSkills() {
+    var cls = curClass(), fixed = fixedSkills(), allow = skillAllowance();
+    S.skills = S.skills.filter(function (s) { return fixed.indexOf(s) < 0; });
+    $("skillInfo").textContent = !cls ? "Choose a class first." : "Trained already: " + (fixed.join(", ") || "none") + ". Choose " + allow + " more (" + cls.freeSkills + " from your class plus Intelligence).";
+    var opts = D.skills.filter(function (s) { return fixed.indexOf(s) < 0; });
+    pills($("skillPills"), opts, S.skills, allow, function (o) { toggle(S.skills, o); refresh(); }, function (o) { return o.charAt(0).toUpperCase() + o.slice(1); });
+  }
+
+  function featSlots() {
+    var slots = [], c = curClass();
+    if (curAncestry()) { slots.push({ key: "ancestry", label: "Ancestry feat", cat: "ancestry" }); if (S.rules.ancestry_paragon) slots.push({ key: "ancestry2", label: "Second ancestry feat (Ancestry Paragon)", cat: "ancestry" }); }
+    if (c && c.classFeat) slots.push({ key: "class", label: "Class feat", cat: "class" });
+    if (c && c.skillFeat) slots.push({ key: "skill", label: "Skill feat", cat: "skill" });
+    return slots;
+  }
+  function featEntries(slot) {
+    var a = curAncestry(), c = curClass(), traits = a ? a.traits : [];
+    var other = slot.key === "ancestry" ? S.feats.ancestry2 : slot.key === "ancestry2" ? S.feats.ancestry : "";
+    return D.feats[slot.cat].filter(function (f) {
+      if (f.level > 1 || !allowed(f.rarity, slot.cat === "ancestry" && a ? a.name : "")) return false;
+      if (slot.cat === "ancestry") { var hit = f.traits.some(function (t) { return traits.indexOf(t) >= 0; }); if (!hit) return false; }
+      if (slot.cat === "class") { if (!c || f.traits.indexOf(c.name.toLowerCase()) < 0) return false; }
+      if (other && f.name === other && !f.repeatable) return false;
+      return true;
+    }).map(function (f) { return { name: f.name, label: f.display || f.name, rarity: f.rarity, note: (f.prereq ? "Needs " + f.prereq + " — " : "") + f.summary }; });
+  }
+  function renderFeats() {
+    var box = $("featBoxes"); box.textContent = "";
+    var slots = featSlots();
+    if (!slots.length) { box.innerHTML = '<p class="hint" style="margin-top:0">Choose an ancestry and a class to see your feats.</p>'; return; }
+    slots.forEach(function (slot) {
+      var h = document.createElement("h3"); h.textContent = slot.label; h.style.marginTop = "6px"; box.appendChild(h);
+      var wrap = document.createElement("div"); wrap.className = "picker";
+      var f = document.createElement("input"); f.type = "text"; f.placeholder = "Search…"; var list = document.createElement("div"); list.className = "plist";
+      wrap.appendChild(f); wrap.appendChild(list); box.appendChild(wrap);
+      var pickedName = function () { return S.feats[slot.key] || ""; };
+      var draw = function () { renderPicker(list, f, featEntries(slot), pickedName(), function (n) { S.feats[slot.key] = pickedName() === n ? "" : n; refresh(); }, 60); };
+      f.addEventListener("input", draw); draw();
+      var cur = document.createElement("div"); cur.className = "chosen"; cur.textContent = pickedName() ? "Chosen: " + pickedName() : "Nothing chosen yet."; box.appendChild(cur);
+    });
+  }
+
+  /* ---------------------------------------------------------------- gear */
+  var KIND = { weapon: "weapon", armor: "armor" };
+  function fmtPrice(cp) { var gp = Math.floor(cp / 100), sp = Math.floor((cp % 100) / 10), c = cp % 10, out = []; if (gp) out.push(gp + " gp"); if (sp) out.push(sp + " sp"); if (c) out.push(c + " cp"); return out.join(" ") || "free"; }
+  function gearCost() { var t = 0; S.gear.forEach(function (g) { t += g.price * g.qty; }); return t; }
+  function renderItems() {
+    var q = $("itemFilter").value.trim().toLowerCase(), kind = $("itemKind").value, maxLevel = parseInt($("itemLevel").value, 10);
+    var list = $("itemList"); list.textContent = ""; var shown = 0;
+    for (var i = 0; i < ITEMS.length && shown < 60; i++) {
+      var it = ITEMS[i];
+      if (it[1] > maxLevel || (kind && it[4] !== kind) || !allowed(it[5])) continue;
+      if (q && it[0].toLowerCase().indexOf(q) < 0) continue;
+      shown++;
+      (function (it) {
+        var b = document.createElement("button"); b.type = "button"; b.className = "opt";
+        var t = document.createElement("span"); t.textContent = it[0]; b.appendChild(t);
+        var s = document.createElement("small"); s.textContent = it[4] + " · level " + it[1] + " · " + fmtPrice(it[2]) + (it[3] ? " · bulk " + it[3] : ""); b.appendChild(s);
+        b.addEventListener("click", function () {
+          var have = S.gear.filter(function (g) { return g.name === it[0]; })[0];
+          if (have) have.qty++; else S.gear.push({ name: it[0], kind: KIND[it[4]] || "gear", qty: 1, price: it[2], equipped: false });
+          renderGear();
+        });
+        list.appendChild(b);
+      }(it));
+    }
+    if (!shown) { var none = document.createElement("div"); none.className = "opt"; none.textContent = q ? "Nothing matches." : "Search for an item."; list.appendChild(none); }
+  }
+  function renderGear() {
+    var tb = $("gearTable").querySelector("tbody"); tb.textContent = "";
+    S.gear.forEach(function (g, idx) {
+      var tr = document.createElement("tr");
+      var name = document.createElement("td"); name.textContent = g.name; tr.appendChild(name);
+      var q = document.createElement("td"); var qi = document.createElement("input"); qi.type = "number"; qi.min = 1; qi.value = g.qty;
+      qi.addEventListener("change", function () { g.qty = Math.max(1, parseInt(qi.value, 10) || 1); renderGear(); }); q.appendChild(qi); tr.appendChild(q);
+      var cost = document.createElement("td"); cost.textContent = fmtPrice(g.price * g.qty); tr.appendChild(cost);
+      var eq = document.createElement("td");
+      if (g.kind === "weapon" || g.kind === "armor") { var l = document.createElement("label"); l.style.margin = 0; var c = document.createElement("input"); c.type = "checkbox"; c.checked = g.equipped;
+        c.addEventListener("change", function () { g.equipped = c.checked; renderSummary(); }); l.appendChild(c); l.appendChild(document.createTextNode(g.kind === "armor" ? " worn" : " wielded")); eq.appendChild(l); }
+      tr.appendChild(eq);
+      var rm = document.createElement("td"); var x = document.createElement("button"); x.type = "button"; x.className = "tbtn"; x.textContent = "✕"; x.setAttribute("aria-label", "Remove " + g.name);
+      x.addEventListener("click", function () { S.gear.splice(idx, 1); renderGear(); }); rm.appendChild(x); tr.appendChild(rm);
+      tb.appendChild(tr);
+    });
+    var left = 1500 - gearCost();
+    $("gearTotal").textContent = (S.gear.length ? "Spent " + fmtPrice(gearCost()) + ". " : "") + (left >= 0 ? "Left: " + fmtPrice(left) + "." : "Over budget by " + fmtPrice(-left) + ".");
+    renderSummary();
+  }
+  ["itemFilter", "itemKind", "itemLevel"].forEach(function (id) { $(id).addEventListener("input", renderItems); });
+
+  /* ---------------------------------------------------------------- summary & problems */
+  function problems() {
+    var p = [], c = curClass(), a = curAncestry(), array = curArray();
+    if (!S.name.trim()) p.push("Name your character.");
+    if (!a) p.push("Choose an ancestry."); else { if (!S.heritage) p.push("Choose a heritage."); if (array && S.ancestryFree.length < freeSlots(array)) p.push("Spend your ancestry's free boost."); }
+    var bg = curBackground(); if (!bg) p.push("Choose a background."); else bg.groups.forEach(function (g) { if ((S.bgBoosts[g.subkey] || []).length < g.count) p.push("Spend your background boost."); });
+    if (!c) p.push("Choose a class."); else { if (c.keys.length > 1 && !S.keyAttr) p.push("Choose a key attribute."); c.groups.forEach(function (g) { if (!S.groups[g.feature] && g.feature.indexOf("Class Archetype") < 0) p.push("Choose your " + g.feature + "."); }); }
+    if (S.free.length < D.freeBoosts) p.push("Spend your " + D.freeBoosts + " free boosts.");
+    if (c && S.skills.length < skillAllowance()) p.push("Choose " + (skillAllowance() - S.skills.length) + " more skill(s).");
+    featSlots().forEach(function (s) { if (!S.feats[s.key]) p.push("Choose a feat: " + s.label.toLowerCase() + "."); });
+    if (gearCost() > 1500) p.push("Your gear costs more than 15 gp.");
+    return p.filter(function (x, i) { return p.indexOf(x) === i; });
+  }
+  function renderSummary() {
+    var dl = $("summary"); dl.textContent = "";
+    function row(t, v) { if (!v) return; var a = document.createElement("dt"); a.textContent = t; var b = document.createElement("dd"); b.textContent = v; dl.appendChild(a); dl.appendChild(b); }
+    row("Name", S.name); row("Ancestry", S.ancestry + (S.heritage ? " · " + S.heritage : "")); row("Background", S.background); row("Class", S.cls + (S.keyAttr ? " (" + NAMES[S.keyAttr] + ")" : ""));
+    var m = mods(); row("Modifiers", ATTR.map(function (a) { return NAMES[a].slice(0, 3) + " " + (m[a] >= 0 ? "+" : "") + m[a]; }).join(" · "));
+    row("Skills", fixedSkills().concat(S.skills).join(", ")); row("Feats", ["ancestry", "ancestry2", "class", "skill"].map(function (k) { return S.feats[k]; }).filter(Boolean).join(", "));
+    row("Gear", S.gear.map(function (g) { return (g.qty > 1 ? g.qty + "× " : "") + g.name; }).join(", "));
+    $("problems").textContent = problems().join(" ");
+  }
+
+  function refresh() { syncRuleChecks(); renderAncestry(); renderBackground(); renderClass(); renderFree(); renderSkills(); renderFeats(); renderSummary(); }
+
+  /* ---------------------------------------------------------------- the file */
+  function stable(v) {
+    if (Array.isArray(v)) return "[" + v.map(stable).join(",") + "]";
+    if (v && typeof v === "object") return "{" + Object.keys(v).sort().map(function (k) { return JSON.stringify(k) + ":" + stable(v[k]); }).join(",") + "}";
+    return JSON.stringify(v);
+  }
+  function sha256(text) { return crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)).then(function (b) { return Array.prototype.map.call(new Uint8Array(b), function (x) { return ("0" + x.toString(16)).slice(-2); }).join(""); }); }
+
+  function buildState() {
+    var array = curArray(), boosts = { free: S.free.slice() };
+    if (S.ancestryFree.length) boosts.ancestry_free = S.ancestryFree.slice();
+    Object.keys(S.bgBoosts).forEach(function (k) { if (S.bgBoosts[k].length) boosts[k] = S.bgBoosts[k].slice(); });
+    var st = { ancestry: S.ancestry, heritage: S.heritage, background: S.background, "class": S.cls, boosts: boosts, skills: S.skills.slice(), variants: { free_archetype: !!S.rules.free_archetype, ancestry_paragon: !!S.rules.ancestry_paragon, dual_class: !!S.rules.dual_class, skill_paragon: !!S.rules.skill_paragon } };
+    if (array && curAncestry().arrays.length > 1) st.boost_array = array.key;
+    if (S.keyAttr) st.key_attribute = S.keyAttr;
+    if (Object.keys(S.groups).length) st.subclass = JSON.parse(JSON.stringify(S.groups));
+    if (S.feats.ancestry) st.ancestry_feat = S.feats.ancestry;
+    if (S.feats.ancestry2 && S.rules.ancestry_paragon) st.ancestry_feat_2 = S.feats.ancestry2;
+    if (S.feats["class"]) st.class_feat = S.feats["class"];
+    if (S.feats.skill) st.skill_feat = S.feats.skill;
+    return st;
+  }
+  function coins() { var left = Math.max(0, 1500 - gearCost()); return { cp: left % 10, sp: Math.floor((left % 100) / 10), gp: Math.floor(left / 100), pp: 0 }; }
+  function usedRules() { return { free_archetype: false, ancestry_paragon: !!(S.rules.ancestry_paragon && S.feats.ancestry2), dual_class: false, skill_paragon: false }; }
+
+  $("download").addEventListener("click", function () {
+    var errs = problems();
+    if (errs.length && !window.confirm("Some choices are missing:\n\n" + errs.join("\n") + "\n\nDownload anyway? The bot will ask you for the rest in Discord.")) return;
+    if (!window.crypto || !crypto.subtle) { $("problems").textContent = "This browser can't make the file here (it needs a secure page)."; return; }
+    var payload = { name: S.name.trim() || "Unnamed", level: 1, state: buildState() };
+    sha256("" + "|" + stable({ kind: "build", level: 1, payload: payload })).then(function (hash) {
+      var doc = {
+        format: "tablegoblin-recipe", format_version: 1, system: "pf2e", data_release: D.release, exported_at: new Date().toISOString().replace(/\.\d+Z$/, "+00:00"),
+        name: payload.name, level: 1, source: "wiki-builder",
+        rules: { campaign_code: S.code || null, variants: S.rules, allow_uncommon: S.allowUncommon, allow_rare: S.allowRare, exceptions: Object.keys(S.exceptions), level_cap: S.levelCap, used: usedRules() },
+        blocks: [{ kind: "build", level: 1, payload: payload, chain_hash: hash }], head: hash,
+        state: { coins: coins(), equipment: S.gear.map(function (g) { var o = { name: g.name, kind: g.kind, qty: g.qty }; if (g.equipped) o.equipped = true; return o; }) }
+      };
+      var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 1)], { type: "application/json" }));
+      var slug = payload.name.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "character";
+      a.download = slug + ".recipe.json"; document.body.appendChild(a); a.click(); a.remove();
+    });
+  });
+
+  $("charName").addEventListener("input", function () { S.name = this.value; renderSummary(); });
+  ["ancestryFilter", "heritageFilter", "bgFilter", "classFilter"].forEach(function (id) { $(id).addEventListener("input", function () { renderAncestry(); renderBackground(); renderClass(); }); });
+
+  buildRuleChecks(); refresh(); renderItems(); renderGear();
+}());
+</script>
+<script>
+  // Live server status under the left rail's "Join the Discord" link, from
+  // Discord's own public widget.json (no auth, CORS-enabled). Stays hidden
+  // until a real response lands, and stays hidden on any failure -- the
+  // "Join the Discord" link is the real call to action either way, this
+  // is only a bonus.
+  (function () {
+    var box = document.getElementById('discordWidget');
+    if (!box) return;
+    fetch('https://discord.com/api/guilds/1541832648870076526/widget.json')
+      .then(function (r) { if (!r.ok) throw new Error('widget disabled'); return r.json(); })
+      .then(function (data) {
+        var avatarsEl = document.getElementById('dwAvatars');
+        var textEl = document.getElementById('dwText');
+        var members = Array.isArray(data.members) ? data.members : [];
+        var shown = members.slice(0, 5);
+        shown.forEach(function (m) {
+          if (!m.avatar_url) return;
+          var img = document.createElement('img');
+          img.src = m.avatar_url;
+          img.alt = '';
+          img.title = m.username || '';
+          img.loading = 'lazy';
+          avatarsEl.appendChild(img);
+        });
+        var extra = members.length - shown.length;
+        if (extra > 0) {
+          var more = document.createElement('span');
+          more.className = 'dw-more';
+          more.textContent = '+' + extra;
+          avatarsEl.appendChild(more);
+        }
+        var count = typeof data.presence_count === 'number' ? data.presence_count : members.length;
+        textEl.innerHTML = '<b>' + count + '</b> online' + (data.name ? ' in ' + data.name : '');
+        box.hidden = false;
+      })
+      .catch(function () { /* widget stays hidden -- Join the Discord link still works fine alone */ });
+  })();
+</script>
+</body>
+</html>
