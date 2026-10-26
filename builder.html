@@ -76,6 +76,8 @@
           </div>
           <label style="margin-top:8px">Party level: the highest level your campaign allows <input type="number" id="levelCap" min="1" max="20" placeholder="No limit"></label>
           <p class="hint">A campaign code fills this in. Without one, set it yourself (leave it blank for no limit); it travels in the file so the bot knows how far your campaign has got, and the bot enforces the party level when you import anyway.</p>
+          <label>Build this character up to level <input type="number" id="buildLevel" min="1" max="20" value="1"></label>
+          <p class="hint">Up to your party level, or the level you give here. Levels 2 and up appear in their own section below.</p>
           <p class="hint" id="exceptionHint"></p>
         </div>
 
@@ -133,9 +135,15 @@
           <p class="hint">Prerequisites are checked by the bot when you import; a feat you don't qualify for is removed and you are asked to choose again.</p>
         </div>
 
+        <div class="panel" id="levelsPanel">
+          <h2><span class="num">9</span>Levels</h2>
+          <div id="levelsBox"></div>
+        </div>
+
         <div class="panel">
-          <h2><span class="num">9</span>Starting gear</h2>
+          <h2><span class="num">10</span>Starting gear</h2>
           <p class="hint" style="margin-top:0">You start with 15 gp. Search the catalog, add what you want, and what's left is saved as your coins.</p>
+          <p class="hint" id="gearNote"></p>
           <div class="picker"><input type="text" id="itemFilter" placeholder="Search equipment (e.g. longsword, backpack, healing potion)…"><div class="plist" id="itemList"></div></div>
           <div class="row2" style="margin-top:8px">
             <label>Show <select id="itemKind"><option value="">Everything</option><option value="weapon">Weapons</option><option value="armor">Armor</option><option value="gear">Gear</option><option value="consumable">Consumables</option><option value="ammo">Ammunition</option></select></label>
@@ -183,7 +191,7 @@
     rules: { free_archetype: false, ancestry_paragon: false, dual_class: false, skill_paragon: false },
     allowUncommon: false, allowRare: false, exceptions: {}, levelCap: null, code: "",
     name: "", ancestry: "", heritage: "", arrayKey: "", ancestryFree: [], background: "", bgBoosts: {}, cls: "", keyAttr: "", groups: {},
-    free: [], skills: [], feats: {}, gear: []
+    free: [], skills: [], feats: {}, gear: [], buildLevel: 1, lvlTouched: false, levels: {}, open: {}
   };
 
   /* ---------------------------------------------------------------- rarity */
@@ -283,12 +291,21 @@
     Array.prototype.forEach.call($("ruleChecks").querySelectorAll("input"), function (c) { c.checked = !!S.rules[c.dataset.rule]; });
     $("allowUncommon").checked = S.allowUncommon; $("allowRare").checked = S.allowRare;
     if (document.activeElement !== $("levelCap")) $("levelCap").value = S.levelCap || "";
+    if (S.levelCap && S.buildLevel > S.levelCap) S.buildLevel = S.levelCap;
+    if (document.activeElement !== $("buildLevel")) $("buildLevel").value = targetLevel();
+    $("buildLevel").max = S.levelCap || 20;
     var names = Object.keys(S.exceptions);
     $("exceptionHint").textContent = names.length ? "Your campaign makes an exception for: " + names.join(", ") + "." : "";
   }
   $("levelCap").addEventListener("input", function () {
     var n = parseInt(this.value, 10);
-    S.levelCap = n >= 1 && n <= 20 ? n : null; S.code = ""; renderSummary();            /* a hand-set cap no longer matches the code that was typed */
+    S.levelCap = n >= 1 && n <= 20 ? n : null; S.code = "";                              /* a hand-set cap no longer matches the code that was typed */
+    if (S.levelCap && !S.lvlTouched) S.buildLevel = S.levelCap;                          /* build to the party level unless a level was asked for */
+    refresh();
+  });
+  $("buildLevel").addEventListener("input", function () {
+    var n = parseInt(this.value, 10); S.lvlTouched = true;
+    S.buildLevel = n >= 1 && n <= 20 ? n : 1; refresh();
   });
   $("code").addEventListener("input", function () {
     var v = this.value.trim(); $("codeMsg").textContent = "";
@@ -297,6 +314,7 @@
     TGCampaignCode.decode(v).then(function (c) {
       S.rules.free_archetype = c.rules.free_archetype; S.rules.ancestry_paragon = c.rules.ancestry_paragon; S.rules.dual_class = c.rules.dual_class; S.rules.skill_paragon = c.rules.skill_paragon;
       S.allowUncommon = c.allowUncommon; S.allowRare = c.allowRare; S.levelCap = c.levelCap; S.code = v.toUpperCase();
+      if (S.levelCap && !S.lvlTouched) S.buildLevel = S.levelCap;
       S.variants = c.rules; S.exceptions = {};
       return Promise.all(D.ancestries.map(function (a) { return TGCampaignCode.nameHash(a.name).then(function (h) { if (c.exceptionHashes.indexOf(h) >= 0) S.exceptions[a.name] = true; }); }));
     }).then(function () { syncRuleChecks(); refresh(); $("codeMsg").textContent = ""; })
@@ -318,7 +336,7 @@
 
   function renderAncestry() {
     renderPicker($("ancestryList"), $("ancestryFilter"), ancestryEntries(), S.ancestry, function (n) {
-      if (n !== S.ancestry) { S.ancestry = n; S.heritage = ""; S.arrayKey = ""; S.ancestryFree = []; S.feats.ancestry = ""; S.feats.ancestry2 = ""; }
+      if (n !== S.ancestry) { S.ancestry = n; S.heritage = ""; S.arrayKey = ""; S.ancestryFree = []; S.feats.ancestry = ""; S.feats.ancestry2 = ""; S.levels = {}; }
       refresh();
     });
     var a = curAncestry();
@@ -365,7 +383,7 @@
   }
 
   function renderClass() {
-    renderPicker($("classList"), $("classFilter"), classEntries(), S.cls, function (n) { if (n !== S.cls) { S.cls = n; S.keyAttr = ""; S.groups = {}; S.skills = []; S.feats.class = ""; S.feats.skill = ""; } refresh(); });
+    renderPicker($("classList"), $("classFilter"), classEntries(), S.cls, function (n) { if (n !== S.cls) { S.cls = n; S.keyAttr = ""; S.groups = {}; S.skills = []; S.feats.class = ""; S.feats.skill = ""; S.levels = {}; } refresh(); });
     var c = curClass();
     $("classChosen").textContent = c ? c.name + " · " + c.hp + " HP" + (c.casts ? " · casts spells (the bot asks for them in Discord)" : "") + (c.deity ? " · needs a deity (asked in Discord)" : "") : "";
     $("keyBox").hidden = !(c && c.keys.length > 1);
@@ -406,10 +424,12 @@
     return slots;
   }
   function featEntries(slot) {
-    var a = curAncestry(), c = curClass(), traits = a ? a.traits : [];
+    var a = curAncestry(), c = curClass(), traits = a ? a.traits : [], ranks = {};
+    fixedSkills().concat(S.skills).forEach(function (s) { ranks[s] = 1; });
     var other = slot.key === "ancestry" ? S.feats.ancestry2 : slot.key === "ancestry2" ? S.feats.ancestry : "";
     return D.feats[slot.cat].filter(function (f) {
       if (f.level > 1 || !allowed(f.rarity, slot.cat === "ancestry" && a ? a.name : "")) return false;
+      if (!skillPrereqMet(f.prereq, ranks)) return false;
       if (slot.cat === "ancestry") { var hit = f.traits.some(function (t) { return traits.indexOf(t) >= 0; }); if (!hit) return false; }
       if (slot.cat === "class") { if (!c || f.traits.indexOf(c.name.toLowerCase()) < 0) return false; }
       if (other && f.name === other && !f.repeatable) return false;
@@ -474,11 +494,211 @@
       x.addEventListener("click", function () { S.gear.splice(idx, 1); renderGear(); }); rm.appendChild(x); tr.appendChild(rm);
       tb.appendChild(tr);
     });
+    $("gearNote").textContent = targetLevel() > 1 ? "The bot doesn't carry gear and coin over from a recipe above 1st level (a file can't vouch for them); your GM sets what a higher-level character has. They're saved in the file anyway." : "";
     var left = 1500 - gearCost();
     $("gearTotal").textContent = (S.gear.length ? "Spent " + fmtPrice(gearCost()) + ". " : "") + (left >= 0 ? "Left: " + fmtPrice(left) + "." : "Over budget by " + fmtPrice(-left) + ".");
     renderSummary();
   }
   ["itemFilter", "itemKind", "itemLevel"].forEach(function (id) { $(id).addEventListener("input", renderItems); });
+
+
+  /* ---------------------------------------------------------------- levels 2 and up */
+  var FEATS = null, FEAT_BY = {}, featsLoading = false;
+  function targetLevel() { return Math.max(1, Math.min(parseInt(S.buildLevel, 10) || 1, S.levelCap || 20)); }
+  function loadFeats(done) {
+    if (FEATS) { done(); return; }
+    if (featsLoading) return;
+    featsLoading = true;
+    var sc = document.createElement("script"); sc.src = "builder-feats.js";
+    sc.onload = function () {
+      FEATS = window.TG_FEATS.map(function (r) { return { name: r[0], display: r[1] || r[0], level: r[2], cat: r[3], rarity: r[4], traits: r[5], arch: r[6], ded: !!r[7], prereq: r[8], summary: r[9], rep: !!r[10] }; });
+      FEATS.forEach(function (f) { FEAT_BY[f.name] = f; });
+      featsLoading = false; done();
+    };
+    sc.onerror = function () { featsLoading = false; $("levelsBox").textContent = "Couldn't load the feat list. Reload the page to try again."; };
+    document.head.appendChild(sc);
+  }
+  function levelState(L) { return S.levels[L] || (S.levels[L] = { feats: {}, src: {}, skill: "", boosts: [] }); }
+  function levelSlots(L) {
+    var cls = curClass(), info = cls && cls.levels[String(L)], seen = {}, out = [];
+    if (!info) return out;
+    info.slots.forEach(function (s) {
+      if (s[2] && !S.rules[s[2]]) return;                                   /* a slot only some campaigns have */
+      var base = s[0] + "|" + s[1]; seen[base] = (seen[base] || 0) + 1;
+      out.push({ id: L + "|" + base + "|" + seen[base], kind: s[0], label: s[1] });
+    });
+    return out;
+  }
+  function pickedAt(L) {                                                    /* every feat chosen at levels 2..L, as {name, level} */
+    var out = [];
+    for (var l = 2; l <= L; l++) { var st = S.levels[l]; if (!st) continue; Object.keys(st.feats).forEach(function (id) { if (st.feats[id]) out.push(st.feats[id]); }); }
+    return out;
+  }
+  function takenNames(L) {
+    var t = {}; ["ancestry", "ancestry2", "class", "skill"].forEach(function (k) { if (S.feats[k]) t[S.feats[k]] = true; });
+    pickedAt(L).forEach(function (n) { t[n] = true; });
+    return t;
+  }
+  function takenArchetypes(L) {
+    var out = [];
+    pickedAt(L).concat(["ancestry", "ancestry2", "class", "skill"].map(function (k) { return S.feats[k]; })).forEach(function (n) { var f = FEAT_BY[n]; if (f && f.ded && out.indexOf(f.arch) < 0) out.push(f.arch); });
+    return out;
+  }
+  function defaultSource(L, slot) {
+    if (slot.kind === "archetype") return takenArchetypes(L).length && L > 2 ? "arch" : "new";
+    return "class";
+  }
+  function sourceOf(L, slot) { var st = levelState(L); return st.src[slot.id] || defaultSource(L, slot); }
+  function poolFor(L, slot, source, query) {
+    var a = curAncestry(), cls = curClass(), taken = takenNames(L), arches = takenArchetypes(L), q = query.trim().toLowerCase(), cname = cls.name.toLowerCase(), out = [], ranks = ranksBefore(L);
+    FEATS.forEach(function (f) {
+      if (f.level > L || (q && f.display.toLowerCase().indexOf(q) < 0 && f.name.toLowerCase().indexOf(q) < 0)) return;
+      if (!skillPrereqMet(f.prereq, ranks)) return;
+      if (!allowed(f.rarity, f.cat === "ancestry" && a ? a.name : "")) return;
+      if (taken[f.name] && !f.rep) return;
+      var k = slot.kind;
+      if (k === "ancestry") { if (f.cat !== "ancestry" || !a || !f.traits.some(function (t) { return a.traits.indexOf(t) >= 0; })) return; }
+      else if (k === "skill") { if (f.cat !== "skill") return; }
+      else if (k === "general") { if (f.cat !== "general") return; }
+      else {                                                                /* a class slot, or the free archetype slot */
+        if (f.cat !== "class") return;
+        if (source === "class") { if (k === "archetype" || f.arch || f.traits.indexOf(cname) < 0) return; }
+        else if (source === "arch") { if (!f.arch || f.ded || arches.indexOf(f.arch) < 0) return; }
+        else if (source === "new") { if (!f.ded) return; }
+      }
+      out.push(f);
+    });
+    return out;
+  }
+  function ranksBefore(L) {
+    var r = {}; fixedSkills().concat(S.skills).forEach(function (s) { r[s] = 1; });
+    for (var l = 2; l < L; l++) { var st = S.levels[l]; if (st && st.skill) r[st.skill] = (r[st.skill] || 0) + 1; }
+    return r;
+  }
+  var RANK_NAMES = ["trained", "expert", "master", "legendary"], RANK_AT = [1, 3, 7, 15];
+  function skillOptions(L) {
+    var r = ranksBefore(L), out = [];
+    D.skills.forEach(function (s) { var cur = r[s] || 0; if (cur < 4 && L >= RANK_AT[cur]) out.push({ skill: s, to: RANK_NAMES[cur] }); });
+    return out;
+  }
+  function cap1(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  var RANK_WORDS = { trained: 1, expert: 2, master: 3, legendary: 4 };
+  function skillPrereqMet(prereq, ranks) {                                  /* only "trained in Medicine" style requirements; the bot checks the rest on import */
+    return String(prereq || "").split("; ").every(function (part) {
+      var m = /^(trained|expert|master|legendary) in ([A-Za-z]+)$/i.exec(part.trim());
+      if (!m || D.skills.indexOf(m[2].toLowerCase()) < 0) return true;
+      return (ranks[m[2].toLowerCase()] || 0) >= RANK_WORDS[m[1].toLowerCase()];
+    });
+  }
+  function levelDone(L) {
+    var cls = curClass(), info = cls && cls.levels[String(L)], st = levelState(L); if (!info) return true;
+    var ok = levelSlots(L).every(function (s) { return st.feats[s.id]; });
+    if (info.skillIncrease && !st.skill) ok = false;
+    if (info.boosts && st.boosts.length < info.boosts) ok = false;
+    return ok;
+  }
+  function pruneLevels() {
+    var T = targetLevel(), cls = curClass();
+    Object.keys(S.levels).forEach(function (key) {
+      var L = parseInt(key, 10), st = S.levels[key];
+      if (!cls || L > T) { delete S.levels[key]; return; }
+      var ids = levelSlots(L).map(function (s) { return s.id; });
+      Object.keys(st.feats).forEach(function (id) { if (ids.indexOf(id) < 0) delete st.feats[id]; });
+    });
+  }
+  function renderLevels() {
+    var box = $("levelsBox"), T = targetLevel(), cls = curClass();
+    box.textContent = "";
+    var note = document.createElement("p"); note.className = "hint"; note.style.marginTop = "0"; box.appendChild(note);
+    if (T < 2) { note.textContent = "Set “Build up to level” in the rules above to plan this character's later levels. Your party level (if you set one) is the most you can plan."; return; }
+    if (!cls) { note.textContent = "Choose a class first."; return; }
+    note.textContent = "Levels 2 to " + T + (S.levelCap ? " (the party level is " + S.levelCap + ")" : "") + ". Prerequisites are checked by the bot when you import: a feat you don't qualify for is left out and you're asked to choose again.";
+    note.hidden = false;
+    loadFeats(function () { pruneLevels(); drawLevels(box, T, cls); });
+  }
+  function drawLevels(box, T, cls) {
+    var firstOpen = 0;
+    for (var l = 2; l <= T; l++) { if (!levelDone(l)) { firstOpen = l; break; } }
+    for (var L = 2; L <= T; L++) { box.appendChild(drawLevel(L, cls, firstOpen)); }
+  }
+  function drawLevel(L, cls, firstOpen) {
+    var info = cls.levels[String(L)], st = levelState(L), det = document.createElement("details"), sum = document.createElement("summary");
+    det.className = "lvl"; det.open = S.open[L] !== undefined ? S.open[L] : L === firstOpen;
+    det.addEventListener("toggle", function () { S.open[L] = det.open; });
+    sum.textContent = "Level " + L + (levelDone(L) ? " ✓" : "") + (info.features.length ? " — " + info.features.join(", ") : "");
+    det.appendChild(sum);
+    levelSlots(L).forEach(function (slot) { det.appendChild(drawSlot(L, slot, st)); });
+    if (info.skillIncrease) {
+      var h = document.createElement("h3"); h.textContent = "Skill increase"; det.appendChild(h);
+      var p = document.createElement("div"); p.className = "pills"; det.appendChild(p);
+      skillOptions(L).forEach(function (o) {
+        var b = document.createElement("button"); b.type = "button"; b.className = "pill"; b.textContent = cap1(o.skill) + " → " + o.to; b.setAttribute("aria-pressed", st.skill === o.skill ? "true" : "false");
+        b.addEventListener("click", function () { st.skill = st.skill === o.skill ? "" : o.skill; refresh(); }); p.appendChild(b);
+      });
+    }
+    if (info.boosts) {
+      var hb = document.createElement("h3"); hb.textContent = "Attribute boosts (" + st.boosts.length + "/" + info.boosts + ")"; det.appendChild(hb);
+      var pb = document.createElement("div"); pb.className = "pills"; det.appendChild(pb);
+      pills(pb, ATTR, st.boosts, info.boosts, function (o) { toggle(st.boosts, o); refresh(); }, function (o) { return NAMES[o]; });
+    }
+    return det;
+  }
+  function drawSlot(L, slot, st) {
+    var wrap = document.createElement("div"), h = document.createElement("h3"); h.textContent = slot.label; wrap.appendChild(h);
+    var source = sourceOf(L, slot);
+    if (slot.kind === "class" || slot.kind === "archetype") {
+      var seg = document.createElement("div"); seg.className = "pills";
+      (slot.kind === "class" ? [["class", "Class feats"], ["arch", "Archetype feats"], ["new", "New archetype"]] : [["arch", "Archetype feats"], ["new", "New archetype (dedication)"]]).forEach(function (o) {
+        var b = document.createElement("button"); b.type = "button"; b.className = "pill"; b.textContent = o[1]; b.setAttribute("aria-pressed", source === o[0] ? "true" : "false");
+        b.addEventListener("click", function () { if (source !== o[0]) { st.src[slot.id] = o[0]; st.feats[slot.id] = ""; refresh(); } }); seg.appendChild(b);
+      });
+      wrap.appendChild(seg);
+    }
+    var picker = document.createElement("div"), input = document.createElement("input"), list = document.createElement("div");
+    picker.className = "picker"; input.type = "text"; input.placeholder = "Search…"; list.className = "plist"; picker.appendChild(input); picker.appendChild(list); wrap.appendChild(picker);
+    var draw = function () {
+      var entries = poolFor(L, slot, source, input.value).map(function (f) { return { name: f.name, label: f.display + " (level " + f.level + ")", rarity: f.rarity, note: (f.prereq ? "Needs " + f.prereq + " — " : "") + f.summary }; });
+      renderPicker(list, input, entries, st.feats[slot.id] || "", function (n) { st.feats[slot.id] = st.feats[slot.id] === n ? "" : n; st.src[slot.id] = source; refresh(); }, 40);
+    };
+    input.addEventListener("input", draw); draw();
+    var cur = document.createElement("div"); cur.className = "chosen"; cur.textContent = st.feats[slot.id] ? "Chosen: " + st.feats[slot.id] : "Nothing chosen yet."; wrap.appendChild(cur);
+    return wrap;
+  }
+  function levelSource(L, slot) {                                          /* what the bot's picker calls the source: class:Fighter, arch:<name>, new */
+    var st = levelState(L), name = st.feats[slot.id], f = FEAT_BY[name], source = sourceOf(L, slot);
+    if (slot.kind === "class" || slot.kind === "archetype") {
+      if (source === "new") return "new";
+      if (source === "arch") return f && f.arch ? "arch:" + f.arch : null;
+      return "class:" + curClass().name;
+    }
+    return null;
+  }
+  function levelBlocks() {
+    var out = [], T = targetLevel();
+    for (var L = 2; L <= T; L++) {
+      var st = levelState(L), info = curClass().levels[String(L)], feats = [];
+      levelSlots(L).forEach(function (slot, index) {
+        if (!st.feats[slot.id]) return;
+        feats.push({ index: index, kind: slot.kind, label: slot.label, name: st.feats[slot.id], source: levelSource(L, slot), answers: [] });
+      });
+      var payload = {};
+      if (feats.length) payload.feats = feats;
+      if (info.skillIncrease && st.skill) payload.skill_increase = st.skill;
+      if (st.boosts.length) payload.boosts = st.boosts.slice();
+      out.push({ kind: "level", level: L, payload: payload });
+    }
+    return out;
+  }
+  function scoreMods(T) {
+    var b = boostSets(), score = {};
+    ATTR.forEach(function (a) { score[a] = 10; });
+    b.flaws.forEach(function (a) { score[a] -= 2; });
+    function boost(a) { score[a] += score[a] >= 18 ? 1 : 2; }
+    ["ancestry", "background", "cls", "free"].forEach(function (k) { b.sets[k].forEach(boost); });
+    for (var L = 2; L <= T; L++) { var st = S.levels[L]; if (st) st.boosts.forEach(boost); }
+    var m = {}; ATTR.forEach(function (a) { m[a] = Math.floor((score[a] - 10) / 2); });
+    return m;
+  }
 
   /* ---------------------------------------------------------------- summary & problems */
   function problems() {
@@ -490,6 +710,12 @@
     if (S.free.length < D.freeBoosts) p.push("Spend your " + D.freeBoosts + " free boosts.");
     if (c && S.skills.length < skillAllowance()) p.push("Choose " + (skillAllowance() - S.skills.length) + " more skill(s).");
     featSlots().forEach(function (s) { if (!S.feats[s.key]) p.push("Choose a feat: " + s.label.toLowerCase() + "."); });
+    if (c) for (var L = 2; L <= targetLevel(); L++) {
+      var info = c.levels[String(L)], st = S.levels[L] || { feats: {}, skill: "", boosts: [] };
+      if (!levelSlots(L).every(function (s) { return st.feats[s.id]; })) p.push("Choose the feats for level " + L + ".");
+      if (info && info.skillIncrease && !st.skill) p.push("Choose the skill increase for level " + L + ".");
+      if (info && info.boosts && st.boosts.length < info.boosts) p.push("Spend the " + info.boosts + " boosts for level " + L + ".");
+    }
     if (gearCost() > 1500) p.push("Your gear costs more than 15 gp.");
     return p.filter(function (x, i) { return p.indexOf(x) === i; });
   }
@@ -497,13 +723,14 @@
     var dl = $("summary"); dl.textContent = "";
     function row(t, v) { if (!v) return; var a = document.createElement("dt"); a.textContent = t; var b = document.createElement("dd"); b.textContent = v; dl.appendChild(a); dl.appendChild(b); }
     row("Name", S.name); row("Ancestry", S.ancestry + (S.heritage ? " · " + S.heritage : "")); row("Background", S.background); row("Class", S.cls + (S.keyAttr ? " (" + NAMES[S.keyAttr] + ")" : ""));
-    var m = mods(); row("Modifiers", ATTR.map(function (a) { return NAMES[a].slice(0, 3) + " " + (m[a] >= 0 ? "+" : "") + m[a]; }).join(" · "));
+    row("Level", targetLevel() > 1 ? "1 to " + targetLevel() : "");
+    var m = targetLevel() > 1 ? scoreMods(targetLevel()) : mods(); row("Modifiers", ATTR.map(function (a) { return NAMES[a].slice(0, 3) + " " + (m[a] >= 0 ? "+" : "") + m[a]; }).join(" · "));
     row("Skills", fixedSkills().concat(S.skills).join(", ")); row("Feats", ["ancestry", "ancestry2", "class", "skill"].map(function (k) { return S.feats[k]; }).filter(Boolean).join(", "));
     row("Gear", S.gear.map(function (g) { return (g.qty > 1 ? g.qty + "× " : "") + g.name; }).join(", "));
     $("problems").textContent = problems().join(" ");
   }
 
-  function refresh() { syncRuleChecks(); renderAncestry(); renderBackground(); renderClass(); renderFree(); renderSkills(); renderFeats(); renderSummary(); }
+  function refresh() { syncRuleChecks(); renderAncestry(); renderBackground(); renderClass(); renderFree(); renderSkills(); renderFeats(); renderLevels(); renderSummary(); }
 
   /* ---------------------------------------------------------------- the file */
   function stable(v) {
@@ -528,19 +755,28 @@
     return st;
   }
   function coins() { var left = Math.max(0, 1500 - gearCost()); return { cp: left % 10, sp: Math.floor((left % 100) / 10), gp: Math.floor(left / 100), pp: 0 }; }
-  function usedRules() { return { free_archetype: false, ancestry_paragon: !!(S.rules.ancestry_paragon && S.feats.ancestry2), dual_class: false, skill_paragon: false }; }
+  function usedRules() {
+    var fa = false, ap = !!(S.rules.ancestry_paragon && S.feats.ancestry2);
+    if (curClass()) levelBlocks().forEach(function (b) { (b.payload.feats || []).forEach(function (f) { if (f.label.toLowerCase().indexOf("free archetype") >= 0) fa = true; if (f.label.toLowerCase().indexOf("paragon") >= 0) ap = true; }); });
+    return { free_archetype: fa, ancestry_paragon: ap, dual_class: false, skill_paragon: false };
+  }
 
   $("download").addEventListener("click", function () {
     var errs = problems();
     if (errs.length && !window.confirm("Some choices are missing:\n\n" + errs.join("\n") + "\n\nDownload anyway? The bot will ask you for the rest in Discord.")) return;
     if (!window.crypto || !crypto.subtle) { $("problems").textContent = "This browser can't make the file here (it needs a secure page)."; return; }
     var payload = { name: S.name.trim() || "Unnamed", level: 1, state: buildState() };
-    sha256("" + "|" + stable({ kind: "build", level: 1, payload: payload })).then(function (hash) {
+    var blocks = [{ kind: "build", level: 1, payload: payload }].concat(curClass() ? levelBlocks() : []);
+    var chain = Promise.resolve(""), hashes = [];
+    blocks.forEach(function (b) {                                                        /* each block's hash covers the one before it, as the bot works it out */
+      chain = chain.then(function (prev) { return sha256(prev + "|" + stable({ kind: b.kind, level: b.level, payload: b.payload })).then(function (h) { hashes.push(h); b.chain_hash = h; return h; }); });
+    });
+    chain.then(function (hash) {
       var doc = {
         format: "tablegoblin-recipe", format_version: 1, system: "pf2e", data_release: D.release, exported_at: new Date().toISOString().replace(/\.\d+Z$/, "+00:00"),
-        name: payload.name, level: 1, source: "wiki-builder",
+        name: payload.name, level: blocks[blocks.length - 1].level, source: "wiki-builder",
         rules: { campaign_code: S.code || null, variants: S.rules, allow_uncommon: S.allowUncommon, allow_rare: S.allowRare, exceptions: Object.keys(S.exceptions), level_cap: S.levelCap, used: usedRules() },
-        blocks: [{ kind: "build", level: 1, payload: payload, chain_hash: hash }], head: hash,
+        blocks: blocks, head: hash,
         state: { coins: coins(), equipment: S.gear.map(function (g) { var o = { name: g.name, kind: g.kind, qty: g.qty }; if (g.equipped) o.equipped = true; return o; }) }
       };
       var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 1)], { type: "application/json" }));
