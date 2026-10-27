@@ -71,12 +71,14 @@
       <section id="what" style="padding-top:34px">
         <h2 class="new-head">What it does</h2>
         <ul class="feature-list">
-          <li><strong>Build a character in Discord.</strong> Pick ancestry, class, feats and spells one dropdown at a time, then keep a live sheet. Already have a Pathbuilder sheet? You can import it too.</li>
-          <li><strong>Play from chat.</strong> Type <code>pc::"grins and swings"{strike}</code> and the bot rolls it as your character, under their own name and portrait.</li>
-          <li><strong>Run encounters.</strong> Initiative, conditions, saves, reactions and the dying rules.</li>
-          <li><strong>Use battle maps.</strong> Walls, terrain, light and fog of war, with cover and flanking worked out for you.</li>
-          <li><strong>Pull in creatures and NPCs.</strong> Take any bestiary creature or build your own, with stat blocks kept GM-only.</li>
-          <li><strong>Handle loot, shops and towns.</strong> Treasure payouts with unidentified magic items, a shared party fund, and generated towns with their shopkeepers.</li>
+          <li><strong>Build a character in Discord or on the site.</strong> Pick ancestry (including versatile heritages), class, feats and spells one dropdown at a time, plan every level on the wiki's Character builder, and keep a live sheet. Already have a Pathbuilder sheet? Import it, or print a readable list of what you picked at each level.</li>
+          <li><strong>Play from chat.</strong> Type <code>pc::"grins and swings"{strike}</code> and the bot rolls it as your character, under their own name and portrait. About 90 feat actions are also in your ability list.</li>
+          <li><strong>Run encounters.</strong> Initiative, conditions, saves, reactions and the dying rules, with critical specializations, persistent damage, afflictions, auras and polymorph battle forms worked out for you.</li>
+          <li><strong>Use battle maps.</strong> Walls, terrain, magical light and darkness, daylight and fog of war, with cover, flanking, falls and forced movement worked out for you. Prepare maps on the wiki's Map prep page.</li>
+          <li><strong>Craft, earn and travel between fights.</strong> Craft items over downtime days with formulas, helpers, upgrades and reverse engineering; buy merchant upgrades; Earn Income, Subsist, Treat Disease and Repair; an optional cost of living; and a travel-time calculator that moves the campaign clock.</li>
+          <li><strong>Pull in creatures and NPCs.</strong> Take any bestiary creature or build your own, with stat blocks kept GM-only, plus animal companions, familiars, eidolons, constructs, vehicles and siege weapons.</li>
+          <li><strong>Handle loot, shops and towns.</strong> Treasure payouts with unidentified magic items, a shared party fund, packs you can set down and pick up again, and generated towns with their shopkeepers.</li>
+          <li><strong>Let the GM set the table's rules.</strong> Variant rules (free archetype, ancestry paragon, automatic bonus progression, gradual boosts), rarity, a party level cap, sell rates and the cost of living, shared with players as a campaign code.</li>
         </ul>
         <div class="note">
           <p><strong>Premium soon.</strong> The character builder and battle maps will become premium features. They are free while we test them.</p>
@@ -85,6 +87,27 @@
 
       <section id="recent" style="padding-top:34px">
         <h2 class="new-head">Recently added</h2>
+        <h3 class="new-date">Oct 27, 2026</h3>
+        <ul class="new-list">
+          <li><strong>Crafting:</strong> the new <code>/tgcraft</code> command makes items over downtime days from the open downtime break: formulas, helpers who Aid your check, reverse engineering, upgrades and the Crafting feats. <code>/tgshop upgrade</code> has a merchant crafter upgrade an item for the Price difference.</li>
+          <li><strong>Downtime and exploration:</strong> an optional cost of living campaign rule, Subsist, Treat Disease, Repair for companions and vehicles, and a GM Travel time button on the explore panel that can advance the clock. Follow the Expert, Hustle limits and many exploration feats change the numbers.</li>
+          <li><strong>Packs and darkness:</strong> Drop now offers <strong>Set it down</strong> (pick it up later from the Gear tab); magical Darkness fades by itself; spells that grant fly or burrow Speed work.</li>
+          <li><strong>More feats:</strong> feats that raise skills to expert or master, Operatic Adventurer, and feats that change Subsist and Earn Income now work, and a feat's own notes show on your sheet.</li>
+        </ul>
+        <h3 class="new-date">Oct 26, 2026</h3>
+        <ul class="new-list">
+          <li><strong>Versatile heritages:</strong> pick one in the build wizard or the wiki builder and its feats open in every ancestry slot, with their choices asked right after a build or level-up. Heritage feats such as Ambersoul, Cindersoul, Daywalker and Mist Child now do their job.</li>
+          <li><strong>Battle forms:</strong> polymorph spells (Aerial, Animal, Dinosaur, Dragon Form and the rest) change your AC, Speeds, Strikes, size and skills, and lock spellcasting until they end.</li>
+          <li><strong>Character builder improvements:</strong> every pick list shows all options, sections collapse, and the summary's missed steps are links back to their section.</li>
+          <li><strong>Also:</strong> <code>/tgchar print</code> lists your choices by level, <code>/tgshop remove_stock</code>, a GM can find a character by alias or GM alias, two new campaign rules (Automatic Bonus Progression and Gradual Ability Boosts), and usage counts on the home page.</li>
+        </ul>
+        <h3 class="new-date">Oct 25, 2026</h3>
+        <ul class="new-list">
+          <li><strong>Map prep page:</strong> paint a map's terrain and light on the wiki and give the file to an upload; <code>/tgmap export_terrain</code> sends a map's terrain back to edit.</li>
+          <li><strong>Class and archetype actions</strong> that used to be slash-only are now on your sheet and in chat, and long option lists have a Search.</li>
+          <li><strong>Size, spells and maps:</strong> Enlarge works in full and resizes the token; a fight's short spells end with it; doors, windows, chests and levers toggle with <code>/tgmap interact</code>.</li>
+          <li><strong>Companions, mythic proficiency and Boosted Reroll</strong> were added; animal companions advance on their own when you take the feats.</li>
+        </ul>
         <h3 class="new-date">Oct 24, 2026</h3>
         <ul class="new-list">
           <li><strong>Replies and images in character posts:</strong> when you answer a message with <code>pc::</code>, <code>gm::</code> or <code>npc::</code>, the post now shows what you replied to ("Replying to Dana: the start of their message") with a link to jump to it, and it pings them only if your reply did. Images and files you attach come through too. If one is too big for the server to carry, the post says which. Editing a post keeps its reply line.</li>
