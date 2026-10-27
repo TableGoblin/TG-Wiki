@@ -251,11 +251,11 @@
 
   /* ---------------------------------------------------------------- generic picker */
   function renderPicker(listEl, filterEl, entries, selected, onPick, limit) {
-    var q = filterEl.value.trim().toLowerCase(), shown = 0;
+    var q = filterEl.value.trim().toLowerCase(), shown = 0, hidden = 0;
     listEl.textContent = "";
     entries.forEach(function (e) {
       if (q && e.name.toLowerCase().indexOf(q) < 0) return;
-      if (shown >= (limit || 80)) return;
+      if (shown >= (limit || 80)) { hidden++; return; }
       shown++;
       var b = document.createElement("button");
       b.type = "button"; b.className = "opt"; b.setAttribute("aria-pressed", e.name === selected ? "true" : "false");
@@ -266,6 +266,7 @@
       listEl.appendChild(b);
     });
     if (!shown) { var none = document.createElement("div"); none.className = "opt"; none.textContent = "Nothing matches."; listEl.appendChild(none); }
+    if (hidden) { var more = document.createElement("div"); more.className = "opt"; more.textContent = hidden + " more not shown: type in the search box to narrow the list."; listEl.appendChild(more); }
   }
 
   function pills(el, options, picked, max, onToggle, labelOf) {
@@ -435,7 +436,7 @@
 
   function renderBackground() {
     renderBgAttrFilter();
-    renderPicker($("bgList"), $("bgFilter"), backgroundEntries(), S.background, function (n) { if (n !== S.background) { S.background = n; S.bgBoosts = {}; } refresh(); }, 60);
+    renderPicker($("bgList"), $("bgFilter"), backgroundEntries(), S.background, function (n) { if (n !== S.background) { S.background = n; S.bgBoosts = {}; } refresh(); }, Infinity);
     var bg = curBackground();
     $("bgChosen").textContent = bg ? bg.name + (bg.skills.length ? " · trains " + bg.skills.join(", ") : "") + (bg.lores.length ? " · Lore: " + bg.lores.join(", ") : "") + ((bg.feats && bg.feats.length) ? " · feat: " + bg.feats.join(", ") : "") + (bg.freeLores ? " · and a Lore you name in Discord" : "") : "";
     showDetail($("bgDetail"), bg ? bg.name : "", "origins", function (t) { return t.background[bg.name]; }, bg ? bg.summary : "");
@@ -555,7 +556,7 @@
       var f = document.createElement("input"); f.type = "text"; f.placeholder = "Search…"; var list = document.createElement("div"); list.className = "plist";
       wrap.appendChild(f); wrap.appendChild(list); box.appendChild(wrap);
       var pickedName = function () { return S.feats[slot.key] || ""; };
-      var draw = function () { renderPicker(list, f, featEntries(slot), pickedName(), function (n) { S.feats[slot.key] = pickedName() === n ? "" : n; refresh(); }, 60); };
+      var draw = function () { renderPicker(list, f, featEntries(slot), pickedName(), function (n) { S.feats[slot.key] = pickedName() === n ? "" : n; refresh(); }, Infinity); };
       f.addEventListener("input", draw); draw();
       var cur = document.createElement("div"); cur.className = "chosen"; cur.textContent = pickedName() ? "Chosen: " + pickedName() : "Nothing chosen yet."; box.appendChild(cur);
       if (pickedName()) detailFor(box, pickedName(), "feats", function (t) { return t[pickedName()]; }, featFacts(pickedName()));
@@ -860,7 +861,7 @@
     picker.className = "picker"; input.type = "text"; input.placeholder = "Search…"; list.className = "plist"; picker.appendChild(input); picker.appendChild(list); wrap.appendChild(picker);
     var draw = function () {
       var entries = poolFor(L, slot, source, input.value).map(function (f) { return { name: f.name, label: f.display + " (level " + f.level + ")", rarity: f.rarity, note: (f.prereq ? "Needs " + f.prereq + " — " : "") + f.summary }; });
-      renderPicker(list, input, entries, st.feats[slot.id] || "", function (n) { st.feats[slot.id] = st.feats[slot.id] === n ? "" : n; st.src[slot.id] = source; refresh(); }, 40);
+      renderPicker(list, input, entries, st.feats[slot.id] || "", function (n) { st.feats[slot.id] = st.feats[slot.id] === n ? "" : n; st.src[slot.id] = source; refresh(); }, Infinity);
     };
     input.addEventListener("input", draw); draw();
     var cur = document.createElement("div"); cur.className = "chosen"; cur.textContent = st.feats[slot.id] ? "Chosen: " + st.feats[slot.id] : "Nothing chosen yet."; wrap.appendChild(cur);
