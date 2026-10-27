@@ -108,8 +108,11 @@
 
         <div class="panel">
           <h2><span class="num">4</span>Background</h2>
-          <p class="hint" style="margin:0 0 4px">Show backgrounds that boost:</p>
-          <div class="pills" id="bgAttrFilter"></div>
+          <div class="filterbox">
+            <p class="filter-title">Narrow the list by attribute</p>
+            <p class="filter-sub">Pick the attribute you want your background to boost and only matching backgrounds are listed. <span id="bgCount"></span></p>
+            <div class="pills" id="bgAttrFilter"></div>
+          </div>
           <div class="picker"><input type="text" id="bgFilter" placeholder="Search backgrounds…"><div class="plist" id="bgList"></div></div>
           <div class="chosen" id="bgChosen"></div>
           <div id="bgDetail" hidden></div>
@@ -436,6 +439,7 @@
 
   function renderBackground() {
     renderBgAttrFilter();
+    $("bgCount").textContent = backgroundEntries().length + " backgrounds match.";
     renderPicker($("bgList"), $("bgFilter"), backgroundEntries(), S.background, function (n) { if (n !== S.background) { S.background = n; S.bgBoosts = {}; } refresh(); }, Infinity);
     var bg = curBackground();
     $("bgChosen").textContent = bg ? bg.name + (bg.skills.length ? " · trains " + bg.skills.join(", ") : "") + (bg.lores.length ? " · Lore: " + bg.lores.join(", ") : "") + ((bg.feats && bg.feats.length) ? " · feat: " + bg.feats.join(", ") : "") + (bg.freeLores ? " · and a Lore you name in Discord" : "") : "";
@@ -971,7 +975,32 @@
     }
 
     box.appendChild(summaryByLevel(T, cls));
-    $("problems").textContent = problems().join(" ");
+    showProblems($("problems"), problems());
+  }
+  /* a missed step is a link back to the section that needs it */
+  var PROBLEM_SECTIONS = [[/^Name your/, "2"], [/level \d/, "10"], [/ancestry|heritage/i, "3"], [/background/i, "4"], [/^Choose a feat/, "8"], [/class|key attribute|^Choose your /i, "5"],
+    [/free boosts/, "6"], [/more skill/, "7"], [/cantrip|spell/i, "9"], [/gear/i, "11"]];
+  function panelNumbered(num) {
+    var found = null;
+    Array.prototype.forEach.call(document.querySelectorAll(".panel"), function (panel) { var n = panel.querySelector(":scope > h2 .num"); if (n && n.textContent === num) found = panel; });
+    return found;
+  }
+  function showProblems(box, list) {
+    box.textContent = "";
+    list.forEach(function (text) {
+      var link = document.createElement("button"); link.type = "button"; link.className = "problem-link"; link.textContent = text;
+      var hit = PROBLEM_SECTIONS.filter(function (r) { return r[0].test(text); })[0], panel = hit ? panelNumbered(hit[1]) : null;
+      if (panel) {
+        link.title = "Go to that section";
+        link.addEventListener("click", function () {
+          panel.classList.remove("collapsed"); var b = panel.querySelector(":scope > .collapse-btn"); if (b) b.setAttribute("aria-expanded", "true");
+          panel.hidden = false; panel.scrollIntoView({ behavior: "smooth", block: "start" });
+          var h = panel.querySelector(":scope > h2"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+          panel.classList.add("flash"); setTimeout(function () { panel.classList.remove("flash"); }, 1600);
+        });
+      } else { link.disabled = true; }
+      box.appendChild(link); box.appendChild(document.createTextNode(" "));
+    });
   }
   function spellAbility(cls) { var a = { bard: "cha", sorcerer: "cha", oracle: "cha", summoner: "cha", wizard: "int", witch: "int", magus: "int", necromancer: "int", psychic: "int", cleric: "wis", druid: "wis", animist: "wis" }; return a[cls.name.toLowerCase()] || cls.keys[0]; }
   function line(label, value, rankChips) {
@@ -1072,6 +1101,18 @@
   $("charName").addEventListener("input", function () { S.name = this.value; renderSummary(); });
   ["ancestryFilter", "heritageFilter", "bgFilter", "classFilter"].forEach(function (id) { $(id).addEventListener("input", function () { renderAncestry(); renderBackground(); renderClass(); }); });
 
+  /* a collapse/expand button in the corner of every section, to hand back the screen to what is still being decided */
+  Array.prototype.forEach.call(document.querySelectorAll(".panel"), function (panel) {
+    var head = panel.querySelector(":scope > h2"); if (!head) return;
+    var btn = document.createElement("button"); btn.type = "button"; btn.className = "collapse-btn";
+    var set = function (collapsed) {
+      panel.classList.toggle("collapsed", collapsed); btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      var title = head.textContent.replace(/^\d+/, "").trim(); btn.setAttribute("aria-label", (collapsed ? "Expand " : "Collapse ") + title); btn.title = collapsed ? "Expand this section" : "Collapse this section";
+    };
+    btn.addEventListener("click", function () { set(!panel.classList.contains("collapsed")); });
+    head.addEventListener("click", function () { if (panel.classList.contains("collapsed")) set(false); });
+    set(false); panel.insertBefore(btn, head.nextSibling);
+  });
   buildRuleChecks(); refresh(); renderItems(); renderGear();
 }());
 </script>
