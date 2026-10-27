@@ -97,6 +97,7 @@
         <div class="panel" style="grid-area:light">
           <h2>2 · Light</h2>
           <div class="seg" id="ambients" role="group" aria-label="Whole map light level"></div>
+          <label class="hint" style="display:block;margin-top:8px"><input type="checkbox" id="sunlight"> 🌞 Direct sunlight (outdoors in daylight)</label>
           <p class="hint">The whole map's light level. Torches and lamps painted above light up their surroundings when the map is dim or dark. Fog of war is not saved here; it starts fresh when the encounter does.</p>
         </div>
 
@@ -452,7 +453,7 @@
       var pa = a.split(","), pb = b.split(","), ka = state.cells[a], kb = state.cells[b];
       return ka < kb ? -1 : ka > kb ? 1 : (pa[1] - pb[1]) || (pa[0] - pb[0]);
     }).forEach(function (id) { var p = id.split(","), key = state.cells[id]; (groups[key] = groups[key] || []).push(cellLabel(+p[0], +p[1])); });
-    var text = JSON.stringify({ format: DATA.format, version: DATA.version, columns: state.cols, rows: state.rows, ambient: state.ambient, cells: groups }, null, 1);
+    var text = JSON.stringify({ format: DATA.format, version: DATA.version, columns: state.cols, rows: state.rows, ambient: state.ambient, sunlight: $("sunlight").checked, cells: groups }, null, 1);
     var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
     a.download = fileName(); document.body.appendChild(a); a.click(); a.remove();
     tgEvent("terrain-file-downloaded");
@@ -476,6 +477,7 @@
       snapshot();
       $("cols").value = d.columns; $("rows").value = d.rows; state.cols = d.columns; state.rows = d.rows;
       state.cells = cells; if (DATA.ambients.some(function (a) { return a.level === d.ambient; })) state.ambient = d.ambient;
+      $("sunlight").checked = d.sunlight === true;
       if (!state.img) state.blank = true;
       markAmbient(); readGrid(); $("fileError").textContent = "";
     }).catch(function (e) { $("fileError").textContent = e.message; }).then(function () { input.value = ""; });
