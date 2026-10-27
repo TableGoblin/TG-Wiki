@@ -40,6 +40,7 @@
         <a href="wiki.html#chars"><span>Characters</span></a>
         <a href="wiki.html#chat"><span>Playing in Character</span></a>
         <a href="wiki.html#npcs"><span>Creatures &amp; NPCs</span></a>
+        <a href="wiki.html#dice"><span>Dice Roller</span></a>
         <a href="wiki.html#combat"><span>Encounters</span></a>
         <a href="wiki.html#maps"><span>Battle Maps</span></a>
         <a href="wiki.html#loot"><span>Loot &amp; the Purse</span></a>
@@ -659,7 +660,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
               <tr><td><code>&#123;give&#125;</code></td><td>Hand loose gear to another party member: pick the stack, then who gets it. A name (and a count) skips the first step.</td><td><code>pc::&#123;give&#125;</code> &middot; <code>pc::&#123;give: rope&#125;</code> &middot; <code>pc::&#123;give: 3 rations&#125;</code></td></tr>
               <tr><td><code>&#123;feint&#125;</code></td><td>Feint a foe (Deception, with your multiple attack penalty).</td><td><code>pc::"sizes up an opening"&#123;feint&#125;</code></td></tr>
               <tr><td><code>&#123;step&#125;</code> &middot; <code>&#123;stride&#125;</code></td><td>Move your token on the encounter map (a Step is 5 feet and never draws a reaction; a Stride can). With no map or token it is a narrative line only.</td><td><code>pc::&#123;stride&#125;</code> &middot; <code>pc::"slips behind the pillar"&#123;step&#125;</code></td></tr>
-              <tr><td><code>&#123;roll: dice&#125;</code></td><td>Roll dice as your character: the result is posted under their name, after your narration if you wrote any. See <a href="#dice">Rolling dice</a> for what you can type.</td><td><code>pc::&#123;roll: 4d6kh3&#125;</code> &middot; <code>pc::"swings for the fences"&#123;roll: 1d20+7 adv&#125;</code></td></tr>
+              <tr><td><code>&#123;roll: dice&#125;</code></td><td>Roll dice as your character: the result is posted under their name, after your narration if you wrote any. See <a href="#dice">Dice Roller</a> for what you can type.</td><td><code>pc::&#123;roll: 4d6kh3&#125;</code> &middot; <code>pc::"swings for the fences"&#123;roll: 1d20+7 adv&#125;</code></td></tr>
               <tr><td><code>&#123;rk&#125;</code></td><td>Recall Knowledge about a creature. See below.</td><td><code>pc::&#123;rk&#125;</code> &middot; <code>pc::"remembers an old story"&#123;rk&#125;</code></td></tr>
             </tbody>
           </table>
@@ -846,6 +847,42 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         </div>
       </section>
 
+      <!-- ============ 06 DICE ROLLER ============ -->
+      <section id="dice">
+        <div class="sec-head">
+          <h2>Dice Roller</h2>
+          <p class="sec-sub">Roll anything: <code>/tgroll</code> or <code>&#123;roll: ...&#125;</code> in chat.</p>
+        </div>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgroll <b>dice</b> <span class="opt">[label] [secret]</span></div><span class="badge b-self">self</span>
+            <div class="desc">Rolls the dice you type and posts the result. <code>label</code> says what the roll is for; <code>secret</code> shows the result only to you.</div></div>
+          <div class="cmd-row"><div class="cmd">&#123;roll: <b>dice</b>&#125;</div><span class="badge b-self">self</span>
+            <div class="desc">The same from chat, as your character: <code>pc::"swings for the fences"&#123;roll: 1d20+7 adv&#125;</code>. Your narration comes first.</div></div>
+        </div>
+        <h3>What you can type</h3>
+        <p>
+          <code>/tgroll</code> and <code>&#123;roll: ...&#125;</code> take the same dice expressions. Spaces are optional, and you can mix groups and flat numbers in any order.
+        </p>
+        <div class="t-wrap">
+          <table>
+            <thead><tr><th>You type</th><th>What happens</th></tr></thead>
+            <tbody>
+              <tr><td><code>2d6</code> &middot; <code>d20</code></td><td>Roll that many dice with that many sides. The count may be left out (one die).</td></tr>
+              <tr><td><code>2d6 + 3</code> &middot; <code>1d20 - 1</code></td><td>Add or subtract a flat number.</td></tr>
+              <tr><td><code>1d20 + 2d4 + 5</code></td><td>Any number of groups and numbers, added or subtracted (up to 20 terms).</td></tr>
+              <tr><td><code>4d6kh3</code></td><td><strong>Keep highest:</strong> roll four, keep the three highest. The dropped die is struck through.</td></tr>
+              <tr><td><code>2d20kl1</code></td><td><strong>Keep lowest:</strong> roll two, keep the lowest one.</td></tr>
+              <tr><td><code>1d20 + 7 adv</code> &middot; <code>1d20 + 7 dis</code></td><td><strong>Advantage / disadvantage:</strong> the first d20 is rolled twice and the better (<code>adv</code>) or worse (<code>dis</code>) one is kept. Same as <code>2d20kh1</code> / <code>2d20kl1</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          A single d20 (or the kept die of an <code>adv</code> / <code>dis</code> roll) that lands on 20 or 1 is flagged as a <strong>natural 20</strong> or <strong>natural 1</strong>.
+          At most 100 dice per group and 1,000 sides, to keep one roll from filling a channel. <code>/tgroll</code> also takes a <code>label</code> (what the roll is for, shown in front) and <code>secret</code> (only you see the result).
+          These rolls are plain dice: they add no modifiers from your sheet. Use <code>/tgcheck</code> or a Strike for those.
+        </p>
+      </section>
+
       <!-- ============ 06 ENCOUNTERS ============ -->
       <section id="combat">
         <div class="sec-head">
@@ -1013,29 +1050,6 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           <code>{reaction}</code> resolves one, right from chat: a dropdown of only the reactions above that <em>you</em> actually hold, kept separate from <code>{action}</code>'s own much longer list of everything else you can do. <code>{reaction: stand still}</code> (or any of their names) runs that one directly. Reactive Strike and Implement's Interruption also keep their original dedicated words (<code>{reactivestrike}</code>, <code>{interrupt}</code>) &mdash; <code>{reaction}</code> is a second way to reach the same roll, not a replacement for them.
         </p>
 
-        <h3 id="dice">Rolling dice</h3>
-        <p>
-          <code>/tgroll</code> and <code>&#123;roll: ...&#125;</code> take the same dice expressions. Spaces are optional, and you can mix groups and flat numbers in any order.
-        </p>
-        <div class="t-wrap">
-          <table>
-            <thead><tr><th>You type</th><th>What happens</th></tr></thead>
-            <tbody>
-              <tr><td><code>2d6</code> &middot; <code>d20</code></td><td>Roll that many dice with that many sides. The count may be left out (one die).</td></tr>
-              <tr><td><code>2d6 + 3</code> &middot; <code>1d20 - 1</code></td><td>Add or subtract a flat number.</td></tr>
-              <tr><td><code>1d20 + 2d4 + 5</code></td><td>Any number of groups and numbers, added or subtracted (up to 20 terms).</td></tr>
-              <tr><td><code>4d6kh3</code></td><td><strong>Keep highest:</strong> roll four, keep the three highest. The dropped die is struck through.</td></tr>
-              <tr><td><code>2d20kl1</code></td><td><strong>Keep lowest:</strong> roll two, keep the lowest one.</td></tr>
-              <tr><td><code>1d20 + 7 adv</code> &middot; <code>1d20 + 7 dis</code></td><td><strong>Advantage / disadvantage:</strong> the first d20 is rolled twice and the better (<code>adv</code>) or worse (<code>dis</code>) one is kept. Same as <code>2d20kh1</code> / <code>2d20kl1</code>.</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p>
-          A single d20 (or the kept die of an <code>adv</code> / <code>dis</code> roll) that lands on 20 or 1 is flagged as a <strong>natural 20</strong> or <strong>natural 1</strong>.
-          At most 100 dice per group and 1,000 sides, to keep one roll from filling a channel. <code>/tgroll</code> also takes a <code>label</code> (what the roll is for, shown in front) and <code>secret</code> (only you see the result).
-          These rolls are plain dice: they add no modifiers from your sheet. Use <code>/tgcheck</code> or a Strike for those.
-        </p>
-
         <h3>A roll for anything else</h3>
         <p>
           Not every DC in the game has a feat or command of its own behind it &mdash; a locked door's
@@ -1044,8 +1058,6 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           roll in this bot computes.
         </p>
         <div class="cmds">
-          <div class="cmd-row"><div class="cmd">/tgroll <b>dice</b> <span class="opt">[label] [secret]</span></div><span class="badge b-self">self</span>
-            <div class="desc">A dice roller: <code>2d6+3</code>, <code>4d6kh3</code> (keep the highest three), <code>2d20kl1</code> (keep the lowest), <code>1d20 + 2d4 + 5</code>, or <code>1d20+7 adv</code> / <code>dis</code>. Dropped dice are struck through and a natural 20 or 1 is flagged. In chat: <code>{roll: 4d6kh3}</code> rolls as your character.</div></div>
           <div class="cmd-row"><div class="cmd">/tgcheck <b>skill</b> <span class="opt">[dc] [action] [target] [alias] [secret]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc"><code>action</code> names what the check is for &mdash; Climb, Swim, Lie, Aid, Sense Motive and so on (the list follows the skill you picked). Your feats that help with that action apply automatically: Sure Feet turns a successful Climb into a critical success, for example. The result then has a <b>&#9734; Favourite</b> button: starred actions are listed first, with a star, the next time you pick one &mdash; and they also appear in your character sheet's skill dropdown, rolled with the skill they suit best. The sheet's Overview also has a <b>Situational toggles</b> menu listing the toggles your feats have (Tail Spin "using your tail", Risky Surgery, Staff Acrobat "wielding your staff"): tick what's true right now and the feat applies until you untick it. Give either a <code>dc</code> or a <code>target</code>: pick a creature in the encounter and its own defense is the DC (Reflex for Trip, Fortitude for Shove, Will for Demoralize, Perception for a Lie or a Feint). Trip, Shove, Grapple, Disarm, Reposition, Tumble Through, Demoralize and Feint against a target run the full action &mdash; the multiple attack penalty, Prone or Grabbed applied, and any follow-up buttons. <code>secret:true</code> posts the real result (feat upgrades for the action included) to the GM's own channel only &mdash; the table just sees that a roll happened.</div></div>
         </div>
