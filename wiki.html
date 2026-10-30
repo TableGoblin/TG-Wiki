@@ -107,9 +107,11 @@
             <div class="desc">Registers the campaign and makes you its first GM. Run it from any channel that isn't already part of a campaign. The name's slug is unique <em>per server</em> — another Discord running "Curse of the Crimson Vault" is none of your business. <code>system</code> lists Pathfinder 2e only for now; the field exists so more can join it later. It then opens your campaign's rules panel, and says so, so the private message isn't a surprise.</div>
           </div>
           <div class="cmd-row">
-            <div class="cmd">/tgm setup_channels <b>campaign_name</b> <span class="opt">[mode] [include_voice]</span></div>
+            <div class="cmd">/tgm setup_channels <b>campaign_name</b> <span class="opt">[layout] [mode] [include_voice]</span></div>
             <span class="badge b-gm">gm only</span>
-            <div class="desc">Builds the two roles, the category, and the channels, then binds them. This is the only <code>/tgm</code> command that takes a campaign name, because the campaign has no channels yet to identify it by.</div>
+            <div class="desc">Builds the two roles and the channels, then binds them. This is the only <code>/tgm</code> command that takes a campaign name, because the campaign has no channels yet to identify it by.
+              <b>Layout:</b> <em>Sandbox</em> is a category with an IC forum and OOC, GM-only, character-sheet and dice channels. <em>PFS</em> has no category: a private IC forum (GM and Members) and a private OOC forum (GM only) whose threads are GM, Character sheets and Dice rolls; players are added to the sheet and dice threads by <code>/tgm add_player</code>.
+              <b>Manual</b> mode opens a prompt where each piece can be created, bound to a channel you already have, or skipped.</div>
           </div>
           <div class="cmd-row">
             <div class="cmd">/tgm campaign_rules</div>
