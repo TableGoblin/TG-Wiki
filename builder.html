@@ -660,7 +660,7 @@
 
   /* ---------------------------------------------------------------- gear */
   var KIND = { weapon: "weapon", armor: "armor" };
-  function fmtPrice(cp) { var gp = Math.floor(cp / 100), sp = Math.floor((cp % 100) / 10), c = cp % 10, out = []; if (gp) out.push(gp + " gp"); if (sp) out.push(sp + " sp"); if (c) out.push(c + " cp"); return out.join(" ") || "free"; }
+  function fmtPrice(cp) { if (S.systems.length === 1 && S.systems[0] === "sf2e") return cp ? Math.floor(cp / 10).toLocaleString("en-US") + " credits" : "free"; /* Starfinder: 1 credit = 1 sp */ var gp = Math.floor(cp / 100), sp = Math.floor((cp % 100) / 10), c = cp % 10, out = []; if (gp) out.push(gp + " gp"); if (sp) out.push(sp + " sp"); if (c) out.push(c + " cp"); return out.join(" ") || "free"; }
   function gearCost() { var t = 0; S.gear.forEach(function (g) { t += g.price * g.qty; }); return t; }
   function renderItems() {
     var q = $("itemFilter").value.trim().toLowerCase(), kind = $("itemKind").value, maxLevel = parseInt($("itemLevel").value, 10);
