@@ -1,4 +1,4 @@
-// Decodes a Table Goblin campaign code (format version 1) in the browser. The same format as campaign_code.py; tests/test_campaign_code.py pins both to the
+// Decodes a Table Goblin campaign code (format versions 1 to 3; 3 carries the game systems) in the browser. The same format as campaign_code.py; tests/test_campaign_code.py pins both to the
 // same examples. Needs a secure page (https or localhost) for crypto.subtle.
 //
 //   TGCampaignCode.decode("TG-BC3Y5-V95G5-0Y860").then(function (c) { c.rules.free_archetype; c.allowUncommon; c.levelCap; c.exceptionHashes; });
@@ -53,13 +53,15 @@
         var bits = body.length * 8;
         function take(n) { bits -= n; return Number((acc >> BigInt(bits)) & ((1n << BigInt(n)) - 1n)); }
         var version = take(4);
-        if (version !== 1 && version !== 2) throw new Error("That campaign code is from a newer version of Table Goblin.");
+        if (version < 1 || version > 3) throw new Error("That campaign code is from a newer version of Table Goblin.");
         var rules = {}; RULES_V2.forEach(function (r) { rules[r] = false; });
         (version === 1 ? RULES_V1 : RULES_V2).forEach(function (r) { rules[r] = take(1) === 1; });
+        var systems = ["pf2e"];
+        if (version >= 3) { systems = []; ["pf2e", "sf2e"].forEach(function (s) { if (take(1) === 1) systems.push(s); }); if (!systems.length) systems = ["pf2e"]; }
         var uncommon = take(1) === 1, rare = take(1) === 1, cap = take(5), count = take(6);
         if (bits < 12 * count) throw new Error("That campaign code is cut short.");
         var hashes = []; for (i = 0; i < count; i++) hashes.push(take(12));
-        return { rules: rules, allowUncommon: uncommon, allowRare: rare, levelCap: cap || null, exceptionHashes: hashes };
+        return { rules: rules, systems: systems, allowUncommon: uncommon, allowRare: rare, levelCap: cap || null, exceptionHashes: hashes };
       });
     });
   }

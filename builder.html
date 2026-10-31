@@ -73,6 +73,10 @@
           <label>Campaign code <input type="text" id="code" placeholder="TG-XXXXX-XXXXX-XXXXX" autocomplete="off" spellcheck="false"></label>
           <div class="error" id="codeMsg" role="alert"></div>
           <p class="hint">Your GM can give you the code (it is pinned in the character channel). Or tick the rules by hand:</p>
+          <h3>Game systems</h3>
+          <div class="checks" id="systemChecks"></div>
+          <div class="error" id="sysMsg" role="status"></div>
+          <p class="hint">Which game's ancestries, classes, feats and gear this campaign offers. Tick both to use them together. A campaign code sets this for you.</p>
           <div class="checks" id="ruleChecks"></div>
           <div class="checks">
             <label><input type="checkbox" id="allowUncommon"> Uncommon options allowed</label>
@@ -198,7 +202,9 @@
 <script>
 (function () {
   "use strict";
-  var D = window.TG_BUILDER, ITEMS = window.TG_ITEMS;
+  var BASE = { b: window.TG_BUILDER, i: window.TG_ITEMS }, EXTRA = {};                 /* Pathfinder 2e loads with the page; Starfinder 2e loads the first time it is ticked */
+  var D = BASE.b, ITEMS = BASE.i;
+  var SYS_NAMES = { pf2e: "Pathfinder 2e", sf2e: "Starfinder 2e" }, SYS_FILES = { sf2e: ["builder-data-sf2e.js", "builder-items-sf2e.js"] };
   var $ = function (id) { return document.getElementById(id); };
   var RULE_LABELS = { free_archetype: "Free Archetype", ancestry_paragon: "Ancestry Paragon", dual_class: "Dual Class", skill_paragon: "Skill Paragon",
                       automatic_bonus_progression: "Automatic Bonus Progression", gradual_ability_boosts: "Gradual Ability Boosts" };
@@ -206,6 +212,7 @@
   var byName = function (list, name) { for (var i = 0; i < list.length; i++) if (list[i].name === name) return list[i]; return null; };
 
   var S = {
+    systems: ["pf2e"],
     rules: { free_archetype: false, ancestry_paragon: false, dual_class: false, skill_paragon: false, automatic_bonus_progression: false, gradual_ability_boosts: false },
     allowUncommon: false, allowRare: false, exceptions: {}, levelCap: null, code: "",
     name: "", ancestry: "", heritage: "", arrayKey: "", ancestryFree: [], background: "", bgBoosts: {}, cls: "", keyAttr: "", groups: {},
@@ -221,16 +228,32 @@
 
 
   /* ---------------------------------------------------------------- the full text of a selected choice */
-  var TEXT_FILES = { origins: ["builder-text.js", "TG_TEXT"], feats: ["builder-text-feats.js", "TG_TEXT_FEATS"] }, textWaiting = {};
+  var TEXT_FILES = { origins: [["builder-text.js", "TG_TEXT", "pf2e"], ["builder-text-sf2e.js", "TG_TEXT_SF2E", "sf2e"]],
+                     feats: [["builder-text-feats.js", "TG_TEXT_FEATS", "pf2e"], ["builder-text-feats-sf2e.js", "TG_TEXT_FEATS_SF2E", "sf2e"]] }, textWaiting = {}, textMerged = {};
+  function loadScript(src, ok, bad) { var sc = document.createElement("script"); sc.src = src; sc.onload = ok; sc.onerror = bad; document.head.appendChild(sc); }
+  function mergeText(files) {                                                /* the first system listed wins a name both have */
+    var out = {};
+    files.forEach(function (f) {
+      var t = window[f[1]] || {};
+      Object.keys(t).forEach(function (k) {
+        var v = t[k];
+        if (v && typeof v === "object") { out[k] = out[k] || {}; Object.keys(v).forEach(function (n) { if (!(n in out[k])) out[k][n] = v[n]; }); }
+        else if (!(k in out)) out[k] = v;
+      });
+    });
+    return out;
+  }
   function withText(kind, done) {                                            /* the text files are large, so they load the first time a choice needs one */
-    var file = TEXT_FILES[kind];
-    if (window[file[1]]) { done(window[file[1]]); return; }
-    if (textWaiting[kind]) { textWaiting[kind].push(done); return; }
-    textWaiting[kind] = [done];
-    var sc = document.createElement("script"); sc.src = file[0];
-    sc.onload = function () { var q = textWaiting[kind]; textWaiting[kind] = null; q.forEach(function (f) { f(window[file[1]]); }); };
-    sc.onerror = function () { var q = textWaiting[kind]; textWaiting[kind] = null; q.forEach(function (f) { f(null); }); };
-    document.head.appendChild(sc);
+    var files = TEXT_FILES[kind].filter(function (f) { return S.systems.indexOf(f[2]) >= 0; }), key = kind + ":" + S.systems.join(",");
+    if (textMerged[key]) { done(textMerged[key]); return; }
+    if (textWaiting[key]) { textWaiting[key].push(done); return; }
+    textWaiting[key] = [done];
+    var left = files.length, failed = false;
+    function finish() { var q = textWaiting[key]; textWaiting[key] = null; var t = failed ? null : mergeText(files); if (t) textMerged[key] = t; q.forEach(function (f) { f(t); }); }
+    files.forEach(function (f) {
+      if (window[f[1]]) { if (--left === 0) finish(); return; }
+      loadScript(f[0], function () { if (--left === 0) finish(); }, function () { failed = true; if (--left === 0) finish(); });
+    });
   }
   /* Fills `box` with a title, some facts and the choice's full text. `lookup(table)` finds the text; `facts` is a line of what the lists already show. */
   function showDetail(box, title, kind, lookup, facts) {
@@ -338,7 +361,73 @@
   }
 
   /* ---------------------------------------------------------------- rules */
+  /* ---------------------------------------------------------------- game systems */
+  function systemSource(sys) { return sys === "pf2e" ? BASE : EXTRA[sys]; }
+  function tagAll(list, sys) { list.forEach(function (x) { if (!x.sys) x.sys = sys; }); return list; }
+  function mergeNamed(lists, keyOf) {
+    var seen = {}, out = [];
+    lists.forEach(function (l) { (l || []).forEach(function (x) { var k = keyOf(x); if (!seen[k]) { seen[k] = 1; out.push(x); } }); });
+    return out;
+  }
+  function mergeData() {                                                     /* D and ITEMS become what the ticked systems offer together; the first ticked system wins a name both have */
+    var parts = S.systems.filter(systemSource).map(function (s) {
+      var src = systemSource(s);
+      ["ancestries", "backgrounds", "classes"].forEach(function (k) { tagAll(src.b[k], s); });
+      Object.keys(src.b.feats).forEach(function (k) { tagAll(src.b.feats[k], s); });
+      return src;
+    });
+    if (!parts.length) parts = [BASE];
+    if (parts.length === 1) { D = parts[0].b; ITEMS = parts[0].i; return; }
+    var m = {}, first = parts[0].b, name = function (x) { return x.name; };
+    Object.keys(first).forEach(function (k) { m[k] = first[k]; });
+    ["ancestries", "backgrounds", "classes"].forEach(function (k) { m[k] = mergeNamed(parts.map(function (p) { return p.b[k]; }), name); });
+    m.feats = {}; ["ancestry", "class", "skill"].forEach(function (k) { m.feats[k] = mergeNamed(parts.map(function (p) { return p.b.feats[k]; }), name); });
+    m.spells = {};
+    ["arcane", "divine", "occult", "primal"].forEach(function (t) {
+      m.spells[t] = {};
+      ["0", "1"].forEach(function (r) { m.spells[t][r] = mergeNamed(parts.map(function (p) { return ((p.b.spells[t] || {})[r]) || []; }), function (x) { return x[0]; }); });
+    });
+    m.featureNames = mergeNamed(parts.map(function (p) { return p.b.featureNames; }), function (x) { return x; });
+    m.skillAbility = {}; parts.slice().reverse().forEach(function (p) { Object.keys(p.b.skillAbility).forEach(function (k) { m.skillAbility[k] = p.b.skillAbility[k]; }); });
+    D = m; ITEMS = mergeNamed(parts.map(function (p) { return p.i; }), function (x) { return x[0]; });
+  }
+  function afterSystems() {
+    mergeData(); FEATS = null; FEAT_BY = {}; featsLoading = false; ALL_NAMES = null;
+    var dropped = false;                                                      /* a choice the ticked systems don't offer goes, with what hangs on it */
+    if (S.ancestry && !curAncestry()) { S.ancestry = ""; S.heritage = ""; S.arrayKey = ""; S.ancestryFree = []; dropped = true; }
+    if (S.background && !curBackground()) { S.background = ""; S.bgBoosts = {}; dropped = true; }
+    if (S.cls && !curClass()) { S.cls = ""; S.keyAttr = ""; S.groups = {}; S.free = []; S.skills = []; S.spells = {}; dropped = true; }
+    if (dropped) { S.feats = {}; S.levels = {}; }
+    syncRuleChecks(); refresh(); renderItems();
+  }
+  function setSystems(list, done) {
+    var want = SYS_NAMES && list.filter(function (s) { return SYS_NAMES[s]; });
+    S.systems = want && want.length ? want : ["pf2e"];
+    var need = S.systems.filter(function (s) { return !systemSource(s); });
+    var finish = function () { $("sysMsg").textContent = ""; afterSystems(); if (done) done(); };
+    if (!need.length) { finish(); return; }
+    $("sysMsg").textContent = "Loading the " + SYS_NAMES[need[0]] + " options…";
+    var files = SYS_FILES[need[0]], left = files.length, failed = false;
+    files.forEach(function (f) {
+      loadScript(f, function () {
+        if (--left === 0 && !failed) { EXTRA[need[0]] = { b: window.TG_BUILDER_SF2E, i: window.TG_ITEMS_SF2E }; finish(); }
+      }, function () {
+        if (failed) return; failed = true;
+        S.systems = ["pf2e"]; $("sysMsg").textContent = "Couldn't load the " + SYS_NAMES[need[0]] + " options. Reload the page to try again."; afterSystems(); if (done) done();
+      });
+    });
+  }
+  function recipeSystem() { var c = curClass(); return (c && c.sys) || S.systems[0]; }
+
   function buildRuleChecks() {
+    Object.keys(SYS_NAMES).forEach(function (k) {
+      var l = document.createElement("label"), c = document.createElement("input"); c.type = "checkbox"; c.dataset.sys = k;
+      c.addEventListener("change", function () {
+        var on = Array.prototype.filter.call($("systemChecks").querySelectorAll("input"), function (x) { return x.checked; }).map(function (x) { return x.dataset.sys; });
+        S.code = ""; setSystems(on.length ? on : ["pf2e"]);
+      });
+      l.appendChild(c); l.appendChild(document.createTextNode(" " + SYS_NAMES[k])); $("systemChecks").appendChild(l);
+    });
     var box = $("ruleChecks");
     Object.keys(RULE_LABELS).forEach(function (k) {
       var l = document.createElement("label"), c = document.createElement("input"); c.type = "checkbox"; c.dataset.rule = k;
@@ -349,6 +438,7 @@
     $("allowRare").addEventListener("change", function () { S.allowRare = this.checked; refresh(); });
   }
   function syncRuleChecks() {
+    Array.prototype.forEach.call($("systemChecks").querySelectorAll("input"), function (c) { c.checked = S.systems.indexOf(c.dataset.sys) >= 0; });
     Array.prototype.forEach.call($("ruleChecks").querySelectorAll("input"), function (c) { c.checked = !!S.rules[c.dataset.rule]; });
     $("allowUncommon").checked = S.allowUncommon; $("allowRare").checked = S.allowRare;
     if (document.activeElement !== $("levelCap")) $("levelCap").value = S.levelCap || "";
@@ -377,7 +467,7 @@
       S.allowUncommon = c.allowUncommon; S.allowRare = c.allowRare; S.levelCap = c.levelCap; S.code = v.toUpperCase();
       if (S.levelCap && !S.lvlTouched) S.buildLevel = S.levelCap;
       S.variants = c.rules; S.exceptions = {};
-      return Promise.all(D.ancestries.map(function (a) { return TGCampaignCode.nameHash(a.name).then(function (h) { if (c.exceptionHashes.indexOf(h) >= 0) S.exceptions[a.name] = true; }); }));
+      return new Promise(function (resolve) { setSystems(c.systems || ["pf2e"], resolve); }).then(function () { return Promise.all(D.ancestries.map(function (a) { return TGCampaignCode.nameHash(a.name).then(function (h) { if (c.exceptionHashes.indexOf(h) >= 0) S.exceptions[a.name] = true; }); })); });
     }).then(function () { syncRuleChecks(); refresh(); $("codeMsg").textContent = ""; })
       .catch(function (e) { $("codeMsg").textContent = e.message; });
   });
@@ -671,14 +761,20 @@
     if (FEATS) { done(); return; }
     if (featsLoading) return;
     featsLoading = true;
-    var sc = document.createElement("script"); sc.src = "builder-feats.js";
-    sc.onload = function () {
-      FEATS = window.TG_FEATS.map(function (r) { return { name: r[0], display: r[1] || r[0], level: r[2], cat: r[3], rarity: r[4], traits: r[5], arch: r[6], ded: !!r[7], prereq: r[8], summary: r[9], rep: !!r[10], trains: r[11] || [], lore: r[12] || "", first: !!r[13] }; });
+    var files = [["builder-feats.js", "TG_FEATS", "pf2e"], ["builder-feats-sf2e.js", "TG_FEATS_SF2E", "sf2e"]].filter(function (f) { return S.systems.indexOf(f[2]) >= 0; });
+    var left = files.length, failed = false, rows = [];
+    function finish() {
+      featsLoading = false;
+      if (failed) { $("levelsBox").textContent = "Couldn't load the feat list. Reload the page to try again."; return; }
+      files.forEach(function (f) { (window[f[1]] || []).forEach(function (r) { rows.push({ name: r[0], display: r[1] || r[0], level: r[2], cat: r[3], rarity: r[4], traits: r[5], arch: r[6], ded: !!r[7], prereq: r[8], summary: r[9], rep: !!r[10], trains: r[11] || [], lore: r[12] || "", first: !!r[13], sys: f[2] }); }); });
+      FEATS = mergeNamed([rows], function (f) { return f.name; });
       FEATS.forEach(function (f) { FEAT_BY[f.name] = f; });
-      ALL_NAMES = null; featsLoading = false; done();
-    };
-    sc.onerror = function () { featsLoading = false; $("levelsBox").textContent = "Couldn't load the feat list. Reload the page to try again."; };
-    document.head.appendChild(sc);
+      ALL_NAMES = null; done();
+    }
+    files.forEach(function (f) {
+      if (window[f[1]]) { if (--left === 0) finish(); return; }
+      loadScript(f[0], function () { if (--left === 0) finish(); }, function () { failed = true; if (--left === 0) finish(); });
+    });
   }
   function boostCount(L) {                                                    /* four at 5/10/15/20, or with Gradual Ability Boosts one at each level of the tier */
     var cls = curClass(), info = cls && cls.levels[String(L)]; if (!info) return 0;
@@ -1086,9 +1182,9 @@
     });
     chain.then(function (hash) {
       var doc = {
-        format: "tablegoblin-recipe", format_version: 1, system: "pf2e", data_release: D.release, exported_at: new Date().toISOString().replace(/\.\d+Z$/, "+00:00"),
+        format: "tablegoblin-recipe", format_version: 1, system: recipeSystem(), data_release: D.release, exported_at: new Date().toISOString().replace(/\.\d+Z$/, "+00:00"),
         name: payload.name, level: blocks[blocks.length - 1].level, source: "wiki-builder",
-        rules: { campaign_code: S.code || null, variants: S.rules, allow_uncommon: S.allowUncommon, allow_rare: S.allowRare, exceptions: Object.keys(S.exceptions), level_cap: S.levelCap, used: usedRules() },
+        rules: { campaign_code: S.code || null, systems: S.systems.slice(), variants: S.rules, allow_uncommon: S.allowUncommon, allow_rare: S.allowRare, exceptions: Object.keys(S.exceptions), level_cap: S.levelCap, used: usedRules() },
         blocks: blocks, head: hash,
         state: { coins: coins(), equipment: S.gear.map(function (g) { var o = { name: g.name, kind: g.kind, qty: g.qty }; if (g.equipped) o.equipped = true; return o; }) }
       };
