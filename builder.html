@@ -62,13 +62,20 @@
         <div class="eyebrow">Player tool</div>
         <h1>Character builder</h1>
         <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html" aria-current="page">Character builder</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a></nav>
-        <p class="lede">Plan a 1st-level character and its starting gear here, where searching for equipment is easy, then download a recipe file. In Discord, give it to <code>/tgchar build</code> as <code>tg_file</code>: the bot checks every choice against your campaign's rules, works out the sheet itself, and asks you for anything this page doesn't cover. Nothing you choose here is uploaded anywhere.</p>
+        <p class="lede">Plan a character and its starting gear here, where searching for equipment is easy, then download a recipe file. Already have a recipe? Open it first to add the next level. In Discord, give it to <code>/tgchar build</code> as <code>tg_file</code>: the bot checks every choice against your campaign's rules, works out the sheet itself, and asks you for anything this page doesn't cover. Nothing you choose here is uploaded anywhere.</p>
         
       </header>
 
       <div class="tool-body">
         <div class="layout">
       <div>
+        <div class="panel" id="openPanel">
+          <h2>Open a saved character</h2>
+          <p class="hint" style="margin-top:0">Already have a recipe? Open it here to see every pick, add the next level, and download it again. Get one in Discord with <code>/tgchar export</code> (choose the recipe format), or from the level-up message your GM sends. The file stays in your browser.</p>
+          <label>Recipe file <input type="file" id="openRecipe" accept=".json,application/json"></label>
+          <div class="error" id="openMsg" role="status"></div>
+        </div>
+
         <div class="panel">
           <h2><span class="num">1</span>Your campaign's rules</h2>
           <label>Campaign code <input type="text" id="code" placeholder="TG-XXXXX-XXXXX-XXXXX" autocomplete="off" spellcheck="false"></label>
@@ -1171,12 +1178,87 @@
     return { free_archetype: fa, ancestry_paragon: ap, dual_class: false, skill_paragon: false };
   }
 
+
+  /* ---------------------------------------------------------------- opening a saved recipe */
+  var LOADED = null;                                                                    /* { doc, build, levels } while a file is open: what the page would write back unchanged, to tell an edit from an untouched block */
+  function sourceWord(src) { return !src ? null : src === "new" ? "new" : String(src).indexOf("arch:") === 0 ? "arch" : "class"; }
+  function readRecipe(text) {
+    var doc; try { doc = JSON.parse(text); } catch (e) { throw new Error("That isn't a recipe file (it isn't JSON)."); }
+    if (!doc || doc.format !== "tablegoblin-recipe") throw new Error("That isn't a Table Goblin recipe file.");
+    if (doc.format_version !== 1) throw new Error("This recipe is a newer version than this page understands.");
+    if (!Array.isArray(doc.blocks) || !doc.blocks.length || doc.blocks[0].kind !== "build" || !doc.blocks[0].payload || !doc.blocks[0].payload.state) throw new Error("The recipe has no build block to open.");
+    return doc;
+  }
+  function applyRecipe(doc) {
+    var build = doc.blocks[0].payload, st = build.state || {}, boosts = st.boosts || {}, skipped = [];
+    S.name = build.name && build.name !== "Unnamed" ? build.name : "";
+    S.ancestry = st.ancestry || ""; S.heritage = st.heritage || ""; S.background = st.background || ""; S.cls = st["class"] || "";
+    S.arrayKey = st.boost_array || ""; S.keyAttr = st.key_attribute || ""; S.groups = JSON.parse(JSON.stringify(st.subclass || {}));
+    S.free = (boosts.free || []).slice(); S.ancestryFree = (boosts.ancestry_free || []).slice();
+    S.bgBoosts = {}; Object.keys(boosts).forEach(function (k) { if (k !== "free" && k !== "ancestry_free") S.bgBoosts[k] = boosts[k].slice(); });
+    S.skills = (st.skills || []).slice(); S.spells = JSON.parse(JSON.stringify(st.spells || {}));
+    S.feats = { ancestry: st.ancestry_feat || "", ancestry2: st.ancestry_feat_2 || "", "class": st.class_feat || "", skill: st.skill_feat || "" };
+    S.levels = {}; S.gear = [];
+    doc.blocks.slice(1).forEach(function (b) {
+      if (b.kind !== "level" || !b.payload) return;
+      var L = b.level, lv = levelState(L), slots = levelSlots(L), used = {};
+      (b.payload.feats || []).forEach(function (f) {
+        var slot = slots[f.index];
+        if (!slot || slot.kind !== f.kind || slot.label !== f.label || used[slot.id]) slot = slots.filter(function (x) { return x.kind === f.kind && x.label === f.label && !used[x.id]; })[0];
+        if (!slot) { skipped.push("level " + L + " " + f.label + " (" + f.name + ")"); return; }
+        used[slot.id] = true; lv.feats[slot.id] = f.name;
+        var w = sourceWord(f.source); if (w) lv.src[slot.id] = w;
+      });
+      if (b.payload.skill_increase) lv.skill = b.payload.skill_increase;
+      if (b.payload.boosts) lv.boosts = b.payload.boosts.slice();
+    });
+    ((doc.state && doc.state.equipment) || []).forEach(function (g) {
+      var it = null; for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i][0] === g.name) { it = ITEMS[i]; break; }
+      if (!it) { skipped.push(g.name); return; }
+      S.gear.push({ name: it[0], kind: KIND[it[4]] || "gear", qty: g.qty || 1, price: it[2], equipped: !!g.equipped });
+    });
+    var last = doc.blocks[doc.blocks.length - 1].level || 1;
+    S.buildLevel = Math.min(20, Math.max(1, last)); S.lvlTouched = true;
+    $("charName").value = S.name; $("code").value = S.code || "";
+    LOADED = { doc: doc, build: null, levels: {} };
+    refresh(); renderItems(); renderGear();
+    LOADED.build = stable({ name: S.name.trim() || "Unnamed", level: 1, state: buildState() });
+    if (curClass()) levelBlocks().forEach(function (b) { LOADED.levels[b.level] = stable(b.payload); });
+    return skipped;
+  }
+  $("openRecipe").addEventListener("change", function () {
+    var file = this.files && this.files[0], msg = $("openMsg"), input = this; msg.textContent = "";
+    if (!file) return;
+    if (file.size > 2000000) { msg.textContent = "That file is too big to be a recipe."; return; }
+    file.text().then(function (text) {
+      var doc = readRecipe(text), r = doc.rules || {};
+      S.rules = { free_archetype: false, ancestry_paragon: false, dual_class: false, skill_paragon: false, automatic_bonus_progression: false, gradual_ability_boosts: false };
+      Object.keys(r.variants || {}).forEach(function (k) { if (k in S.rules) S.rules[k] = !!r.variants[k]; });
+      S.allowUncommon = !!r.allow_uncommon; S.allowRare = !!r.allow_rare; S.levelCap = r.level_cap || null; S.code = r.campaign_code || ""; S.exceptions = {};
+      (r.exceptions || []).forEach(function (n) { S.exceptions[n] = true; });
+      var systems = r.systems && r.systems.length ? r.systems : [doc.system || "pf2e"];
+      return new Promise(function (resolve) { setSystems(systems, resolve); }).then(function () {
+        var skipped = applyRecipe(doc);
+        msg.textContent = "Opened " + (S.name || "the recipe") + ", level " + (doc.level || 1) + "." + (skipped.length ? " Not found in this page's lists, so left out: " + skipped.join(", ") + "." : "");
+      });
+    }).catch(function (e) { LOADED = null; msg.textContent = e.message || "Couldn't open that file."; }).then(function () { input.value = ""; });
+  });
+
   $("download").addEventListener("click", function () {
     var errs = problems();
     if (errs.length && !window.confirm("Some choices are missing:\n\n" + errs.join("\n") + "\n\nDownload anyway? The bot will ask you for the rest in Discord.")) return;
     if (!window.crypto || !crypto.subtle) { $("problems").textContent = "This browser can't make the file here (it needs a secure page)."; return; }
     var payload = { name: S.name.trim() || "Unnamed", level: 1, state: buildState() };
     var blocks = [{ kind: "build", level: 1, payload: payload }].concat(curClass() ? levelBlocks() : []);
+    if (LOADED) {                                                                        /* a block left as it was opened goes back exactly as the bot recorded it, so its hash chain still matches */
+      var edited = [];
+      blocks.forEach(function (b, i) {
+        var orig = LOADED.doc.blocks[i], base = b.kind === "build" ? LOADED.build : LOADED.levels[b.level];
+        if (!orig || orig.kind !== b.kind || orig.level !== b.level) return;
+        if (base === stable(b.payload)) b.payload = orig.payload; else edited.push(b.level);
+      });
+      if (edited.length && LOADED.doc.source !== "wiki-builder" && !window.confirm("You changed level " + edited.join(", ") + ", which the bot has already recorded. /tgchar levelup will refuse a file that rewrites earlier levels; it only suits a new character.\n\nDownload anyway?")) return;
+    }
     var chain = Promise.resolve(""), hashes = [];
     blocks.forEach(function (b) {                                                        /* each block's hash covers the one before it, as the bot works it out */
       chain = chain.then(function (prev) { return sha256(prev + "|" + stable({ kind: b.kind, level: b.level, payload: b.payload })).then(function (h) { hashes.push(h); b.chain_hash = h; return h; }); });

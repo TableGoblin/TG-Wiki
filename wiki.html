@@ -103,16 +103,17 @@
         <h3>Two commands to a working table</h3>
         <div class="cmds">
           <div class="cmd-row">
-            <div class="cmd">/tgm campaign_create <b>name</b> <span class="opt">[notes] [system]</span></div>
+            <div class="cmd">/tgm campaign_create <b>name</b> <span class="opt">[notes] [system] [is_society] [use_category] [new_category] [gm] [create_channels_default]</span></div>
             <span class="badge b-gm">admin only</span>
-            <div class="desc">Registers the campaign and makes you its first GM. Run it from any channel that isn't already part of a campaign. The name's slug is unique <em>per server</em> — another Discord running "Curse of the Crimson Vault" is none of your business. <code>system</code> lists Pathfinder 2e only for now; the field exists so more can join it later. It then opens your campaign's rules panel, and says so, so the private message isn't a surprise.</div>
+            <div class="desc">Registers the campaign, makes its GM (you, or the member you name in <code>gm</code>) and builds its channels in the same step. <code>is_society</code> marks a Pathfinder Society or Starfinder Society game (one system), whose GM, sheets and dice channels are threads of the out-of-character forum. <code>use_category</code> picks an existing category and <code>new_category</code> names a new one. With <code>create_channels_default</code> off, a picker lets you create, reuse or skip each channel. Run it from any channel that isn't already part of a campaign. The name's slug is unique <em>per server</em> — another Discord running "Curse of the Crimson Vault" is none of your business. <code>system</code> lists Pathfinder 2e only for now; the field exists so more can join it later. It then opens your campaign's rules panel, and says so, so the private message isn't a surprise.</div>
           </div>
           <div class="cmd-row">
-            <div class="cmd">/tgm setup_channels <b>campaign_name</b> <span class="opt">[layout] [mode] [include_voice]</span></div>
+            <div class="cmd">/tgm setup_channels <b>campaign_name</b> <span class="opt">[layout] [mode] [include_voice] [category]</span></div>
             <span class="badge b-gm">gm only</span>
             <div class="desc">Builds the two roles and the channels, then binds them. This is the only <code>/tgm</code> command that takes a campaign name, because the campaign has no channels yet to identify it by.
               <b>Layout:</b> <em>Sandbox</em> is a category with an IC forum and OOC, GM-only, character-sheet and dice channels. <em>PFS</em> has no category: a private IC forum (GM and Members) and a private OOC forum (GM only) whose threads are GM, Character sheets and Dice rolls; players are added to the sheet and dice threads by <code>/tgm add_player</code>.
-              <b>Manual</b> mode opens a prompt where each piece can be created, bound to a channel you already have, or skipped.</div>
+              <b>Manual</b> mode opens a prompt where each piece can be created, bound to a channel you already have, or skipped.
+              <b>Category:</b> pick an existing category to build in. A Sandbox game uses it instead of making one; a PFS game puts its two forums inside it (for example a shared <em>Society Campaigns</em> category) instead of at the root of the server.</div>
           </div>
           <div class="cmd-row">
             <div class="cmd">/tgm campaign_rules</div>
@@ -218,7 +219,7 @@
           <div class="cmd-row"><div class="cmd">/tgm add_player <b>user</b></div><span class="badge b-gm">gm only</span>
             <div class="desc">Grants the Members role — this is what gives access to the campaign's channels.</div></div>
           <div class="cmd-row"><div class="cmd">/tgm remove_player <b>user</b></div><span class="badge b-gm">gm only</span>
-            <div class="desc">Takes it away again. The bot only ever removes a role it was asked to remove, so assigning these by hand in Discord stays perfectly valid.</div></div>
+            <div class="desc">Takes it away again. The bot only ever removes a role it was asked to remove, so assigning these by hand in Discord stays perfectly valid. In a society game it also saves that player's characters back to the society home campaign and removes them from the game.</div></div>
         </div>
 
         <h3>GM narration persona</h3>
@@ -343,6 +344,12 @@
         <div class="cmds">
           <div class="cmd-row"><div class="cmd">/tgchar build <b>name</b> <b>alias</b> <span class="opt">[assist_me] [level] [tg_file]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Starts a build, or resumes one already in progress under the same <b>name</b>/<b>alias</b>. Attach a recipe from the <a href="builder.html">Character builder</a> page as <b>tg_file</b> to start with its choices already in (the page plans every level up to your party level); the bot checks them against your campaign's rules and asks you for anything missing. <code>assist_me</code> makes the wizard visible to the whole table instead of just you, for a GM walking a new player through their first build. <code>level</code> (1&ndash;20) builds a higher-level character: after the 1st-level build, the bot walks you through levels 2 to that level, one level-up at a time, within the party level your GM has set. <strong>What you are offered follows the campaign's rules</strong> (<code>/tgm campaign_rules</code>) — common always, uncommon and rare where your GM allows them, and whichever optional rules your table runs add their own steps.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgchar sheet <span class="opt">[alias] [player] [show_all] [view]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Opens the character sheet. <code>view:Choices at each level</code> instead lists what was chosen at each level, in plain messages only you can see: ancestry, heritage, background and class, the attribute boosts, the skills picked, every feat and skill increase, and a caster's first spells. <code>view:Every stored field</code> attaches the file of every stored field.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgchar update <span class="opt">[expression] [newname] [alt_alias] [form] [alias] [player]</span></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Edits a sheet value (<code>hp-=5</code>, <code>str=18</code>, <code>fortitude=expert</code>), renames the sheet, or sets a GM shorthand. Run it with nothing set, or with <code>expression:help</code>, for a private list of every field it accepts, with examples.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgchar leave_society <span class="opt">[alias]</span></div><span class="badge b-self">self</span>
+            <div class="desc">Society games only. Saves the character (with its familiar, animal companion or eidolon) back to the society home campaign and removes it from this game; you can check it out again later. While it is checked out, the home record is also updated every 12 hours.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar starting_gear <span class="opt">[alias] [player]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Reopens your still-open starting-gear shopping trip if it closed early or timed out — no GM needed. Only works while it's genuinely still open; once you check out or click Done shopping, this refuses and points to <code>/tgm starting_gear</code> for a real re-do.</div></div>
         </div>
@@ -361,6 +368,7 @@
           <figure><a href="char-build-spells.png" target="_blank" rel="noopener"><img src="char-build-spells.png" alt="The spells step of the character builder" loading="lazy"></a><figcaption>Cantrips and spells are picked from dropdowns that show how many are still to choose.</figcaption></figure>
         </div>
         <div class="note">
+          <p><strong>Society games:</strong> in a Pathfinder Society or Starfinder Society campaign, building (or importing) a new character first asks for your Organized Play number and character number. The character is also saved in the society home campaign, with its familiar, animal companion or eidolon, so you never have to join that server. If those numbers already belong to one of your characters, you are offered a check-out to this game instead of a second build.</p>
           <p><strong>A build resumes exactly where you left off.</strong> Run <code>/tgchar build</code> again with the same <b>name</b> and <b>alias</b> and it picks the draft back up — nothing is lost to a closed laptop or a bot restart.</p>
         </div>
         <div class="note">
@@ -382,8 +390,6 @@
         <h3>Importing and exporting</h3>
         <p>Already have a sheet? Bring a Pathbuilder character in, or move one between tables with Table Goblin's own export.</p>
         <div class="cmds">
-          <div class="cmd-row"><div class="cmd">/tgchar create <b>player</b> <b>name</b> <b>alias</b> <span class="opt">[pathbuilder_id] […]</span></div><span class="badge b-self">self / gm</span>
-            <div class="desc">Creates the character. Give a <code>pathbuilder_id</code> and the whole sheet imports immediately. The <b>alias</b> is the short handle you'll use in every other command and in chat — keep it short and typeable.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar import <b>source</b> <span class="opt">[alias] [file] [pathbuilder_id] [sync]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Brings a character in and makes it your active character. <b>Pathbuilder</b>: attach Pathbuilder's own <em>Export JSON</em> file (safest — no mix-ups with whatever is in your account's one export slot) or give its <code>pathbuilder_id</code>. <b>Table Goblin export</b>: attach a file from <code>/tgchar export</code> to bring that whole character, companions and all, into this campaign.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar import source:Pathbuilder <span class="opt">sync:Update existing…</span></div><span class="badge b-self">self / gm</span>
@@ -492,8 +498,6 @@
 
         <h3>The rest</h3>
         <div class="cmds">
-          <div class="cmd-row"><div class="cmd">/tgchar print <span class="opt">[alias] [player] [all_fields]</span></div><span class="badge b-self">self / gm</span>
-            <div class="desc">Lists what was chosen at each level, in plain messages only you can see: ancestry, heritage, background and class, the attribute boosts, the skills picked, every feat and skill increase, and a caster's first spells. Characters built or levelled in Table Goblin have the full level-by-level list; older ones and Pathbuilder imports show their feats by the level they were taken, with attributes and skills as they stand now. <code>all_fields:True</code> attaches the old every-stored-field file instead.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar active <b>alias</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Sets which character <code>pc::</code> and bare commands mean.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar deity <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
