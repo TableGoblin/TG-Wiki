@@ -95,6 +95,12 @@
           <label>Build this character up to level <input type="number" id="buildLevel" min="1" max="20" value="1"></label>
           <p class="hint">Up to your party level, or the level you give here. Levels 2 and up appear in their own section below.</p>
           <p class="hint" id="exceptionHint"></p>
+          <h3>Books you own</h3>
+          <p class="hint">Tick the books you own and the builder offers only their content (anything with no book is always offered). Nothing ticked means every book; the list of books your build needs then appears in the summary. Your ticks stay in this browser and travel in the recipe.</p>
+          <details id="bookBox"><summary id="bookSummary">Every book</summary>
+            <div style="margin:6px 0"><button class="tbtn" id="bookClear" type="button">Every book (untick all)</button> <button class="tbtn" id="bookSociety" type="button">Society-legal books</button></div>
+            <div id="bookChecks"></div>
+          </details>
         </div>
 
         <div class="panel">
@@ -187,6 +193,7 @@
         <div class="panel">
           <h2>Summary</h2>
           <div class="sum" id="summary"></div>
+          <div class="hint" id="neededBooks" aria-live="polite"></div>
           <div class="error" id="problems" role="alert"></div>
           <div style="margin-top:12px"><button class="tbtn primary" id="download" type="button">Download recipe</button></div>
           <p class="hint">Then, in Discord: <code>/tgchar build tg_file:</code> and attach it.</p>
@@ -206,6 +213,7 @@
 
 <script src="builder-data.js"></script>
 <script src="builder-items.js"></script>
+<script src="builder-books.js"></script>
 <script src="campaign-code.js"></script>
 <script>
 (function () {
@@ -224,11 +232,29 @@
     rules: { free_archetype: false, ancestry_paragon: false, dual_class: false, skill_paragon: false, automatic_bonus_progression: false, gradual_ability_boosts: false },
     allowUncommon: false, allowRare: false, exceptions: {}, levelCap: null, code: "",
     name: "", ancestry: "", heritage: "", arrayKey: "", ancestryFree: [], background: "", bgBoosts: {}, cls: "", keyAttr: "", groups: {},
-    free: [], skills: [], feats: {}, gear: [], spells: {}, bgAttr: "", buildLevel: 1, lvlTouched: false, levels: {}, open: {}
+    free: [], skills: [], feats: {}, gear: [], spells: {}, bgAttr: "", buildLevel: 1, lvlTouched: false, levels: {}, open: {},
+    books: []                                                                 /* D988: the family ids of the books the reader owns; empty = every book */
   };
 
+  /* ---------------------------------------------------------------- books (D988) */
+  var BOOKS = window.TG_BOOKS || [];                                         /* docs/builder-books.js: [family, name, category, edition, society, system] */
+  var BOOK_KEY = "tg-builder-books", BOOK_CATS = { rulebook: "Rulebooks", "lost-omens": "Lost Omens", "adventure-path": "Adventure Paths", adventure: "Adventures", society: "Society", other: "Blogs and other" };
+  function loadBooks() { try { var v = JSON.parse(window.localStorage.getItem(BOOK_KEY) || "[]"); return Array.isArray(v) ? v.filter(function (x) { return typeof x === "string"; }) : []; } catch (e) { return []; } }
+  function saveBooks() { try { window.localStorage.setItem(BOOK_KEY, JSON.stringify(S.books)); } catch (e) { /* private window or blocked storage: the ticks just don't persist */ } }
+  S.books = loadBooks();
+  function srcList(b) { return b === undefined || b === null ? [] : (Array.isArray(b) ? b : [b]); }
+  function bookOk(b) {                                                        /* no ticks = every book; no source = always; printed in several books = any one owned */
+    if (!S.books.length) return true;
+    var l = srcList(b), rows = BOOKS;
+    if (!l.length) return true;
+    for (var i = 0; i < l.length; i++) { var r = rows[l[i]]; if (!r || S.books.indexOf(r[0]) >= 0) return true; }
+    return false;
+  }
+  function notOwnedTag(b) { return S.books.length && !bookOk(b) ? " · ⚠ not in your books" : ""; }   /* D991 (M Q12): a choice made before the ticks stays, flagged */
+
   /* ---------------------------------------------------------------- rarity */
-  function allowed(rarity, ancestryName) {
+  function allowed(rarity, ancestryName, src) {
+    if (!bookOk(src)) return false;                                           /* D988: the reader's books */
     if (rarity === "common" || !rarity) return true;
     if (ancestryName && S.exceptions[ancestryName]) return true;
     return rarity === "uncommon" ? S.allowUncommon : rarity === "rare" ? S.allowRare : false;
@@ -360,7 +386,33 @@
     function add(n) { n = String(n || "").trim(); if (!n) return; if (!/lore$/i.test(n)) n += " Lore"; if (out.indexOf(n) < 0) out.push(n); }
     if (bg) bg.lores.forEach(add);
     l1FeatNames().concat(typeof pickedAt === "function" ? pickedAt(targetLevel()) : []).forEach(function (n) { var f = featInfo(n); if (f) add(f.lore); });
+    loreAnswers(targetLevel()).forEach(function (a) { add(a.lore); });
     return out;
+  }
+  /* D986 (J8 item 7): the Lores a level's feat answers name -- [{lore, feat, level}] -- and how each Lore's rank grows on its own (the bot's lore_ranks):
+     an ancestry / dedication Lore with a Foundry level rule and Additional Lore by D.loreFormula, Dongun Education by its own schedule; any other Lore is
+     trained and only a skill increase raises it. */
+  function loreAnswers(T) {
+    var out = [];
+    for (var l = 2; l <= T; l++) { var st = S.levels[l]; if (!st || !st.answers) continue;
+      Object.keys(st.feats).forEach(function (id) { var f = st.feats[id]; (st.answers[id] || []).forEach(function (a) { if (a) out.push({ lore: a, feat: f, level: l }); }); }); }
+    return out;
+  }
+  function scheduleRank(schedule, level) { for (var i = 0; i < schedule.length; i++) if (level >= schedule[i][0]) return schedule[i][1]; return 1; }
+  function loreSchedule(name) {
+    var auto = D.autoLoreFeats || {}, sched = null;
+    l1FeatNames().concat(pickedAt(targetLevel())).forEach(function (n) { var f = featInfo(n); if (f && f.lore === name && auto[n]) sched = D.loreFormula; });
+    loreAnswers(targetLevel()).forEach(function (a) { if (a.lore === name) { var s = (D.loreSchedules || {})[a.feat]; if (s) sched = s; } });
+    return sched;
+  }
+  function loreRank(name, level, upto) {                                     /* the rank at `level`: its own schedule, then the increases taken at levels 2..upto */
+    var s = loreSchedule(name), r = s ? scheduleRank(s, level) : 1;
+    for (var l = 2; l <= upto; l++) { var st = S.levels[l]; if (st && st.skill === "lore:" + name) r = Math.max(r, Math.min(4, (s ? scheduleRank(s, l) : r) + 1)); }
+    return r;
+  }
+  function skillPool() {                                                     /* Computers and Piloting are skills of a Starfinder class only (D980) */
+    var cls = curClass(), sf = D.sf2eSkills || [];
+    return D.skills.filter(function (s) { return sf.indexOf(s) < 0 || (cls && cls.sys === "sf2e"); });
   }
   function skillAllowance() {
     var cls = curClass(); if (!cls) return 0;
@@ -397,6 +449,9 @@
     });
     m.featureNames = mergeNamed(parts.map(function (p) { return p.b.featureNames; }), function (x) { return x; });
     m.skillAbility = {}; parts.slice().reverse().forEach(function (p) { Object.keys(p.b.skillAbility).forEach(function (k) { m.skillAbility[k] = p.b.skillAbility[k]; }); });
+    m.skills = mergeNamed(parts.map(function (p) { return p.b.skills; }), function (x) { return x; });                       /* D986: Computers / Piloting come with Starfinder */
+    m.sf2eSkills = mergeNamed(parts.map(function (p) { return p.b.sf2eSkills || []; }), function (x) { return x; });
+    ["loreChoiceFeats", "autoLoreFeats", "loreSchedules"].forEach(function (k) { m[k] = {}; parts.slice().reverse().forEach(function (p) { Object.keys(p.b[k] || {}).forEach(function (n) { m[k][n] = p.b[k][n]; }); }); });
     D = m; ITEMS = mergeNamed(parts.map(function (p) { return p.i; }), function (x) { return x[0]; });
   }
   function afterSystems() {
@@ -406,7 +461,7 @@
     if (S.background && !curBackground()) { S.background = ""; S.bgBoosts = {}; dropped = true; }
     if (S.cls && !curClass()) { S.cls = ""; S.keyAttr = ""; S.groups = {}; S.free = []; S.skills = []; S.spells = {}; dropped = true; }
     if (dropped) { S.feats = {}; S.levels = {}; }
-    syncRuleChecks(); refresh(); renderItems();
+    syncRuleChecks(); renderBookChecks(); refresh(); renderItems();
   }
   function setSystems(list, done) {
     var want = SYS_NAMES && list.filter(function (s) { return SYS_NAMES[s]; });
@@ -482,15 +537,15 @@
 
   /* ---------------------------------------------------------------- sections */
   function ancestryEntries() {
-    return D.ancestries.filter(function (a) { return allowed(a.rarity, a.name); }).map(function (a) { return { name: a.name, rarity: a.rarity, note: a.summary }; });
+    return D.ancestries.filter(function (a) { return allowed(a.rarity, a.name, a.b); }).map(function (a) { return { name: a.name, rarity: a.rarity, note: a.summary }; });
   }
   function heritageEntries() {
     var a = curAncestry(); if (!a) return [];
-    return a.heritages.filter(function (h) { return allowed(h.rarity, a.name); }).map(function (h) { return { name: h.name, rarity: h.rarity, note: (h.versatile ? "versatile — " : "") + h.summary }; });
+    return a.heritages.filter(function (h) { return allowed(h.rarity, a.name, h.b); }).map(function (h) { return { name: h.name, rarity: h.rarity, note: (h.versatile ? "versatile — " : "") + h.summary }; });
   }
   function backgroundEntries() {
     return D.backgrounds.filter(function (b) {
-      if (!allowed(b.rarity)) return false;
+      if (!allowed(b.rarity, "", b.b)) return false;
       /* the boost a background lets you choose between ("Charisma or Strength"); its free boost goes anywhere, so it can't tell backgrounds apart */
       return !S.bgAttr || b.groups.some(function (g) { return g.label !== "free" && g.options.indexOf(S.bgAttr) >= 0; });
     }).map(function (b) { return { name: b.name, rarity: b.rarity, note: b.summary }; });
@@ -502,7 +557,7 @@
       b.addEventListener("click", function () { S.bgAttr = a; refresh(); }); box.appendChild(b);
     });
   }
-  function classEntries() { return D.classes.map(function (c) { return { name: c.name, note: c.hp + " HP · trains " + c.skills.length + "+" + c.freeSkills + " skills · key " + c.keys.map(function (k) { return NAMES[k]; }).join("/") }; }); }
+  function classEntries() { return D.classes.filter(function (c) { return bookOk(c.b); }).map(function (c) { return { name: c.name, note: c.hp + " HP · trains " + c.skills.length + "+" + c.freeSkills + " skills · key " + c.keys.map(function (k) { return NAMES[k]; }).join("/") }; }); }
 
   function renderAncestry() {
     renderPicker($("ancestryList"), $("ancestryFilter"), ancestryEntries(), S.ancestry, function (n) {
@@ -511,7 +566,7 @@
     });
     var a = curAncestry();
     $("ancestryChosen").innerHTML = a ? "<strong></strong> · " + a.hp + " HP · " + a.size + " · " + a.speed + " ft" : "";
-    if (a) $("ancestryChosen").firstChild.textContent = a.name;
+    if (a) { $("ancestryChosen").firstChild.textContent = a.name; $("ancestryChosen").appendChild(document.createTextNode(notOwnedTag(a.b))); var hh = byName(a.heritages, S.heritage); if (hh && notOwnedTag(hh.b)) $("ancestryChosen").appendChild(document.createTextNode(" · heritage " + hh.name + notOwnedTag(hh.b))); }
     showDetail($("ancestryDetail"), a ? a.name : "", "origins", function (t) { return t.ancestry[a.name]; }, "");
     $("heritageBox").hidden = !a;
     if (a) renderPicker($("heritageList"), $("heritageFilter"), heritageEntries(), S.heritage, function (n) { S.heritage = n; dropStaleAncestryFeats(); refresh(); });
@@ -541,7 +596,7 @@
     $("bgCount").textContent = backgroundEntries().length + " backgrounds match.";
     renderPicker($("bgList"), $("bgFilter"), backgroundEntries(), S.background, function (n) { if (n !== S.background) { S.background = n; S.bgBoosts = {}; } refresh(); }, Infinity);
     var bg = curBackground();
-    $("bgChosen").textContent = bg ? bg.name + (bg.skills.length ? " · trains " + bg.skills.join(", ") : "") + (bg.lores.length ? " · Lore: " + bg.lores.join(", ") : "") + ((bg.feats && bg.feats.length) ? " · feat: " + bg.feats.join(", ") : "") + (bg.freeLores ? " · and a Lore you name in Discord" : "") : "";
+    $("bgChosen").textContent = bg ? bg.name + (bg.skills.length ? " · trains " + bg.skills.join(", ") : "") + (bg.lores.length ? " · Lore: " + bg.lores.join(", ") : "") + ((bg.feats && bg.feats.length) ? " · feat: " + bg.feats.join(", ") : "") + (bg.freeLores ? " · and a Lore you name in Discord" : "") + notOwnedTag(bg.b) : "";
     showDetail($("bgDetail"), bg ? bg.name : "", "origins", function (t) { return t.background[bg.name]; }, bg ? bg.summary : "");
     var box = $("bgBoosts"); box.textContent = "";
     if (!bg) return;
@@ -560,7 +615,7 @@
   function renderClass() {
     renderPicker($("classList"), $("classFilter"), classEntries(), S.cls, function (n) { if (n !== S.cls) { S.cls = n; S.keyAttr = ""; S.groups = {}; S.skills = []; S.feats.class = ""; S.feats.skill = ""; S.levels = {}; S.spells = {}; } refresh(); });
     var c = curClass();
-    $("classChosen").textContent = c ? c.name + " · " + c.hp + " HP" + (c.casts ? " · casts spells (the bot asks for them in Discord)" : "") + (c.deity ? " · needs a deity (asked in Discord)" : "") : "";
+    $("classChosen").textContent = c ? c.name + " · " + c.hp + " HP" + (c.casts ? " · casts spells (the bot asks for them in Discord)" : "") + (c.deity ? " · needs a deity (asked in Discord)" : "") + notOwnedTag(c.b) : "";
     $("keyBox").hidden = !(c && c.keys.length > 1);
     if (c && c.keys.length > 1) pills($("keyPills"), c.keys, S.keyAttr ? [S.keyAttr] : [], 1, function (o) { S.keyAttr = S.keyAttr === o ? "" : o; refresh(); }, function (o) { return NAMES[o]; });
     var box = $("groupBox"); box.textContent = "";
@@ -591,7 +646,7 @@
     var cls = curClass(), fixed = fixedSkills(), allow = skillAllowance();
     S.skills = S.skills.filter(function (s) { return fixed.indexOf(s) < 0; });
     $("skillInfo").textContent = !cls ? "Choose a class first." : "Trained already: " + (fixed.join(", ") || "none") + ". Choose " + allow + " more (" + cls.freeSkills + " from your class plus Intelligence).";
-    var opts = D.skills.filter(function (s) { return fixed.indexOf(s) < 0; });
+    var opts = skillPool().filter(function (s) { return fixed.indexOf(s) < 0; });
     pills($("skillPills"), opts, S.skills, allow, function (o) { toggle(S.skills, o); refresh(); }, function (o) { return o.charAt(0).toUpperCase() + o.slice(1); });
   }
 
@@ -638,7 +693,7 @@
     fixedSkills().concat(S.skills).forEach(function (s) { ranks[s] = 1; });
     var other = slot.key === "ancestry" ? S.feats.ancestry2 : slot.key === "ancestry2" ? S.feats.ancestry : "";
     return D.feats[slot.cat].filter(function (f) {
-      if (f.level > 1 || !allowed(f.rarity, slot.cat === "ancestry" && a ? a.name : "")) return false;
+      if (f.level > 1 || !allowed(f.rarity, slot.cat === "ancestry" && a ? a.name : "", f.b)) return false;
       if (!skillPrereqMet(f.prereq, ranks) || !featureGateMet(f.prereq) || !featNamePrereqMet(f.prereq, held) || granted.indexOf(f.name) >= 0) return false;
       if (slot.cat === "ancestry") {
         var hit = f.traits.some(function (t) { return traits.indexOf(t) >= 0; }); if (!hit) return false;
@@ -661,7 +716,7 @@
       var pickedName = function () { return S.feats[slot.key] || ""; };
       var draw = function () { renderPicker(list, f, featEntries(slot), pickedName(), function (n) { S.feats[slot.key] = pickedName() === n ? "" : n; refresh(); }, Infinity); };
       f.addEventListener("input", draw); draw();
-      var cur = document.createElement("div"); cur.className = "chosen"; cur.textContent = pickedName() ? "Chosen: " + pickedName() : "Nothing chosen yet."; box.appendChild(cur);
+      var cur = document.createElement("div"); cur.className = "chosen"; cur.textContent = pickedName() ? "Chosen: " + pickedName() + notOwnedTag((featInfo(pickedName()) || {}).b) : "Nothing chosen yet."; box.appendChild(cur);
       if (pickedName()) detailFor(box, pickedName(), "feats", function (t) { return t[pickedName()]; }, featFacts(pickedName()));
     });
   }
@@ -675,7 +730,7 @@
     var list = $("itemList"); list.textContent = ""; var shown = 0;
     for (var i = 0; i < ITEMS.length && shown < 60; i++) {
       var it = ITEMS[i];
-      if (it[1] > maxLevel || (kind && it[4] !== kind) || !allowed(it[5])) continue;
+      if (it[1] > maxLevel || (kind && it[4] !== kind) || !allowed(it[5], "", it[7])) continue;
       if (S.rules.automatic_bonus_progression && D.abp.runes.indexOf(it[0].toLowerCase()) >= 0) continue;                        /* potency, striking and resilient come with your level */
       if (q && it[0].toLowerCase().indexOf(q) < 0) continue;
       shown++;
@@ -739,7 +794,7 @@
     note.textContent = (plan.type === "prepared" ? "A prepared caster picks the spells it knows now; which ones are prepared each day is chosen in play. " : "A spontaneous caster's repertoire. ") + "Spells for later levels are chosen in Discord after each level-up.";
     box.appendChild(note);
     spellRanks(plan).forEach(function (rank) {
-      var need = plan.need[rank], pool = (D.spells[plan.trad] || {})[rank] || [], picked = S.spells[rank] = (S.spells[rank] || []).filter(function (n) { return pool.some(function (p) { return p[0] === n; }); });
+      var need = plan.need[rank], pool = ((D.spells[plan.trad] || {})[rank] || []).filter(function (p) { return bookOk(p[2]); }), picked = S.spells[rank] = (S.spells[rank] || []).filter(function (n) { return pool.some(function (p) { return p[0] === n; }); });
       var h = document.createElement("h3"); h.textContent = (rank === "0" ? "Cantrips" : "Rank " + rank + " spells") + " (" + picked.length + "/" + need + ")"; box.appendChild(h);
       var wrap = document.createElement("div"), input = document.createElement("input"), list = document.createElement("div");
       wrap.className = "picker"; input.type = "text"; input.placeholder = "Search…"; list.className = "plist"; wrap.appendChild(input); wrap.appendChild(list); box.appendChild(wrap);
@@ -774,7 +829,7 @@
     function finish() {
       featsLoading = false;
       if (failed) { $("levelsBox").textContent = "Couldn't load the feat list. Reload the page to try again."; return; }
-      files.forEach(function (f) { (window[f[1]] || []).forEach(function (r) { rows.push({ name: r[0], display: r[1] || r[0], level: r[2], cat: r[3], rarity: r[4], traits: r[5], arch: r[6], ded: !!r[7], prereq: r[8], summary: r[9], rep: !!r[10], trains: r[11] || [], lore: r[12] || "", first: !!r[13], sys: f[2] }); }); });
+      files.forEach(function (f) { (window[f[1]] || []).forEach(function (r) { rows.push({ name: r[0], display: r[1] || r[0], level: r[2], cat: r[3], rarity: r[4], traits: r[5], arch: r[6], ded: !!r[7], prereq: r[8], summary: r[9], rep: !!r[10], trains: r[11] || [], lore: r[12] || "", first: !!r[13], b: r[14], sys: f[2] }); }); });
       FEATS = mergeNamed([rows], function (f) { return f.name; });
       FEATS.forEach(function (f) { FEAT_BY[f.name] = f; });
       ALL_NAMES = null; done();
@@ -794,7 +849,7 @@
     if (tier) for (var l = tier[0]; l <= tier[1]; l++) if (l !== L && S.levels[l]) S.levels[l].boosts.forEach(function (a) { out.push(a); });
     return out;
   }
-  function levelState(L) { return S.levels[L] || (S.levels[L] = { feats: {}, src: {}, skill: "", boosts: [] }); }
+  function levelState(L) { var st = S.levels[L] || (S.levels[L] = { feats: {}, src: {}, skill: "", boosts: [], answers: {} }); if (!st.answers) st.answers = {}; return st; }
   function levelSlots(L) {
     var cls = curClass(), info = cls && cls.levels[String(L)], seen = {}, out = [];
     if (!info) return out;
@@ -831,7 +886,7 @@
     FEATS.forEach(function (f) {
       if (f.level > L || (q && f.display.toLowerCase().indexOf(q) < 0 && f.name.toLowerCase().indexOf(q) < 0)) return;
       if (!skillPrereqMet(f.prereq, ranks) || !featureGateMet(f.prereq) || !featNamePrereqMet(f.prereq, taken)) return;
-      if (!allowed(f.rarity, f.cat === "ancestry" && a ? a.name : "")) return;
+      if (!allowed(f.rarity, f.cat === "ancestry" && a ? a.name : "", f.b)) return;
       if (taken[f.name] && !f.rep) return;
       var k = slot.kind;
       if (k === "ancestry") { if (f.cat !== "ancestry" || !a || f.first || !f.traits.some(function (t) { return ancTraits().indexOf(t) >= 0; })) return; }
@@ -859,7 +914,12 @@
   var RANK_NAMES = ["trained", "expert", "master", "legendary"], RANK_AT = [1, 3, 7, 15];
   function skillOptions(L) {
     var r = ranksBefore(L), out = [];
-    D.skills.forEach(function (s) { var cur = r[s] || 0; if (cur < 4 && L >= RANK_AT[cur]) out.push({ skill: s, to: RANK_NAMES[cur] }); });
+    skillPool().forEach(function (s) { var cur = r[s] || 0; if (cur < 4 && L >= RANK_AT[cur]) out.push({ skill: s, to: RANK_NAMES[cur], tier: "Skills" }); });
+    loreNames().forEach(function (n) {                                       /* D986: a Lore is raised like any skill; one that rises on its own at L isn't offered a wasted increase */
+      var own = loreSchedule(n), cur = loreRank(n, L, L - 1);
+      if (own && scheduleRank(own, L) > scheduleRank(own, L - 1)) return;
+      if (cur < 4 && L >= RANK_AT[cur]) out.push({ skill: "lore:" + n, label: n, to: RANK_NAMES[cur], tier: "Lores" });
+    });
     return out;
   }
   function cap1(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -941,10 +1001,15 @@
     levelSlots(L).forEach(function (slot) { det.appendChild(drawSlot(L, slot, st)); });
     if (info.skillIncrease) {
       var h = document.createElement("h3"); h.textContent = "Skill increase"; det.appendChild(h);
-      var p = document.createElement("div"); p.className = "pills"; det.appendChild(p);
-      skillOptions(L).forEach(function (o) {
-        var b = document.createElement("button"); b.type = "button"; b.className = "pill"; b.textContent = cap1(o.skill) + " → " + o.to; b.setAttribute("aria-pressed", st.skill === o.skill ? "true" : "false");
-        b.addEventListener("click", function () { st.skill = st.skill === o.skill ? "" : o.skill; refresh(); }); p.appendChild(b);
+      var opts = skillOptions(L);
+      ["Skills", "Lores"].forEach(function (tier) {                           /* D986: the bot's tiers -- Skills, then Lores; nothing is left out */
+        var mine = opts.filter(function (o) { return o.tier === tier; }); if (!mine.length) return;
+        var th = document.createElement("h4"); th.textContent = tier; th.className = "tier"; det.appendChild(th);
+        var p = document.createElement("div"); p.className = "pills"; det.appendChild(p);
+        mine.forEach(function (o) {
+          var b = document.createElement("button"); b.type = "button"; b.className = "pill"; b.textContent = (o.label || cap1(o.skill)) + " → " + o.to; b.setAttribute("aria-pressed", st.skill === o.skill ? "true" : "false");
+          b.addEventListener("click", function () { st.skill = st.skill === o.skill ? "" : o.skill; refresh(); }); p.appendChild(b);
+        });
       });
     }
     if (boostCount(L)) {
@@ -973,9 +1038,27 @@
       renderPicker(list, input, entries, st.feats[slot.id] || "", function (n) { st.feats[slot.id] = st.feats[slot.id] === n ? "" : n; st.src[slot.id] = source; refresh(); }, Infinity);
     };
     input.addEventListener("input", draw); draw();
-    var cur = document.createElement("div"); cur.className = "chosen"; cur.textContent = st.feats[slot.id] ? "Chosen: " + st.feats[slot.id] : "Nothing chosen yet."; wrap.appendChild(cur);
+    var cur = document.createElement("div"); cur.className = "chosen"; cur.textContent = st.feats[slot.id] ? "Chosen: " + st.feats[slot.id] + notOwnedTag((featInfo(st.feats[slot.id]) || {}).b) : "Nothing chosen yet."; wrap.appendChild(cur);
+    var ask = st.feats[slot.id] && (D.loreChoiceFeats || {})[st.feats[slot.id]];
+    if (ask) wrap.appendChild(lorePicker(ask, st, slot.id));
     if (st.feats[slot.id]) detailFor(wrap, st.feats[slot.id], "feats", function (t) { return t[st.feats[slot.id]]; }, featFacts(st.feats[slot.id]));
     return wrap;
+  }
+  function lorePicker(ask, st, id) {                                         /* D991 (J9 item 1): every Lore question is a plain text box -- the player types the name; nothing is suggested */
+    var box = document.createElement("div"); box.className = "lorepick";
+    var answers = st.answers[id] || (st.answers[id] = []);
+    for (var i = 0; i < ask.count; i++) (function (i) {
+      var lab = document.createElement("label"); lab.textContent = (ask.count > 1 ? "Lore " + (i + 1) : "Lore") + ": ";
+      var input = document.createElement("input"); input.type = "text"; input.maxLength = 40; input.placeholder = "Type the Lore skill's name";
+      input.value = answers[i] || "";
+      input.addEventListener("change", function () {
+        var v = String(input.value || "").trim(); if (v && !/ lore$/i.test(v)) v += " Lore";
+        v = v.replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+        answers[i] = v; st.answers[id] = answers.slice(0, ask.count); refresh();
+      });
+      lab.appendChild(input); box.appendChild(lab);
+    })(i);
+    return box;
   }
   function levelSource(L, slot) {                                          /* what the bot's picker calls the source: class:Fighter, arch:<name>, new */
     var st = levelState(L), name = st.feats[slot.id], f = FEAT_BY[name], source = sourceOf(L, slot);
@@ -992,7 +1075,7 @@
       var st = levelState(L), info = curClass().levels[String(L)], feats = [];
       levelSlots(L).forEach(function (slot, index) {
         if (!st.feats[slot.id]) return;
-        feats.push({ index: index, kind: slot.kind, label: slot.label, name: st.feats[slot.id], source: levelSource(L, slot), answers: [] });
+        feats.push({ index: index, kind: slot.kind, label: slot.label, name: st.feats[slot.id], source: levelSource(L, slot), answers: ((st.answers || {})[slot.id] || []).filter(Boolean) });
       });
       var payload = {};
       if (feats.length) payload.feats = feats;
@@ -1056,8 +1139,8 @@
     if (cls) {
       var prof = cls.prof[String(T)] || {}, ranks = ranksBefore(T + 1), keyMod = m[S.keyAttr || cls.keys[0]] || 0;
       var sk = summarySection("Skills");
-      sk.appendChild(profTable(D.skills.map(function (s) { var r = ranks[s] || 0, mod = m[D.skillAbility[s]] || 0; return [cap1(s), r, sign(profBonus(r, T) + mod)]; })
-        .concat(loreNames().map(function (n) { return [n, 1, sign(profBonus(1, T) + m.int)]; }))));
+      sk.appendChild(profTable(skillPool().map(function (s) { var r = ranks[s] || 0, mod = m[D.skillAbility[s]] || 0; return [cap1(s), r, sign(profBonus(r, T) + mod)]; })
+        .concat(loreNames().map(function (n) { var r = loreRank(n, T, T); return [n, r, sign(profBonus(r, T) + m.int)]; }))));
       box.appendChild(sk);
       var sv = summarySection("Saves and Perception");
       sv.appendChild(profTable([["Fortitude", prof.fortitude || 0, sign(profBonus(prof.fortitude || 0, T) + m.con)], ["Reflex", prof.reflex || 0, sign(profBonus(prof.reflex || 0, T) + m.dex)],
@@ -1135,7 +1218,8 @@
       var st = S.levels[L], sec = el("div", "slevel"), any = false; sec.appendChild(el("h5", "", "Level " + L));
       if (st) {
         levelSlots(L).forEach(function (slot) { if (st.feats[slot.id]) { sec.appendChild(line(slot.label, st.feats[slot.id])); any = true; } });
-        if (st.skill) { var from = ranks[st.skill] || 0; ranks[st.skill] = from + 1; sec.appendChild(line("Skill increase", [skillLine(st.skill, from, from + 1)])); any = true; }
+        if (st.skill && st.skill.indexOf("lore:") === 0) { sec.appendChild(line("Skill increase", st.skill.slice(5) + " (Lore)")); any = true; }
+        else if (st.skill) { var from = ranks[st.skill] || 0; ranks[st.skill] = from + 1; sec.appendChild(line("Skill increase", [skillLine(st.skill, from, from + 1)])); any = true; }
         if (st.boosts.length) { sec.appendChild(line("Boosts", st.boosts.map(function (b) { return NAMES[b]; }).join(", "))); any = true; }
       }
       if (!any) sec.appendChild(el("div", "sempty", "Nothing chosen yet."));
@@ -1144,7 +1228,74 @@
     return wrap;
   }
 
-  function refresh() { syncRuleChecks(); renderAncestry(); renderBackground(); renderClass(); renderFree(); renderSkills(); renderFeats(); renderSpells(); renderLevels(); renderSummary(); }
+  function bookFamilies() {                                                  /* one row per family with content in the ticked systems, by category */
+    var seen = {}, out = [];
+    BOOKS.forEach(function (r) { if (S.systems.indexOf(r[5]) >= 0 && !seen[r[0]]) { seen[r[0]] = 1; out.push(r); } });
+    return out;
+  }
+  function renderBookChecks() {
+    var box = $("bookChecks"); box.textContent = "";
+    var rows = bookFamilies();
+    S.systems.forEach(function (sys) {
+      Object.keys(BOOK_CATS).forEach(function (cat) {
+        var mine = rows.filter(function (r) { return r[5] === sys && r[2] === cat; });
+        if (!mine.length) return;
+        var det = document.createElement("details"), sum = document.createElement("summary"), grid = el("div", "checks");
+        if (cat === "rulebook" || cat === "lost-omens") det.open = true;
+        sum.textContent = (S.systems.length > 1 ? SYS_NAMES[sys] + " · " : "") + BOOK_CATS[cat] + " (" + mine.length + ")";
+        det.appendChild(sum);
+        mine.forEach(function (r) {
+          var l = document.createElement("label"), c = document.createElement("input");
+          c.type = "checkbox"; c.checked = S.books.indexOf(r[0]) >= 0; c.dataset.fam = r[0];
+          c.addEventListener("change", function () { if (c.checked) { if (S.books.indexOf(r[0]) < 0) S.books.push(r[0]); } else toggleOff(r[0]); saveBooks(); refresh(); renderItems(); });
+          l.appendChild(c); l.appendChild(document.createTextNode(" " + r[1] + (r[4] ? " ✦" : "")));
+          l.title = [r[3], r[4] ? "Society legal" : ""].filter(Boolean).join(" · ");
+          grid.appendChild(l);
+        });
+        det.appendChild(grid); box.appendChild(det);
+      });
+    });
+  }
+  function toggleOff(fam) { var i = S.books.indexOf(fam); if (i >= 0) S.books.splice(i, 1); }
+  function spellSrc(name) {
+    var found;
+    Object.keys(D.spells || {}).some(function (t) { return Object.keys(D.spells[t]).some(function (r) { return D.spells[t][r].some(function (p) { if (p[0] === name) { found = p[2]; return true; } return false; }); }); });
+    return found;
+  }
+  function neededBooks(onlyMissing) {                                         /* {book index: [names]} for every choice made so far (D991: or only those not in the ticked books) */
+    var need = {}, order = [];
+    function add(b, what) { var l = srcList(b); if (!l.length || !BOOKS[l[0]]) return; if (onlyMissing && bookOk(b)) return; if (!need[l[0]]) { need[l[0]] = []; order.push(l[0]); } if (need[l[0]].indexOf(what) < 0) need[l[0]].push(what); }
+    var a = curAncestry(), bg = curBackground(), c = curClass();
+    if (a) { add(a.b, a.name); var h = byName(a.heritages, S.heritage); if (h) add(h.b, h.name); }
+    if (bg) add(bg.b, bg.name);
+    if (c) add(c.b, c.name);
+    l1FeatNames().concat(pickedAt(targetLevel())).forEach(function (n) { var f = featInfo(n); if (f) add(f.b, f.display || n); });
+    Object.keys(S.spells).forEach(function (r) { (S.spells[r] || []).forEach(function (n) { add(spellSrc(n), n); }); });
+    S.gear.forEach(function (g) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i][0] === g.name) { add(ITEMS[i][7], g.name); break; } });
+    return order.sort(function (x, y) { return BOOKS[x][1] < BOOKS[y][1] ? -1 : 1; }).map(function (i) { return { book: BOOKS[i], names: need[i] }; });
+  }
+  function renderBooks() {
+    $("bookSummary").textContent = S.books.length ? S.books.length + " book" + (S.books.length === 1 ? "" : "s") + " ticked: only their content is offered" : "Every book (nothing ticked)";
+    var box = $("neededBooks"); box.textContent = "";
+    if (S.books.length) {                                                     /* D991 (M Q12): flag, never drop, what was chosen before the ticks */
+      var missing = neededBooks(true);
+      if (!missing.length) return;
+      box.appendChild(el("b", "", "⚠ Chosen but not in your books (kept; change them if you like)"));
+      missing.forEach(function (n) { box.appendChild(el("div", "", n.book[1] + ": " + n.names.slice(0, 6).join(", ") + (n.names.length > 6 ? " and " + (n.names.length - 6) + " more" : ""))); });
+      return;
+    }
+    var list = neededBooks();
+    if (!list.length) return;
+    box.appendChild(el("b", "", "Books this build uses"));
+    list.forEach(function (n) { box.appendChild(el("div", "", n.book[1] + ": " + n.names.slice(0, 6).join(", ") + (n.names.length > 6 ? " and " + (n.names.length - 6) + " more" : ""))); });
+  }
+  $("bookClear").addEventListener("click", function () { S.books = []; saveBooks(); renderBookChecks(); refresh(); renderItems(); });
+  $("bookSociety").addEventListener("click", function () {
+    S.books = bookFamilies().filter(function (r) { return r[4]; }).map(function (r) { return r[0]; });
+    saveBooks(); renderBookChecks(); refresh(); renderItems();
+  });
+
+  function refresh() { syncRuleChecks(); renderAncestry(); renderBackground(); renderClass(); renderFree(); renderSkills(); renderFeats(); renderSpells(); renderLevels(); renderSummary(); renderBooks(); }
 
   /* ---------------------------------------------------------------- the file */
   function stable(v) {
@@ -1206,7 +1357,7 @@
         var slot = slots[f.index];
         if (!slot || slot.kind !== f.kind || slot.label !== f.label || used[slot.id]) slot = slots.filter(function (x) { return x.kind === f.kind && x.label === f.label && !used[x.id]; })[0];
         if (!slot) { skipped.push("level " + L + " " + f.label + " (" + f.name + ")"); return; }
-        used[slot.id] = true; lv.feats[slot.id] = f.name;
+        used[slot.id] = true; lv.feats[slot.id] = f.name; if (f.answers && f.answers.length) lv.answers[slot.id] = f.answers.slice();
         var w = sourceWord(f.source); if (w) lv.src[slot.id] = w;
       });
       if (b.payload.skill_increase) lv.skill = b.payload.skill_increase;
@@ -1236,8 +1387,10 @@
       Object.keys(r.variants || {}).forEach(function (k) { if (k in S.rules) S.rules[k] = !!r.variants[k]; });
       S.allowUncommon = !!r.allow_uncommon; S.allowRare = !!r.allow_rare; S.levelCap = r.level_cap || null; S.code = r.campaign_code || ""; S.exceptions = {};
       (r.exceptions || []).forEach(function (n) { S.exceptions[n] = true; });
+      if (Array.isArray(r.owned_books)) { S.books = r.owned_books.filter(function (x) { return typeof x === "string"; }); saveBooks(); }   /* D988 */
       var systems = r.systems && r.systems.length ? r.systems : [doc.system || "pf2e"];
       return new Promise(function (resolve) { setSystems(systems, resolve); }).then(function () {
+        renderBookChecks();
         var skipped = applyRecipe(doc);
         msg.textContent = "Opened " + (S.name || "the recipe") + ", level " + (doc.level || 1) + "." + (skipped.length ? " Not found in this page's lists, so left out: " + skipped.join(", ") + "." : "");
       });
@@ -1267,7 +1420,7 @@
       var doc = {
         format: "tablegoblin-recipe", format_version: 1, system: recipeSystem(), data_release: D.release, exported_at: new Date().toISOString().replace(/\.\d+Z$/, "+00:00"),
         name: payload.name, level: blocks[blocks.length - 1].level, source: "wiki-builder",
-        rules: { campaign_code: S.code || null, systems: S.systems.slice(), variants: S.rules, allow_uncommon: S.allowUncommon, allow_rare: S.allowRare, exceptions: Object.keys(S.exceptions), level_cap: S.levelCap, used: usedRules() },
+        rules: { campaign_code: S.code || null, systems: S.systems.slice(), variants: S.rules, allow_uncommon: S.allowUncommon, allow_rare: S.allowRare, exceptions: Object.keys(S.exceptions), level_cap: S.levelCap, used: usedRules(), owned_books: S.books.slice() },
         blocks: blocks, head: hash,
         state: { coins: coins(), equipment: S.gear.map(function (g) { var o = { name: g.name, kind: g.kind, qty: g.qty }; if (g.equipped) o.equipped = true; return o; }) }
       };
@@ -1293,7 +1446,7 @@
     head.addEventListener("click", function () { if (panel.classList.contains("collapsed")) set(false); });
     set(false); panel.insertBefore(btn, head.nextSibling);
   });
-  buildRuleChecks(); refresh(); renderItems(); renderGear();
+  buildRuleChecks(); renderBookChecks(); refresh(); renderItems(); renderGear();
 }());
 </script>
 <script>
