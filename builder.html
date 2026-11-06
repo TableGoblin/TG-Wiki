@@ -1264,7 +1264,10 @@
   }
   function neededBooks(onlyMissing) {                                         /* {book index: [names]} for every choice made so far (D991: or only those not in the ticked books) */
     var need = {}, order = [];
-    function add(b, what) { var l = srcList(b); if (!l.length || !BOOKS[l[0]]) return; if (onlyMissing && bookOk(b)) return; if (!need[l[0]]) { need[l[0]] = []; order.push(l[0]); } if (need[l[0]].indexOf(what) < 0) need[l[0]].push(what); }
+    function add(b, what) {                                                   /* a choice printed in several books lists them all ("Feybound or Lost Omens Ancestry Guide"): any one covers it */
+      var l = srcList(b).filter(function (i) { return BOOKS[i]; }); if (!l.length) return; if (onlyMissing && bookOk(b)) return;
+      var key = l.join(","); if (!need[key]) { need[key] = []; order.push(key); } if (need[key].indexOf(what) < 0) need[key].push(what);
+    }
     var a = curAncestry(), bg = curBackground(), c = curClass();
     if (a) { add(a.b, a.name); var h = byName(a.heritages, S.heritage); if (h) add(h.b, h.name); }
     if (bg) add(bg.b, bg.name);
@@ -1272,7 +1275,8 @@
     l1FeatNames().concat(pickedAt(targetLevel())).forEach(function (n) { var f = featInfo(n); if (f) add(f.b, f.display || n); });
     Object.keys(S.spells).forEach(function (r) { (S.spells[r] || []).forEach(function (n) { add(spellSrc(n), n); }); });
     S.gear.forEach(function (g) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i][0] === g.name) { add(ITEMS[i][7], g.name); break; } });
-    return order.sort(function (x, y) { return BOOKS[x][1] < BOOKS[y][1] ? -1 : 1; }).map(function (i) { return { book: BOOKS[i], names: need[i] }; });
+    function label(key) { return key.split(",").map(function (i) { return BOOKS[i][1]; }).join(" or "); }
+    return order.sort(function (x, y) { return label(x) < label(y) ? -1 : 1; }).map(function (k) { return { label: label(k), names: need[k] }; });
   }
   function renderBooks() {
     $("bookSummary").textContent = S.books.length ? S.books.length + " book" + (S.books.length === 1 ? "" : "s") + " ticked: only their content is offered" : "Every book (nothing ticked)";
@@ -1281,13 +1285,13 @@
       var missing = neededBooks(true);
       if (!missing.length) return;
       box.appendChild(el("b", "", "⚠ Chosen but not in your books (kept; change them if you like)"));
-      missing.forEach(function (n) { box.appendChild(el("div", "", n.book[1] + ": " + n.names.slice(0, 6).join(", ") + (n.names.length > 6 ? " and " + (n.names.length - 6) + " more" : ""))); });
+      missing.forEach(function (n) { box.appendChild(el("div", "", n.label + ": " + n.names.slice(0, 6).join(", ") + (n.names.length > 6 ? " and " + (n.names.length - 6) + " more" : ""))); });
       return;
     }
     var list = neededBooks();
     if (!list.length) return;
     box.appendChild(el("b", "", "Books this build uses"));
-    list.forEach(function (n) { box.appendChild(el("div", "", n.book[1] + ": " + n.names.slice(0, 6).join(", ") + (n.names.length > 6 ? " and " + (n.names.length - 6) + " more" : ""))); });
+    list.forEach(function (n) { box.appendChild(el("div", "", n.label + ": " + n.names.slice(0, 6).join(", ") + (n.names.length > 6 ? " and " + (n.names.length - 6) + " more" : ""))); });
   }
   $("bookClear").addEventListener("click", function () { S.books = []; saveBooks(); renderBookChecks(); refresh(); renderItems(); });
   $("bookSociety").addEventListener("click", function () {
