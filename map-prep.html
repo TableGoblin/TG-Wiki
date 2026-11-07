@@ -225,6 +225,48 @@
     return cv;
   }
 
+  /* ---- several terrains in one cell (W4B, map_terrain.py): a cell is a list of up to 4 layers, oldest first ---- */
+  var MAX_LAYERS = DATA.maxLayers || 4;
+  var GROUPS = DATA.exclusiveGroups || [            /* as map_terrain.EXCLUSIVE_GROUPS: one layer of each per cell */
+    ["door", "door-open", "door-locked"], ["window", "window-open", "window-locked"], ["chest", "chest-open", "chest-locked"],
+    ["lever", "lever-down"], ["ledge", "ledge-20", "ledge-40"], ["darkness", "darkness-4"], ["difficult", "greater"], ["light-torch", "light-lamp"],
+    ["water", "water-deep"]];
+  function groupOf(key) { for (var i = 0; i < GROUPS.length; i++) if (GROUPS[i].indexOf(key) >= 0) return GROUPS[i]; return [key]; }
+  function addLayer(list, key) {                     /* as map_terrain.add_layer; null when the cell is full */
+    list = (list || []).slice();
+    if (key === DATA.floor || list.indexOf(key) >= 0) return list;
+    var g = groupOf(key);
+    for (var i = 0; i < list.length; i++) if (g.indexOf(list[i]) >= 0) { list[i] = key; return list; }
+    if (list.length >= MAX_LAYERS) return null;
+    list.push(key); return list;
+  }
+  /* The split, as map_render.layer_sector: 2 layers on the top-right to bottom-left diagonal (first layer upper-left), 3-4 with an X
+     (top, right, bottom, left; with 3 the left triangle repeats the layer that restricts movement most, as map_render.sector_layers). */
+  var SECTORS = {
+    2: [[[0, 0], [1, 0], [0, 1]], [[1, 0], [1, 1], [0, 1]]],
+    4: [[[0, 0], [1, 0], [.5, .5]], [[1, 0], [1, 1], [.5, .5]], [[1, 1], [0, 1], [.5, .5]], [[0, 1], [0, 0], [.5, .5]]]
+  };
+  /* As map_terrain.restriction / worst_layer: blocking movement, then forcing a Swim (deep water), then the extra cost; a tie keeps the earliest. */
+  function restriction(t) { return [t.blocksMove ? 1 : 0, t.forcesSwim ? 1 : 0, t.costExtra || 0]; }
+  function worse(a, b) { var ra = restriction(a), rb = restriction(b); for (var i = 0; i < ra.length; i++) if (ra[i] !== rb[i]) return ra[i] > rb[i]; return false; }
+  function sectorTerrains(ts) {
+    if (ts.length !== 3) return ts;
+    var w = ts[0]; ts.forEach(function (t) { if (worse(t, w)) w = t; });
+    return ts.concat([w]);
+  }
+  function drawLayers(g, list, x, y, cs) {
+    var ts = sectorTerrains(list.map(function (key) { return BY_KEY[key]; }).filter(Boolean));
+    if (ts.length === 1) { g.drawImage(tileFor(ts[0], cs), x, y, cs, cs); return; }
+    var polys = SECTORS[ts.length === 2 ? 2 : 4];
+    ts.forEach(function (t, i) {
+      var poly = polys[i]; if (!poly) return;
+      g.save(); g.beginPath();
+      poly.forEach(function (p, n) { if (n) g.lineTo(x + p[0] * cs, y + p[1] * cs); else g.moveTo(x + p[0] * cs, y + p[1] * cs); });
+      g.closePath(); g.clip(); g.drawImage(tileFor(t, cs), x, y, cs, cs); g.restore();
+    });
+  }
+  function labelOf(list) { return list.map(function (key) { return BY_KEY[key] ? BY_KEY[key].label : key; }).join(" + "); }
+
   /* ---- geometry ---- */
   function imgSize() { return state.img ? { w: state.img.naturalWidth, h: state.img.naturalHeight } : { w: state.cols * state.cell, h: state.rows * state.cell }; }
   function layout() {
@@ -254,10 +296,10 @@
     if (state.img) g.drawImage(state.img, 0, 0, l.w * sc, l.h * sc); else { g.fillStyle = "#cfcfc4"; g.fillRect(0, 0, l.w * sc, l.h * sc); }
     var cs = l.cs * sc, ox = l.ox * sc, oy = l.oy * sc;
     Object.keys(state.cells).forEach(function (id) {
-      var t = BY_KEY[state.cells[id]]; if (!t) return;
+      var list = state.cells[id]; if (!list || !list.length) return;
       var p = id.split(","), x = ox + (p[0] - 1) * cs, y = oy + (p[1] - 1) * cs;
-      g.drawImage(tileFor(t, cs), x, y, cs, cs);
-      if (t.hidden) { g.strokeStyle = "rgba(255,255,255,.8)"; g.setLineDash([3, 3]); g.strokeRect(x + 1, y + 1, cs - 2, cs - 2); g.setLineDash([]); }
+      drawLayers(g, list, x, y, cs);
+      if (list.some(function (key) { return BY_KEY[key] && BY_KEY[key].hidden; })) { g.strokeStyle = "rgba(255,255,255,.8)"; g.setLineDash([3, 3]); g.strokeRect(x + 1, y + 1, cs - 2, cs - 2); g.setLineDash([]); }
     });
     g.strokeStyle = "rgba(0,0,0,.45)"; g.lineWidth = 1; g.beginPath();
     for (var c = 0; c <= state.cols; c++) { var gx = Math.round(ox + c * cs) + .5; g.moveTo(gx, oy); g.lineTo(gx, oy + state.rows * cs); }
@@ -283,7 +325,17 @@
     if (c < 1 || r < 1 || c > state.cols || r > state.rows) return null;
     return { c: c, r: r };
   }
-  function setCell(c, r, key) { var id = c + "," + r; if (key === DATA.floor) delete state.cells[id]; else state.cells[id] = key; }
+  /* W4B, as map_repo.paint_layer: floor clears the cell; otherwise a stroke ADDS the terrain as a layer, or -- when it starts on a cell
+     that already has it (a rectangle: when every cell in it has it) -- takes just that layer off. */
+  function hasLayer(c, r, key) { var list = state.cells[c + "," + r]; return !!list && list.indexOf(key) >= 0; }
+  function setCell(c, r, key, remove) {
+    var id = c + "," + r;
+    if (key === DATA.floor) { delete state.cells[id]; return; }
+    var list = state.cells[id] || [];
+    if (remove) list = list.filter(function (k2) { return k2 !== key; });
+    else list = addLayer(list, key) || list;
+    if (list.length) state.cells[id] = list; else delete state.cells[id];
+  }
   function snapshot() { state.undo.push(JSON.stringify(state.cells)); if (state.undo.length > 100) state.undo.shift(); state.redo = []; syncButtons(); }
   function line(c0, r0, c1, r1, fn) {
     var dc = Math.abs(c1 - c0), dr = -Math.abs(r1 - r0), sc = c0 < c1 ? 1 : -1, sr = r0 < r1 ? 1 : -1, err = dc + dr;
@@ -295,21 +347,22 @@
     mapEl.setPointerCapture(ev.pointerId); snapshot();
     var erase = ev.button === 2 || ev.altKey, key = erase ? DATA.floor : state.key;
     if (state.tool === "rect") drag = { rect: { c0: cell.c, r0: cell.r, c1: cell.c, r1: cell.r }, key: key };
-    else { drag = { last: cell, key: key }; setCell(cell.c, cell.r, key); }
+    else { drag = { last: cell, key: key, remove: hasLayer(cell.c, cell.r, key) }; setCell(cell.c, cell.r, key, drag.remove); }
     draw(); counts();
   });
   mapEl.addEventListener("pointermove", function (ev) {
     var cell = cellAt(ev);
-    $("where").textContent = cell ? "Cell " + cellLabel(cell.c, cell.r) + (state.cells[cell.c + "," + cell.r] ? " — " + BY_KEY[state.cells[cell.c + "," + cell.r]].label : "") : " ";
+    $("where").textContent = cell ? "Cell " + cellLabel(cell.c, cell.r) + (state.cells[cell.c + "," + cell.r] ? " — " + labelOf(state.cells[cell.c + "," + cell.r]) : "") : " ";
     if (!drag || !cell) return;
     if (drag.rect) { drag.rect.c1 = cell.c; drag.rect.r1 = cell.r; }
-    else { line(drag.last.c, drag.last.r, cell.c, cell.r, function (c, r) { setCell(c, r, drag.key); }); drag.last = cell; counts(); }
+    else { line(drag.last.c, drag.last.r, cell.c, cell.r, function (c, r) { setCell(c, r, drag.key, drag.remove); }); drag.last = cell; counts(); }
     draw();
   });
   function finish() {
     if (drag && drag.rect) {
-      var a = drag.rect;
-      for (var c = Math.min(a.c0, a.c1); c <= Math.max(a.c0, a.c1); c++) for (var r = Math.min(a.r0, a.r1); r <= Math.max(a.r0, a.r1); r++) setCell(c, r, drag.key);
+      var a = drag.rect, all = true, c, r;              /* W4B: off only when every cell in it already has it */
+      for (c = Math.min(a.c0, a.c1); c <= Math.max(a.c0, a.c1); c++) for (r = Math.min(a.r0, a.r1); r <= Math.max(a.r0, a.r1); r++) all = all && hasLayer(c, r, drag.key);
+      for (c = Math.min(a.c0, a.c1); c <= Math.max(a.c0, a.c1); c++) for (r = Math.min(a.r0, a.r1); r <= Math.max(a.r0, a.r1); r++) setCell(c, r, drag.key, all);
     }
     drag = null; draw(); counts();
   }
@@ -328,7 +381,7 @@
 
   function counts() {
     var n = {}, total = 0;
-    Object.keys(state.cells).forEach(function (id) { var key = state.cells[id]; n[key] = (n[key] || 0) + 1; total++; });
+    Object.keys(state.cells).forEach(function (id) { state.cells[id].forEach(function (key) { n[key] = (n[key] || 0) + 1; }); total++; });
     $("counts").textContent = total ? total + " cells: " + Object.keys(n).sort(function (a, b) { return n[b] - n[a]; }).map(function (key) { return n[key] + " " + BY_KEY[key].label.toLowerCase(); }).join(", ") : "No terrain yet.";
   }
 
@@ -337,6 +390,8 @@
     var bits = [];
     if (t.blocksMove && t.blocksSight) bits.push("blocks movement and sight"); else if (t.blocksMove) bits.push("blocks movement");
     if (t.costExtra) bits.push("+" + t.costExtra + " ft per square");
+    if (t.forcesSwim) bits.push("everyone Swims (Athletics); a Swim Speed moves normally");
+    else if (t.key === "water") bits.push("Small and Tiny creatures Swim");
     if (t.hidden) bits.push("hidden from players until shown or found");
     return t.label + (bits.length ? " — " + bits.join(", ") : "");
   }
@@ -356,7 +411,7 @@
   }
   function markPalette() {
     Array.prototype.forEach.call($("palette").children, function (b) { b.setAttribute("aria-pressed", b.dataset.key === state.key ? "true" : "false"); });
-    $("terrainHint").textContent = describe(BY_KEY[state.key]) + ". Right-click or hold Alt to erase.";
+    $("terrainHint").textContent = describe(BY_KEY[state.key]) + ". A cell holds up to " + MAX_LAYERS + " terrains: painting one it already has takes just that one off. Right-click or hold Alt to erase the cell.";
   }
   function buildAmbients() {
     var box = $("ambients");
@@ -427,9 +482,9 @@
     if (withLegends) { g.fillStyle = "#f4f4ee"; g.fillRect(0, 0, cv.width, cv.height); }
     g.drawImage(state.img, M, M, l.w, l.h);
     Object.keys(state.cells).forEach(function (id) {
-      var t = BY_KEY[state.cells[id]]; if (!t || t.hidden) return;
+      var list = state.cells[id].filter(function (key) { return BY_KEY[key] && !BY_KEY[key].hidden; }); if (!list.length) return;   /* traps left off, the rest kept */
       var p = id.split(",");
-      g.drawImage(tileFor(t, cs), M + l.ox + (p[0] - 1) * cs, M + l.oy + (p[1] - 1) * cs, cs, cs);
+      drawLayers(g, list, M + l.ox + (p[0] - 1) * cs, M + l.oy + (p[1] - 1) * cs, cs);
     });
     g.strokeStyle = "rgba(0,0,0,.5)"; g.lineWidth = Math.max(1, cs / 40); g.beginPath();
     for (var c = 0; c <= state.cols; c++) { var x = M + l.ox + c * cs; g.moveTo(x, M + l.oy); g.lineTo(x, M + l.oy + state.rows * cs); }
@@ -450,12 +505,17 @@
   $("pngClean").addEventListener("click", function () { tgEvent("map-png-clean"); exportPng(false); });
   $("download").addEventListener("click", function () {
     if (!$("mapName").value.trim()) { $("fileError").textContent = "Give the map a name first; it becomes the file's name."; $("mapName").focus(); return; }
-    var groups = {};
-    Object.keys(state.cells).sort(function (a, b) {
-      var pa = a.split(","), pb = b.split(","), ka = state.cells[a], kb = state.cells[b];
+    var groups = {}, stacks = {}, flat = [];
+    Object.keys(state.cells).forEach(function (id) { state.cells[id].forEach(function (key) { flat.push([id, key]); }); });
+    flat.sort(function (a, b) {
+      var pa = a[0].split(","), pb = b[0].split(","), ka = a[1], kb = b[1];
       return ka < kb ? -1 : ka > kb ? 1 : (pa[1] - pb[1]) || (pa[0] - pb[0]);
-    }).forEach(function (id) { var p = id.split(","), key = state.cells[id]; (groups[key] = groups[key] || []).push(cellLabel(+p[0], +p[1])); });
-    var text = JSON.stringify({ format: DATA.format, version: DATA.version, columns: state.cols, rows: state.rows, ambient: state.ambient, sunlight: $("sunlight").checked, cells: groups }, null, 1);
+    }).forEach(function (e) { var p = e[0].split(","), key = e[1]; (groups[key] = groups[key] || []).push(cellLabel(+p[0], +p[1])); });
+    Object.keys(state.cells).sort(function (a, b) { var pa = a.split(","), pb = b.split(","); return (pa[1] - pb[1]) || (pa[0] - pb[0]); })
+      .forEach(function (id) { var p = id.split(","); if (state.cells[id].length > 1) stacks[cellLabel(+p[0], +p[1])] = state.cells[id].slice(); });
+    var body = { format: DATA.format, version: DATA.version, columns: state.cols, rows: state.rows, ambient: state.ambient, sunlight: $("sunlight").checked, cells: groups };
+    if (Object.keys(stacks).length) body.layers = stacks;           /* W4B: a stacked cell's order, as map_terrain_file.build */
+    var text = JSON.stringify(body, null, 1);
     var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
     a.download = fileName(); document.body.appendChild(a); a.click(); a.remove();
     tgEvent("terrain-file-downloaded");
@@ -472,8 +532,18 @@
         if (!BY_KEY[key]) throw new Error("The file uses `" + key + "`, which the editor doesn't have.");
         (d.cells[key] || []).forEach(function (label) {
           var m = /^([A-Za-z]+)(\d+)$/.exec(String(label)); if (!m) throw new Error(label + " isn't a cell like D7.");
-          cells[colIndex(m[1].toUpperCase()) + "," + parseInt(m[2], 10)] = key;
+          var id = colIndex(m[1].toUpperCase()) + "," + parseInt(m[2], 10);
+          if (key === DATA.floor) return;
+          var list = addLayer(cells[id], key);               /* W4B: a cell under several terrains holds them all */
+          if (!list) throw new Error(label + " has more than " + MAX_LAYERS + " terrains.");
+          cells[id] = list;
         });
+      });
+      Object.keys(d.layers || {}).forEach(function (label) {   /* the order the layers were added */
+        var m = /^([A-Za-z]+)(\d+)$/.exec(String(label)); if (!m) throw new Error(label + " isn't a cell like D7.");
+        var id = colIndex(m[1].toUpperCase()) + "," + parseInt(m[2], 10), want = d.layers[label] || [], have = cells[id] || [];
+        if (want.length !== have.length || want.some(function (key) { return have.indexOf(key) < 0; })) throw new Error("The layers for " + label + " don't match its terrains.");
+        cells[id] = want.slice();
       });
       if (!(d.columns >= 1 && d.rows >= 1 && d.columns <= DATA.maxColumns && d.rows <= DATA.maxRows)) throw new Error("The file's grid size isn't valid.");
       snapshot();

@@ -237,6 +237,7 @@
   };
 
   /* ---------------------------------------------------------------- books (D988) */
+  var BOOK_COVERS = window.TG_BOOK_COVERS || {};                             /* family -> families it brings along (a hardcover's volumes, a book's web supplements), one way */
   var BOOKS = window.TG_BOOKS || [];                                         /* docs/builder-books.js: [family, name, category, edition, society, system] */
   var BOOK_KEY = "tg-builder-books", BOOK_CATS = { rulebook: "Rulebooks", "lost-omens": "Lost Omens", "adventure-path": "Adventure Paths", adventure: "Adventures", society: "Society", other: "Blogs and other" };
   function loadBooks() { try { var v = JSON.parse(window.localStorage.getItem(BOOK_KEY) || "[]"); return Array.isArray(v) ? v.filter(function (x) { return typeof x === "string"; }) : []; } catch (e) { return []; } }
@@ -245,9 +246,10 @@
   function srcList(b) { return b === undefined || b === null ? [] : (Array.isArray(b) ? b : [b]); }
   function bookOk(b) {                                                        /* no ticks = every book; no source = always; printed in several books = any one owned */
     if (!S.books.length) return true;
-    var l = srcList(b), rows = BOOKS;
+    var l = srcList(b), rows = BOOKS, owned = {};
     if (!l.length) return true;
-    for (var i = 0; i < l.length; i++) { var r = rows[l[i]]; if (!r || S.books.indexOf(r[0]) >= 0) return true; }
+    S.books.forEach(function (f) { owned[f] = 1; (BOOK_COVERS[f] || []).forEach(function (c) { owned[c] = 1; }); });
+    for (var i = 0; i < l.length; i++) { var r = rows[l[i]]; if (!r || owned[r[0]]) return true; }
     return false;
   }
   function notOwnedTag(b) { return S.books.length && !bookOk(b) ? " · ⚠ not in your books" : ""; }   /* D991 (M Q12): a choice made before the ticks stays, flagged */

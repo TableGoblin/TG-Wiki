@@ -18,9 +18,52 @@ window.TG_TERRAIN = {
   }
  ],
  "defaultAmbient": "bright",
+ "exclusiveGroups": [
+  [
+   "door",
+   "door-open",
+   "door-locked"
+  ],
+  [
+   "window",
+   "window-open",
+   "window-locked"
+  ],
+  [
+   "chest",
+   "chest-open",
+   "chest-locked"
+  ],
+  [
+   "lever",
+   "lever-down"
+  ],
+  [
+   "ledge",
+   "ledge-20",
+   "ledge-40"
+  ],
+  [
+   "darkness",
+   "darkness-4"
+  ],
+  [
+   "difficult",
+   "greater"
+  ],
+  [
+   "light-torch",
+   "light-lamp"
+  ],
+  [
+   "water",
+   "water-deep"
+  ]
+ ],
  "floor": "floor",
  "format": "tablegoblin-terrain",
  "maxColumns": 60,
+ "maxLayers": 4,
  "maxRows": 60,
  "types": [
   {
@@ -29,6 +72,7 @@ window.TG_TERRAIN = {
    "costExtra": 0,
    "crosses": null,
    "emoji": "\u2b1c",
+   "forcesSwim": false,
    "hidden": false,
    "key": "floor",
    "label": "Normal floor",
@@ -42,6 +86,7 @@ window.TG_TERRAIN = {
    "costExtra": 5,
    "crosses": null,
    "emoji": "\ud83d\udfeb",
+   "forcesSwim": false,
    "hidden": false,
    "key": "difficult",
    "label": "Difficult",
@@ -68,6 +113,7 @@ window.TG_TERRAIN = {
    "costExtra": 10,
    "crosses": null,
    "emoji": "\ud83d\udfe7",
+   "forcesSwim": false,
    "hidden": false,
    "key": "greater",
    "label": "Greater difficult",
@@ -94,6 +140,7 @@ window.TG_TERRAIN = {
    "costExtra": 5,
    "crosses": null,
    "emoji": "\ud83d\udfe6",
+   "forcesSwim": false,
    "hidden": false,
    "key": "water",
    "label": "Water",
@@ -107,11 +154,31 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83c\udf0a",
+   "forcesSwim": true,
+   "hidden": false,
+   "key": "water-deep",
+   "label": "Deep water",
+   "shapes": null,
+   "tint": [
+    20,
+    55,
+    185,
+    150
+   ],
+   "waves": null
+  },
+  {
    "blocksMove": true,
    "blocksSight": true,
    "costExtra": 0,
    "crosses": null,
    "emoji": "\u2b1b",
+   "forcesSwim": false,
    "hidden": false,
    "key": "wall",
    "label": "Wall",
@@ -135,6 +202,7 @@ window.TG_TERRAIN = {
     235
    ],
    "emoji": "\u274e",
+   "forcesSwim": false,
    "hidden": false,
    "key": "hazard",
    "label": "Area effect",
@@ -153,6 +221,7 @@ window.TG_TERRAIN = {
     235
    ],
    "emoji": "\ud83e\udea4",
+   "forcesSwim": false,
    "hidden": true,
    "key": "trap",
    "label": "Hazard (trap)",
@@ -166,6 +235,7 @@ window.TG_TERRAIN = {
    "costExtra": 0,
    "crosses": null,
    "emoji": "\ud83d\udd32",
+   "forcesSwim": false,
    "hidden": false,
    "key": "narrow",
    "label": "Narrow (needs Squeeze)",
@@ -184,6 +254,7 @@ window.TG_TERRAIN = {
    "costExtra": 0,
    "crosses": null,
    "emoji": "\ud83d\udd6f\ufe0f",
+   "forcesSwim": false,
    "hidden": false,
    "key": "light-torch",
    "label": "Light: torch (20 ft bright, 40 dim)",
@@ -202,6 +273,7 @@ window.TG_TERRAIN = {
    "costExtra": 0,
    "crosses": null,
    "emoji": "\ud83d\udca1",
+   "forcesSwim": false,
    "hidden": false,
    "key": "light-lamp",
    "label": "Light: lamp (60 ft bright, 120 dim)",
@@ -220,6 +292,7 @@ window.TG_TERRAIN = {
    "costExtra": 0,
    "crosses": null,
    "emoji": "\ud83c\udf11",
+   "forcesSwim": false,
    "hidden": false,
    "key": "darkness",
    "label": "Magical darkness",
@@ -238,6 +311,7 @@ window.TG_TERRAIN = {
    "costExtra": 0,
    "crosses": null,
    "emoji": "\u26ab",
+   "forcesSwim": false,
    "hidden": false,
    "key": "darkness-4",
    "label": "Magical darkness (4th rank+)",
@@ -256,6 +330,7 @@ window.TG_TERRAIN = {
    "costExtra": 0,
    "crosses": null,
    "emoji": "\ud83d\udeaa",
+   "forcesSwim": false,
    "hidden": false,
    "key": "door",
    "label": "Door (closed)",
@@ -309,6 +384,7 @@ window.TG_TERRAIN = {
    "costExtra": 0,
    "crosses": null,
    "emoji": "\ud83e\ude9f",
+   "forcesSwim": false,
    "hidden": false,
    "key": "window",
    "label": "Window (closed)",
@@ -460,6 +536,7 @@ window.TG_TERRAIN = {
    "costExtra": 0,
    "crosses": null,
    "emoji": "\ud83e\uddf0",
+   "forcesSwim": false,
    "hidden": false,
    "key": "chest",
    "label": "Chest (closed)",
@@ -513,6 +590,7 @@ window.TG_TERRAIN = {
    "costExtra": 0,
    "crosses": null,
    "emoji": "\ud83d\udd79\ufe0f",
+   "forcesSwim": false,
    "hidden": false,
    "key": "lever",
    "label": "Lever (up)",
@@ -600,6 +678,7 @@ window.TG_TERRAIN = {
    "costExtra": 0,
    "crosses": null,
    "emoji": "\ud83e\uddd7",
+   "forcesSwim": false,
    "hidden": false,
    "key": "ledge",
    "label": "Ledge (10 ft drop)",
@@ -655,6 +734,7 @@ window.TG_TERRAIN = {
    "costExtra": 0,
    "crosses": null,
    "emoji": "\ud83e\uddd7",
+   "forcesSwim": false,
    "hidden": false,
    "key": "ledge-20",
    "label": "Ledge (20 ft drop)",
@@ -710,6 +790,7 @@ window.TG_TERRAIN = {
    "costExtra": 0,
    "crosses": null,
    "emoji": "\ud83e\uddd7",
+   "forcesSwim": false,
    "hidden": false,
    "key": "ledge-40",
    "label": "Ledge (40 ft drop)",
