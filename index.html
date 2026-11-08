@@ -51,6 +51,8 @@
       <a class="top" href="map-prep.html"><span>Map prep</span></a>
       <a class="top" href="builder.html"><span>Character builder</span></a>
       <a class="top" href="npc-builder.html"><span>NPC builder</span></a>
+      <a class="top" href="town-builder.html"><span>Town builder</span></a>
+      <a class="top" href="treasure.html"><span>Treasure planner</span></a>
       <a class="top" href="class-commands.html"><span>Class Commands</span></a>
     </nav>
   </aside>
@@ -59,7 +61,7 @@
     <div class="wrap">
       <header class="hero">
         <h1>Your table has a goblin in it now.</h1>
-        <nav class="topnav" aria-label="Site"><a href="index.html" aria-current="page">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a></nav>
+        <nav class="topnav" aria-label="Site"><a href="index.html" aria-current="page">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a></nav>
         <p class="lede">
           Table Goblin is a Discord bot for running Pathfinder 2e. It does the bookkeeping, from initiative
           and conditions to the multiple attack penalty, treasure and coin, so the table can spend its time on the game.
@@ -92,6 +94,11 @@
         <h2 class="new-head">Recently added</h2>
         <h3 class="new-date">Nov 8, 2026</h3>
         <ul class="new-list">
+          <li><strong>Ammunition comes in stacks of 10 everywhere:</strong> town shops, the starting-gear shop and the site's character and town builders all sell ammunition as a stack of 10 rounds, marked "stack of 10", at the stack's price and Bulk. Magical and alchemical rounds that are priced each now cost ten times that for a stack (before, a "pack" of them cost one round's price), and firearm rounds priced per 5 cost twice that. Shelves stocked earlier are repriced automatically.</li>
+          <li><strong>NPC builder resistances:</strong> the resistance and weakness type list now offers splash damage, area damage, critical hits, persistent damage, energy and the special materials, so a swarm's "weakness splash damage" is one pick away. Strikes keep the plain damage types.</li>
+          <li><strong>Town builder on the site:</strong> the <a href="town-builder.html">Town builder</a> page rolls a settlement the way <code>/tgtown generate</code> does: set the level and size, a level bonus for specialist shops, and whether uncommon or rare items may be stocked. Every town name, shop name, merchant, ancestry, personality and note has a 🎲 to roll just that again, and each shop can be restocked. Copy it as text or print it.</li>
+          <li><strong>Treasure planner on the site:</strong> the <a href="treasure.html">Treasure planner</a> page rolls a whole level's treasure (GM Core's Party Treasure by Level, on the official tables) for your party's level and size, with uncommon and rare items if you allow them, and splits it into as many encounters as you choose, each worth about the same. Any item can be rolled again.</li>
+          <li><strong>NPC builder power bars:</strong> the NPC builder's side panel shows how each number compares with GM Core's scale for the creature's level, offense and defense, whether it is weaker or stronger than its level, and which level it plays like.</li>
           <li><strong>Mortal Weakness or Personal Antithesis:</strong> after a successful Exploit Vulnerability, the post has a button to switch to the other exploit, so the thaumaturge chooses knowing the creature's weakness. Once per Exploit.</li>
           <li><strong>Diverse Lore:</strong> a successful Exploit Vulnerability also counts against the creature's Recall Knowledge DC, and if it would succeed you pick what you recall from a menu (delivered like Recall Knowledge). <code>/tgcheck</code> has a new Esoteric Lore action, <strong>Recall Knowledge (any topic)</strong>, at the feat's &minus;2.</li>
           <li><strong>Terms of Service and Privacy Policy:</strong> the description of an AI Game Master feature (which was never built) is gone. The Privacy Policy now says exactly which messages the bot looks at (only chat commands in campaign channels), and that <code>/tgtown generate</code> asks Google's Gemini for town names and people unless you set <code>ai:False</code>.</li>

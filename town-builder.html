@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Table Goblin — Town Builder</title>
+<link rel="icon" href="table-goblin.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="tools.css">
+<script data-goatcounter="https://tablegoblin.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+<script src="events.js"></script>
+<style>
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+  .grid2.tight { gap: 0 8px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 12px; }
+  @media (max-width: 640px) { .grid2, .grid4 { grid-template-columns: 1fr; } .grid2.tight { grid-template-columns: 1fr 1fr; } }
+  .tiny-label { display: block; font-size: 13px; color: var(--text-2); }
+  .rollrow { display: flex; gap: 6px; margin-top: 3px; }
+  .rollrow input { flex: 1; min-width: 0; }
+  .die { border: 1px solid var(--line-strong); background: var(--ground); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 15px; line-height: 1.2; }
+  .die:hover { border-color: var(--accent); }
+  .card-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+  .card-head b { font: 600 16px Fraunces, Georgia, serif; }
+  .x { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text-2); border-radius: 6px; padding: 6px 10px; cursor: pointer; font: inherit; font-size: 13px; }
+  .x:hover { color: var(--danger); border-color: var(--danger); }
+  .table-scroll { overflow-x: auto; }
+  table.stock { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  table.stock th, table.stock td { text-align: left; padding: 5px 6px; border-top: 1px solid var(--line); vertical-align: top; }
+  table.stock th { font: 600 11.5px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .04em; color: var(--text-3); border-top: 0; }
+  table.stock td:nth-child(n+2) { white-space: nowrap; }
+  .rar { font: 600 10.5px "IBM Plex Mono", monospace; text-transform: uppercase; border-radius: 3px; padding: 1px 5px; margin-left: 4px; border: 1px solid var(--line-strong); color: var(--text-2); }
+  .rar.uncommon { border-color: #c45f24; color: #c45f24; }
+  .rar.rare { border-color: #0b4f8a; color: #3b82c4; }
+  .rar.est { text-transform: none; }
+  .controls .checks { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 4px 0 10px; }
+  .controls .checks label { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 13.5px; color: var(--text); }
+  @media print { .rail, .topnav, .controls, .die, .x, .tbtn, .steps, .site-footer { display: none !important; } .panel { box-shadow: none; break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+        <img class="rail-logo" src="table-goblin.png" alt="Table Goblin logo">
+        <b>Table Goblin</b>
+        <span>Pathfinder 2e for Discord</span>
+        <a class="btn" href="https://discord.gg/cHMex5xFsV" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.211.375-.457.879-.626 1.278a18.27 18.27 0 0 0-5.518 0A12.76 12.76 0 0 0 9.115 3 19.736 19.736 0 0 0 4.68 4.372C1.727 8.75.929 13.028 1.328 17.244a19.9 19.9 0 0 0 5.993 3.03c.483-.66.914-1.36 1.285-2.098a12.87 12.87 0 0 1-2.024-.973c.17-.124.336-.253.497-.386 3.902 1.803 8.13 1.803 11.987 0 .162.133.329.262.497.386-.645.386-1.323.71-2.026.974.371.738.802 1.438 1.285 2.098a19.876 19.876 0 0 0 5.995-3.03c.468-4.891-.795-9.13-3.5-13.876ZM8.68 14.813c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Zm7.324 0c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Z"/></svg>
+          Join the Discord
+        </a>
+        <div class="discord-widget" id="discordWidget" hidden aria-live="polite">
+          <span class="dw-dot"></span>
+          <span class="dw-avatars" id="dwAvatars"></span>
+          <span id="dwText"></span>
+        </div>
+    </div>
+    <nav>
+      <a class="btn" href="https://discord.com/oauth2/authorize?client_id=1550867869066076263" target="_blank" rel="noopener">Install Table Goblin</a>
+      <a class="top" href="index.html"><span>Home</span></a>
+      <a class="top" href="changelog.html"><span>Change Log</span></a>
+      <a class="top" href="wiki.html"><span>Wiki</span></a>
+      <div class="rail-sub">
+        <a href="wiki.html#start"><span>Getting Started</span></a>
+        <a href="wiki.html#gm"><span>GM Tools</span></a>
+        <a href="wiki.html#chars"><span>Characters</span></a>
+        <a href="wiki.html#chat"><span>Playing in Character</span></a>
+        <a href="wiki.html#npcs"><span>Creatures &amp; NPCs</span></a>
+        <a href="wiki.html#dice"><span>Dice Roller</span></a>
+        <a href="wiki.html#combat"><span>Encounters</span></a>
+        <a href="wiki.html#maps"><span>Battle Maps</span></a>
+        <a href="wiki.html#loot"><span>Loot &amp; the Purse</span></a>
+        <a href="wiki.html#towns"><span>Towns &amp; Shops</span></a>
+        <a href="wiki.html#lookup"><span>Reference Lookup</span></a>
+        <a href="wiki.html#coming"><span>Coming Features</span></a>
+      </div>
+      <a class="top" href="map-prep.html"><span>Map prep</span></a>
+      <a class="top" href="builder.html"><span>Character builder</span></a>
+      <a class="top" href="npc-builder.html"><span>NPC builder</span></a>
+      <a class="top" href="town-builder.html" aria-current="page"><span>Town builder</span></a>
+      <a class="top" href="treasure.html"><span>Treasure planner</span></a>
+      <a class="top" href="class-commands.html"><span>Class Commands</span></a>
+    </nav>
+  </aside>
+  <main class="tool-page">
+    <div class="wrap">
+      <header class="hero tool-hero">
+        <div class="eyebrow">GM tool</div>
+        <h1>Town builder</h1>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="town-builder.html" aria-current="page">Town builder</a><a href="treasure.html">Treasure planner</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a></nav>
+        <p class="lede">Roll up a settlement for your table: its name, its shops, the merchant behind each counter, and what is on the shelves. It uses the same tables and stocking rules as <code>/tgtown generate</code>: the town's level sets what can legally be sold, a bigger place has more and more specialist shops, and the shelves lean toward the best things the shop is allowed to carry.</p>
+        <ol class="steps"><li><strong>Set the level</strong> (and the size, or let the level choose it), then press <strong>Roll a town</strong>.</li><li><strong>Press 🎲</strong> beside any name, ancestry, personality or note to roll just that again, or type your own.</li><li><strong>Give a shop a level bonus</strong> to let it stock above the town's level, then <strong>Restock</strong>.</li><li><strong>Copy as text</strong> or <strong>Print</strong> it. Your town is kept in this browser.</li></ol>
+      </header>
+
+      <div class="tool-body">
+        <div class="panel controls"><div class="grid4">
+          <label>Town level<input type="number" id="level" min="0" max="25"></label>
+          <label>Size<select id="size"><option value="">From the level</option><option value="village">Village</option><option value="town">Town</option><option value="city">City</option><option value="metropolis">Metropolis</option></select><span class="hint" id="sizeHint"></span></label>
+          <label>Shop level bonus<input type="number" id="bonus" min="0" max="10"><span class="hint">For specialist shops; the general store stays at the town's level.</span></label>
+          <div><span class="tiny-label">Stock</span><div class="checks"><label><input type="checkbox" id="uncommon"> Uncommon items</label><label><input type="checkbox" id="rare"> Rare items</label></div></div>
+        </div>
+        <div class="btns"><button type="button" class="tbtn primary" id="rollTown">Roll a town</button><button type="button" class="tbtn" id="restockAll">Restock every shop</button>
+          <button type="button" class="tbtn" id="copyText">Copy as text</button><button type="button" class="tbtn" id="printTown">Print</button><span class="hint" id="copyHint"></span></div></div>
+        <div id="town"></div>
+      </div>
+
+      <footer class="site-footer">
+        A reference, not a rules substitute &mdash; when in doubt, check Archives of Nethys.
+        Table Goblin is an unofficial tool and is not affiliated with Paizo Inc.
+        <a href="terms.html">Terms of Service</a> &middot; <a href="privacy.html">Privacy Policy</a>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<script src="town-loot-data.js"></script>
+<script>
+(function () {
+  "use strict";
+  // D1048 -- the town / shop builder. Rules from the bot (town_generator / settlement_repo.restock), data from town-loot-data.js.
+  var D = window.TG_TOWN, T = D.town, ITEMS = D.items, STORE = "tg-town-builder-v1";
+  var KINDS = ["general", "weaponsmith", "armorer", "alchemist", "jeweller", "magic"];
+  var KIND_LABEL = { general: "General store", weaponsmith: "Weaponsmith", armorer: "Armorer", alchemist: "Alchemist", jeweller: "Jeweler", magic: "Magic shop" };
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function randint(lo, hi) { return lo + Math.floor(Math.random() * (hi - lo + 1)); }
+  function cap1(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  // D1050: ammunition is sold in stacks of 10; Foundry's price is for it[5] rounds, so a stack costs price x 10 / it[5].
+  var STACK = 10;
+  function isAmmo(it) { return it[3] === "ammo"; }
+  function unitPrice(it) { return isAmmo(it) ? Math.round(it[2] * STACK / (it[5] || 1)) : it[2]; }
+  function gp(cp) { if (cp >= 100) return (cp / 100).toLocaleString(undefined, { maximumFractionDigits: 2 }) + " gp"; if (cp >= 10) return (cp / 10) + " sp"; return cp + " cp"; }
+  function weighted(pairs) {
+    var total = pairs.reduce(function (s, p) { return s + p[1]; }, 0), r = Math.random() * total;
+    for (var i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function sizeFor(level) {
+    for (var name in T.sizes) { var b = T.sizes[name]; if (level >= b[0] && level <= b[1]) return name; }
+    return level > 20 ? "metropolis" : "village";
+  }
+
+  // ---------- the tables (town_generator) ----------
+  function townName() { var n = pick(T.prefix) + pick(T.suffix); return Math.random() < 0.12 ? pick(T.qualifier) + " " + n : n; }
+  function ancestry() { return cap1(weighted(T.ancestries)); }
+  function given(anc) { return pick(T.given[String(anc || "").toLowerCase()] || T.given.human); }
+  function surname(avoid) { var fresh = T.surname.filter(function (s) { return avoid.indexOf(s) < 0; }); return pick(fresh.length ? fresh : T.surname); }
+  function shopName(kind, owner) {
+    var noun = pick(T.shopNoun[kind] || T.shopNoun.general);
+    return Math.random() < 0.5 ? owner.split(" ")[0] + "'s " + noun : "The " + pick(T.shopAdj) + " " + noun;
+  }
+  function personality() { return cap1(pick(T.manner)) + "."; }
+  function notes() { return cap1(pick(T.hook)) + "."; }
+  function kindsFor(size) {
+    var spec = T.shopsBySize[size] || T.shopsBySize.village, kinds = spec[0], cap = spec[1];
+    var n = randint(Math.max(1, cap - 1), cap), out = kinds.slice(0, n);
+    if (size === "metropolis" && Math.random() < 0.5) out.push(pick(["general", "alchemist", "magic"]));
+    return out;
+  }
+
+  // ---------- stock (settlement_repo.restock) ----------
+  function allowedRarity(r) { return r === "common" || (r === "uncommon" && state.uncommon) || (r === "rare" && state.rare); }
+  function stockSize(cap) { return Math.max(4, Math.min(24, 4 + cap * 2)); }
+  function restock(shop) {
+    var cap = state.level + (+shop.bonus || 0), cats = T.shopStock[shop.kind] || T.shopStock.general;
+    var pool = [];
+    for (var i = 0; i < ITEMS.length; i++) { var it = ITEMS[i]; if (it[1] <= cap && cats.indexOf(it[3]) >= 0 && allowedRarity(it[4])) pool.push(i); }
+    var staples = pool.filter(function (i) { return ITEMS[i][1] <= 1; });
+    var wanted = stockSize(cap), stapleCount = staples.length ? Math.min(staples.length, Math.round(wanted * 0.6)) : 0;
+    var picked = [], seen = {};
+    function take(cands, weightOf, quota) {
+      if (!cands.length) return;
+      var total = cands.reduce(function (s, i) { return s + weightOf(i); }, 0);
+      for (var tries = 0; tries < quota * 6 && quota > 0; tries++) {
+        var r = Math.random() * total, j = 0;
+        for (; j < cands.length; j++) { r -= weightOf(cands[j]); if (r < 0) break; }
+        var idx = cands[Math.min(j, cands.length - 1)];
+        if (seen[idx]) continue;
+        seen[idx] = 1; picked.push(idx); quota--;
+      }
+    }
+    take(staples, function () { return 1; }, stapleCount);
+    take(pool, function (i) { return 1 + Math.max(0, ITEMS[i][1]); }, wanted - picked.length);
+    shop.stock = picked.map(function (i) { return [i, ITEMS[i][1] >= 1 ? 1 : randint(1, 5)]; })
+      .sort(function (a, b) { return ITEMS[a[0]][1] - ITEMS[b[0]][1] || ITEMS[a[0]][0].localeCompare(ITEMS[b[0]][0]); });
+  }
+
+  // ---------- state ----------
+  var state = { name: "", region: "", level: 3, size: "", bonus: 0, uncommon: false, rare: false, shops: [] };
+  try { var saved = JSON.parse(localStorage.getItem(STORE) || "null"); if (saved && saved.shops) state = saved; } catch (e) { /* private window */ }
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* storage blocked */ } }
+  function size() { return state.size || sizeFor(state.level); }
+  function surnames() { return state.shops.map(function (s) { return (s.merchant || "").split(" ").slice(-1)[0]; }); }
+
+  function newShop(kind) {
+    var anc = ancestry(), owner = given(anc) + " " + surname(surnames());
+    var shop = { kind: kind, bonus: kind === "general" ? 0 : state.bonus, merchant: owner, ancestry: anc, personality: personality(), notes: notes(), name: "" };
+    shop.name = shopName(kind, owner);
+    restock(shop);
+    return shop;
+  }
+  function rollTown() {
+    state.name = townName(); state.region = pick(T.regions);
+    state.shops = [];
+    kindsFor(size()).forEach(function (k) { state.shops.push(newShop(k)); });
+  }
+
+  // ---------- render ----------
+  function dice(attr, label) { return '<button type="button" class="die" ' + attr + ' title="Roll a new ' + label + '" aria-label="Roll a new ' + label + '">🎲</button>'; }
+  function field(label, value, attr, dieAttr, dieLabel) {
+    return '<label>' + esc(label) + '<span class="rollrow"><input type="text" ' + attr + ' value="' + esc(value) + '">' + dice(dieAttr, dieLabel) + "</span></label>";
+  }
+  function render() {
+    $("level").value = state.level; $("size").value = state.size; $("bonus").value = state.bonus;
+    $("uncommon").checked = state.uncommon; $("rare").checked = state.rare;
+    $("sizeHint").textContent = state.size ? "" : "From the level: " + cap1(sizeFor(state.level)) + ".";
+    if (!state.shops.length) { $("town").innerHTML = '<p class="hint">Set the level and press <b>Roll a town</b>.</p>'; save(); return; }
+    var h = ['<div class="panel"><div class="grid2">' +
+      field("Town name", state.name, 'data-t="name"', 'data-roll="name"', "town name") +
+      field("Region", state.region, 'data-t="region"', 'data-roll="region"', "region") + "</div>" +
+      '<p class="hint">Level ' + state.level + " " + cap1(size()) + " &middot; " + state.shops.length + " shop" + (state.shops.length === 1 ? "" : "s") + ".</p></div>"];
+    state.shops.forEach(function (s, i) {
+      var capLevel = state.level + (+s.bonus || 0), value = 0;
+      var rows = s.stock.map(function (st) {
+        var it = ITEMS[st[0]]; value += unitPrice(it) * st[1];
+        return "<tr><td><a href=\"https://2e.aonprd.com/Search.aspx?q=" + encodeURIComponent(it[0]) + '" target="_blank" rel="noopener">' + esc(it[0]) + "</a>" +
+          (it[4] !== "common" ? ' <span class="rar ' + it[4] + '">' + it[4] + "</span>" : "") + (isAmmo(it) ? ' <span class="rar">stack of ' + STACK + "</span>" : "") +
+          "</td><td>" + it[1] + "</td><td>" + gp(unitPrice(it)) + "</td><td>" + st[1] + "</td></tr>";
+      }).join("");
+      h.push('<div class="panel shop"><div class="card-head"><b>' + esc(KIND_LABEL[s.kind] || s.kind) + "</b>" +
+        '<span class="btns"><button type="button" class="tbtn" data-restock="' + i + '">Restock</button><button type="button" class="x" data-remove="' + i + '">Remove</button></span></div>' +
+        '<div class="grid2">' + field("Shop name", s.name, 'data-s="name" data-i="' + i + '"', 'data-roll="shop" data-i="' + i + '"', "shop name") +
+        '<div class="grid2 tight"><label>Kind<select data-s="kind" data-i="' + i + '">' + KINDS.map(function (k) {
+          return '<option value="' + k + '"' + (k === s.kind ? " selected" : "") + ">" + KIND_LABEL[k] + "</option>"; }).join("") + "</select></label>" +
+        '<label>Level bonus<input type="number" min="0" max="10" data-s="bonus" data-i="' + i + '" value="' + (+s.bonus || 0) + '"></label></div>' +
+        field("Merchant", s.merchant, 'data-s="merchant" data-i="' + i + '"', 'data-roll="merchant" data-i="' + i + '"', "merchant name") +
+        field("Ancestry", s.ancestry, 'data-s="ancestry" data-i="' + i + '"', 'data-roll="ancestry" data-i="' + i + '"', "ancestry") +
+        "</div>" +
+        field("Personality", s.personality, 'data-s="personality" data-i="' + i + '"', 'data-roll="personality" data-i="' + i + '"', "personality") +
+        field("Notes", s.notes, 'data-s="notes" data-i="' + i + '"', 'data-roll="notes" data-i="' + i + '"', "note") +
+        '<p class="hint">Stock up to level ' + capLevel + " &middot; " + s.stock.length + " items &middot; worth " + gp(value) + " on the shelves.</p>" +
+        (rows ? '<div class="table-scroll"><table class="stock"><thead><tr><th>Item</th><th>Lvl</th><th>Price</th><th>Qty</th></tr></thead><tbody>' + rows + "</tbody></table></div>"
+              : '<p class="hint">Nothing this shop could sell at this level.</p>') + "</div>");
+    });
+    h.push('<div class="btns"><select id="addKind" aria-label="Kind of shop to add">' + KINDS.map(function (k) { return '<option value="' + k + '">' + KIND_LABEL[k] + "</option>"; }).join("") +
+      '</select><button type="button" class="tbtn" id="addShop">Add a shop</button></div>');
+    $("town").innerHTML = h.join("");
+    save();
+  }
+
+  function asText() {
+    var out = [state.name + " (" + state.region + ") — level " + state.level + " " + size(), ""];
+    state.shops.forEach(function (s) {
+      out.push(s.name + " — " + (KIND_LABEL[s.kind] || s.kind) + " (stock to level " + (state.level + (+s.bonus || 0)) + ")");
+      out.push("  " + s.merchant + ", " + s.ancestry + ". " + s.personality + " " + s.notes);
+      s.stock.forEach(function (st) { var it = ITEMS[st[0]]; out.push("  - " + it[0] + (isAmmo(it) ? " (stack of " + STACK + ")" : "") + " (level " + it[1] + ", " + gp(unitPrice(it)) + (isAmmo(it) ? " per stack" : "") + ")" + (st[1] > 1 ? " x" + st[1] : "") + (it[4] !== "common" ? " [" + it[4] + "]" : "")); });
+      out.push("");
+    });
+    return out.join("\n");
+  }
+
+  // ---------- events ----------
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("button"); if (!t) return;
+    var d = t.dataset, s = d.i != null ? state.shops[+d.i] : null;
+    if (t.id === "rollTown") { rollTown(); render(); }
+    else if (t.id === "restockAll") { state.shops.forEach(restock); render(); }
+    else if (t.id === "copyText") { navigator.clipboard && navigator.clipboard.writeText(asText()).then(function () { $("copyHint").textContent = "Copied."; }); }
+    else if (t.id === "printTown") { window.print(); }
+    else if (t.id === "addShop") { state.shops.push(newShop($("addKind").value)); render(); }
+    else if (d.restock != null) { restock(state.shops[+d.restock]); render(); }
+    else if (d.remove != null) { state.shops.splice(+d.remove, 1); render(); }
+    else if (d.roll === "name") { state.name = townName(); render(); }
+    else if (d.roll === "region") { state.region = pick(T.regions); render(); }
+    else if (s && d.roll === "shop") { s.name = shopName(s.kind, s.merchant); render(); }
+    else if (s && d.roll === "merchant") { s.merchant = given(s.ancestry) + " " + surname(surnames()); render(); }
+    else if (s && d.roll === "ancestry") { s.ancestry = ancestry(); render(); }
+    else if (s && d.roll === "personality") { s.personality = personality(); render(); }
+    else if (s && d.roll === "notes") { s.notes = notes(); render(); }
+  });
+  document.addEventListener("change", function (e) {
+    var t = e.target, d = t.dataset;
+    if (t.id === "level") { state.level = Math.max(0, Math.min(25, +t.value || 0)); state.shops.forEach(restock); render(); }
+    else if (t.id === "size") { state.size = t.value; render(); }
+    else if (t.id === "bonus") {
+      var old = state.bonus; state.bonus = Math.max(0, Math.min(10, +t.value || 0));
+      state.shops.forEach(function (s) { if (s.kind !== "general" && (+s.bonus || 0) === old) { s.bonus = state.bonus; restock(s); } });
+      render();
+    }
+    else if (t.id === "uncommon" || t.id === "rare") { state[t.id] = t.checked; state.shops.forEach(restock); render(); }
+    else if (d.t) { state[d.t] = t.value; save(); }
+    else if (d.s) {
+      var s = state.shops[+d.i];
+      if (d.s === "bonus") { s.bonus = Math.max(0, Math.min(10, +t.value || 0)); restock(s); render(); }
+      else if (d.s === "kind") { s.kind = t.value; restock(s); render(); }
+      else { s[d.s] = t.value; save(); }
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

@@ -62,6 +62,24 @@
   textarea.ab { width: 100%; min-height: 54px; padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--ground); color: var(--text); font: inherit; font-size: 13.5px; resize: vertical; }
   .inline-checks { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 8px; }
   .inline-checks label { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 13px; color: var(--text); }
+  .pw-head { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 6px; margin: 0 0 8px; border-left: 3px solid var(--line-strong); background: var(--ground); font-size: 13px; }
+  .pw-head b { font-size: 14px; }
+  .pw-head span { color: var(--text-3); }
+  .pw-head.fair { border-left-color: #3a9d6a; }
+  .pw-head.soft, .pw-head.strong { border-left-color: #c9962b; }
+  .pw-head.weak, .pw-head.over { border-left-color: var(--danger); }
+  .pw-row, .pw-scale { display: grid; grid-template-columns: 70px minmax(0, 1fr) 32px; gap: 6px; align-items: center; }
+  .pw-scale { margin-bottom: 2px; }
+  .pw-scale .pw-cap { display: flex; justify-content: space-between; font: 500 10px "IBM Plex Mono", monospace; color: var(--text-3); }
+  .pw-row { font-size: 12.5px; padding: 2px 0; }
+  .pw-row.sum { font-weight: 600; border-top: 1px solid var(--line); margin-top: 3px; padding-top: 5px; }
+  .pw-label { color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pw-track { position: relative; height: 10px; background: var(--surface-2); border-radius: 3px; }
+  .pw-mid { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--text-3); }
+  .pw-fill { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+  .pw-fill.pos { background: var(--accent); }
+  .pw-fill.neg { background: #8a93a6; }
+  .pw-val { font: 500 11.5px "IBM Plex Mono", monospace; text-align: right; color: var(--text-2); }
   .csv-guide { margin-top: 18px; }
   .csv-guide .table-scroll { overflow-x: auto; }
   .csv-cols { border-collapse: collapse; width: 100%; font-size: 14px; }
@@ -114,6 +132,8 @@
       <a class="top" href="map-prep.html"><span>Map prep</span></a>
       <a class="top" href="builder.html"><span>Character builder</span></a>
       <a class="top" href="npc-builder.html" aria-current="page"><span>NPC builder</span></a>
+      <a class="top" href="town-builder.html"><span>Town builder</span></a>
+      <a class="top" href="treasure.html"><span>Treasure planner</span></a>
       <a class="top" href="class-commands.html"><span>Class Commands</span></a>
     </nav>
   </aside>
@@ -123,7 +143,7 @@
       <header class="hero tool-hero">
         <div class="eyebrow">GM tool</div>
         <h1>NPC builder</h1>
-        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html" aria-current="page">NPC builder</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a></nav>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html" aria-current="page">NPC builder</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a></nav>
         <p class="lede">Build one creature or a whole cast at the power level you mean, using GM Core's Building Creatures tables. Every number has Extreme, High, Moderate and Low buttons for the creature's level, and the page warns you when something runs past the table. Nothing here is uploaded; your work is kept in this browser until you download the file.</p>
         <ol class="steps">
           <li><strong>Pick a level</strong>, then a tier for each number. Change the level and every tiered number follows.</li>
@@ -142,6 +162,8 @@
             <div class="panel">
               <h2>Stat block</h2>
               <div class="statblock" id="statblock"></div>
+              <h3>Power for its level</h3>
+              <div class="power" id="power"></div>
               <h3>Checks</h3>
               <ul class="warns" id="warns"></ul>
               <div class="btns">
@@ -175,7 +197,7 @@
             <tr><td><code>speed</code>, <code>fly_speed</code>, <code>swim_speed</code>, <code>climb_speed</code>, <code>burrow_speed</code></td><td>Feet.</td></tr>
             <tr><td><code>str</code>, <code>dex</code>, <code>con</code>, <code>int</code>, <code>wis</code>, <code>cha</code></td><td>Attribute modifiers or tier words.</td></tr>
             <tr><td><code>acrobatics</code> &hellip; <code>thievery</code></td><td>One column per skill (16); empty means none. Lores aren't kept on creatures.</td></tr>
-            <tr><td><code>resistances</code>, <code>weaknesses</code>, <code>immunities</code></td><td><code>fire 5; cold 5</code>, <code>silver 5</code>, <code>poison; sleep</code>. An exception goes in brackets: <code>physical 5 (except silver)</code>.</td></tr>
+            <tr><td><code>resistances</code>, <code>weaknesses</code>, <code>immunities</code></td><td><code>fire 5; cold 5</code>, <code>silver 5</code>, <code>poison; sleep</code>. An exception goes in brackets: <code>physical 5 (except silver)</code>. Hits are matched by what they are as well as their damage type: a swarm has resistances <code>physical 5</code> and weaknesses <code>splash-damage 5; area-damage 5</code> (also <code>critical-hits</code>, <code>persistent-damage</code>, <code>energy</code>, <code>cold-iron</code>, <code>silver</code>).</td></tr>
             <tr><td><code>strike1_name</code> &hellip; <code>strike4_*</code></td><td>Up to 4 Strikes. A real weapon's name (Longsword, Shortbow) fills its die, damage type, traits and range.<br>
               <code>strikeN_attack_bonus</code>: <code>+15</code> or a tier.<br>
               <code>strikeN_damage</code>: <code>2d8+7 slashing</code>, or a tier (<code>high</code>, or <code>high piercing</code> for a natural attack); a tier is built the GM Core way, with the extra damage counted toward the table's average.<br>
@@ -322,7 +344,7 @@
       '<div class="inline-checks"><label><input type="checkbox" data-f="significant"' + (n.significant ? " checked" : "") + '> Significant NPC (uses the dying rules, not just knocked out)</label></div>' +
       '<p class="hint">Several copies get numbered aliases (<code>bandit1</code>, <code>bandit2</code>…) and each carries its own gear.</p></div>');
 
-    h.push('<div class="panel"><h2><span class="num">2</span>Attributes</h2><p class="hint" style="margin:0 0 6px">GM Core: one Extreme attribute at most, usually the creature\'s main one; most are High or Moderate, with a Low or worse where it is weak.</p>' +
+    h.push('<div class="panel"><h2><span class="num">2</span>Attributes</h2><p class="hint" style="margin:0 0 6px">GM Core: one Extreme attribute at most, usually the creature\'s main one; most are High or Moderate, with a Low where it is weak. GM Core\'s attribute table stops at Low (it has no Terrible column, unlike saves and Perception); for something weaker, type the number yourself, like Intelligence &minus;5 for a mindless creature.</p>' +
       ABIL.map(function (a) { return statRow("ab-" + a, ABIL_NAME[a], "", n.abilities[a], "attribute", T4, L); }).join("") + "</div>");
 
     h.push('<div class="panel"><h2><span class="num">3</span>Defenses and Perception</h2>' +
@@ -337,12 +359,17 @@
         var rr = row("resistance", L);
         return '<div class="card"><div class="card-head"><b>' + esc(cap(r.kind)) + "</b><button class=\"x\" type=\"button\" data-del=\"resist\" data-i=\"" + i + '">Remove</button></div><div class="grid3">' +
           '<label>Kind<select data-r="kind" data-i="' + i + '">' + ["resistance", "weakness", "immunity"].map(function (k) { return '<option value="' + k + '"' + (k === r.kind ? " selected" : "") + ">" + cap(k) + "</option>"; }).join("") + "</select></label>" +
-          '<label>Damage type or effect<input type="text" list="dtypes" data-r="type" data-i="' + i + '" value="' + esc(r.type) + '"></label>' +
+          '<label>Damage type or effect<input type="text" list="rtypes" data-r="type" data-i="' + i + '" value="' + esc(r.type) + '"></label>' +
           (r.kind === "immunity" ? "<span></span>" : '<label>Amount<input type="number" data-r="amount" data-i="' + i + '" min="1" value="' + esc(r.amount) + '"></label>') + "</div>" +
           '<label>Except (optional)<input type="text" data-r="exceptions" data-i="' + i + '" value="' + esc(r.exceptions) + '" placeholder="cold iron"></label>' +
           (r.kind === "immunity" ? "" : '<p class="tiny">Level ' + L + ": " + rr.min + " to " + rr.max + " (GM Core: the maximum for one narrow type, the minimum for a broad one such as all physical).</p>") + "</div>";
       }).join("") + '<button class="tbtn" type="button" data-add="resist">Add one</button>' +
-      '<datalist id="dtypes">' + D.damageTypes.concat(["physical", "all-damage", "precision", "poison", "disease", "death effects", "mental", "paralyzed", "sleep"]).map(function (t) { return '<option value="' + t + '">'; }).join("") + "</datalist></div>");
+      '<datalist id="dtypes">' + D.damageTypes.map(function (t) { return '<option value="' + t + '">'; }).join("") + "</datalist>" +
+      '<datalist id="rtypes">' + D.damageTypes.concat(["physical", "all-damage", "precision", "poison", "disease", "death effects", "mental", "paralyzed", "sleep"]).map(function (t) { return '<option value="' + t + '">'; }).join("") +
+      /* D1051: what a hit is rather than its damage type -- the bot matches these on the attack (a bomb's splash, a burst or cone, a critical hit), as the bestiary does */
+      [["splash-damage", "Splash damage (bombs; a swarm's usual weakness)"], ["area-damage", "Area damage (bursts, cones, lines)"], ["critical-hits", "Critical hits"],
+       ["persistent-damage", "Persistent damage"], ["energy", "Energy (acid, cold, electricity, fire, sonic...)"], ["cold-iron", "Cold iron"], ["silver", "Silver"],
+       ["adamantine", "Adamantine"]].map(function (t) { return '<option value="' + t[0] + '" label="' + t[1] + '">'; }).join("") + "</datalist></div>");
 
     h.push('<div class="panel"><h2><span class="num">4</span>Skills</h2>' + n.skills.map(function (s, i) {
       return '<div class="stat"><div class="sname"><select data-sk="' + i + '">' + D.skills.map(function (k) { return '<option value="' + k + '"' + (k === s.skill ? " selected" : "") + ">" + cap(k) + "</option>"; }).join("") +
@@ -553,6 +580,89 @@
     return out;
   }
 
+  // ---------- power for its level (D1048) ----------
+  // Each number placed on GM Core's scale for the creature's level: Terrible -2, Low -1, Moderate 0, High +1, Extreme +2, straight lines between
+  // the table's own numbers (and on past the ends). A typical creature built by GM Core's advice (mostly High and Moderate, one Extreme, a Low)
+  // lands a little above Moderate, so that is the "about right" band.
+  var TIER_SCORE = { terrible: -2, low: -1, moderate: 0, high: 1, extreme: 2 };
+  function scaleOf(table, level) {
+    var r = row(table, level), pts = [];
+    Object.keys(TIER_SCORE).forEach(function (t) {
+      var v;
+      if (table === "hp") { if (r[t]) v = (r[t][0] + r[t][1]) / 2; }
+      else if (table === "strike_damage") { if (r[t]) v = r[t][3]; }
+      else if (table === "spell") { if (r[t]) v = r[t].dc; }
+      else if (typeof r[t] === "number") v = r[t];
+      if (v != null) pts.push([v, TIER_SCORE[t]]);
+    });
+    return pts.sort(function (a, b) { return a[0] - b[0]; });
+  }
+  function scoreOf(table, level, value) {
+    var pts = scaleOf(table, level);
+    if (value == null || isNaN(value) || pts.length < 2) return null;
+    var i = 0;
+    while (i < pts.length - 2 && value > pts[i + 1][0]) i++;
+    var a = pts[i], b = pts[i + 1], s = b[0] === a[0] ? a[1] : a[1] + (value - a[0]) * (b[1] - a[1]) / (b[0] - a[0]);
+    return Math.max(-3, Math.min(3, s));
+  }
+  function playsLike(table, value) {
+    // The level whose typical number (halfway between Moderate and High) is nearest this one.
+    var best = null;
+    for (var lv = -1; lv <= 24; lv++) {
+      var r = row(table, lv), m, hi;
+      if (table === "hp") { m = (r.moderate[0] + r.moderate[1]) / 2; hi = (r.high[0] + r.high[1]) / 2; }
+      else if (table === "strike_damage") { m = r.moderate[3]; hi = r.high[3]; }
+      else { m = r.moderate; hi = r.high; }
+      var d = Math.abs(value - (m + hi) / 2);
+      if (best === null || d < best[0]) best = [d, lv];
+    }
+    return best[1];
+  }
+  function power(n) {
+    var L = n.level, rows = [], eq = [];
+    function add(label, table, value, group) {
+      var s = scoreOf(table, L, value);
+      if (s !== null) rows.push([label, s, group]);
+      if (s !== null && table !== "spell") eq.push(playsLike(table, value));
+    }
+    var st = {}; STATS.forEach(function (s) { st[s[0]] = statValue(n.stats[s[0]], s[2], L); });
+    var best = null;
+    n.strikes.forEach(function (s) { var c = strikeCalc(s, L); if (!best || c.avg > best.avg) best = c; });
+    if (best) { add("Attack", "strike_attack", best.toHit, "off"); add("Damage", "strike_damage", best.avg, "off"); }
+    n.casting.forEach(function (c, i) {
+      var dc = c.tier === "custom" ? c.dc : row("spell", L)[c.tier].dc;
+      if (i === 0) add("Spell DC", "spell", +dc, "off");
+    });
+    add("AC", "ac", st.ac, "def"); add("Hit Points", "hp", st.hp, "def");
+    add("Saves", "save", (st.fort + st.ref + st.will) / 3, "def"); add("Perception", "perception", st.per, "def");
+    var avg = function (g) { var r = rows.filter(function (x) { return !g || x[2] === g; }); return r.length ? r.reduce(function (t, x) { return t + x[1]; }, 0) / r.length : null; };
+    var level = eq.length ? Math.round(eq.reduce(function (t, x) { return t + x; }, 0) / eq.length) : L;
+    return { rows: rows, offense: avg("off"), defense: avg("def"), overall: avg(null), plays: level };
+  }
+  function verdict(s) {
+    if (s === null) return ["", ""];
+    if (s < -0.75) return ["weak", "Weaker than its level"];
+    if (s < -0.1) return ["soft", "A little weak for its level"];
+    if (s <= 0.85) return ["fair", "About right for its level"];
+    if (s <= 1.4) return ["strong", "Stronger than its level"];
+    return ["over", "Much stronger than its level"];
+  }
+  function bar(label, s, cls) {
+    var pct = Math.min(1, Math.abs(s) / 3) * 50, left = s < 0 ? 50 - pct : 50;
+    return '<div class="pw-row' + (cls ? " " + cls : "") + '"><span class="pw-label">' + esc(label) + '</span><span class="pw-track"><span class="pw-mid"></span>' +
+      '<span class="pw-fill ' + (s < 0 ? "neg" : "pos") + '" style="left:' + left.toFixed(1) + "%;width:" + pct.toFixed(1) + '%"></span></span>' +
+      '<span class="pw-val">' + (s >= 0 ? "+" : "") + s.toFixed(1) + "</span></div>";
+  }
+  function powerHtml(n) {
+    var p = power(n), v = verdict(p.overall);
+    if (p.overall === null) return '<p class="hint">Fill in its numbers to see how it compares.</p>';
+    return '<div class="pw-head ' + v[0] + '"><b>' + v[1] + "</b><span>Plays like a level " + p.plays + " creature (built as level " + n.level + ")</span></div>" +
+      '<div class="pw-scale"><span></span><span class="pw-cap"><span>&#9664; weaker</span><span>Mod</span><span>stronger &#9654;</span></span><span></span></div>' +
+      p.rows.map(function (r) { return bar(r[0], r[1]); }).join("") +
+      (p.offense !== null ? bar("Offense", p.offense, "sum") : "") + bar("Defense", p.defense, "sum") +
+      '<p class="hint">Each bar is that number on GM Core\'s scale for level ' + n.level + ": the middle line is Moderate. A creature built the GM Core way (mostly High and Moderate, one Extreme, a Low) sits a little right of the middle.</p>";
+  }
+
   // ---------- the side panel ----------
   function renderSide() {
     var n = npc(), L = n.level, st = {};
@@ -578,6 +688,7 @@
     });
     n.specials.forEach(function (a) { if (a.name.trim()) html.push("<p><b>" + esc(a.name) + "</b> " + esc(a.summary) + "</p>"); });
     $("statblock").innerHTML = html.join("");
+    $("power").innerHTML = powerHtml(n);
     $("warns").innerHTML = checks(n).map(function (w) { return '<li class="' + w[0] + '">' + esc(w[1]) + "</li>"; }).join("");
     var total = state.npcs.reduce(function (a, o) { return a + (+o.count || 1); }, 0);
     $("fileHint").innerHTML = "The file holds " + state.npcs.length + " NPC" + (state.npcs.length > 1 ? "s" : "") + " (" + total + " creature" + (total > 1 ? "s" : "") + "). Open it here again to keep editing.";

@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Table Goblin — Treasure Planner</title>
+<link rel="icon" href="table-goblin.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="tools.css">
+<script data-goatcounter="https://tablegoblin.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+<script src="events.js"></script>
+<style>
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+  .grid2.tight { gap: 0 8px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 12px; }
+  @media (max-width: 640px) { .grid2, .grid4 { grid-template-columns: 1fr; } .grid2.tight { grid-template-columns: 1fr 1fr; } }
+  .tiny-label { display: block; font-size: 13px; color: var(--text-2); }
+  .rollrow { display: flex; gap: 6px; margin-top: 3px; }
+  .rollrow input { flex: 1; min-width: 0; }
+  .die { border: 1px solid var(--line-strong); background: var(--ground); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 15px; line-height: 1.2; }
+  .die:hover { border-color: var(--accent); }
+  .card-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+  .card-head b { font: 600 16px Fraunces, Georgia, serif; }
+  .x { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text-2); border-radius: 6px; padding: 6px 10px; cursor: pointer; font: inherit; font-size: 13px; }
+  .x:hover { color: var(--danger); border-color: var(--danger); }
+  .table-scroll { overflow-x: auto; }
+  table.stock { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  table.stock th, table.stock td { text-align: left; padding: 5px 6px; border-top: 1px solid var(--line); vertical-align: top; }
+  table.stock th { font: 600 11.5px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .04em; color: var(--text-3); border-top: 0; }
+  table.stock td:nth-child(n+2) { white-space: nowrap; }
+  .rar { font: 600 10.5px "IBM Plex Mono", monospace; text-transform: uppercase; border-radius: 3px; padding: 1px 5px; margin-left: 4px; border: 1px solid var(--line-strong); color: var(--text-2); }
+  .rar.uncommon { border-color: #c45f24; color: #c45f24; }
+  .rar.rare { border-color: #0b4f8a; color: #3b82c4; }
+  .rar.est { text-transform: none; }
+  .controls .checks { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 4px 0 10px; }
+  .controls .checks label { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 13.5px; color: var(--text); }
+  @media print { .rail, .topnav, .controls, .die, .x, .tbtn, .steps, .site-footer { display: none !important; } .panel { box-shadow: none; break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+        <img class="rail-logo" src="table-goblin.png" alt="Table Goblin logo">
+        <b>Table Goblin</b>
+        <span>Pathfinder 2e for Discord</span>
+        <a class="btn" href="https://discord.gg/cHMex5xFsV" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.211.375-.457.879-.626 1.278a18.27 18.27 0 0 0-5.518 0A12.76 12.76 0 0 0 9.115 3 19.736 19.736 0 0 0 4.68 4.372C1.727 8.75.929 13.028 1.328 17.244a19.9 19.9 0 0 0 5.993 3.03c.483-.66.914-1.36 1.285-2.098a12.87 12.87 0 0 1-2.024-.973c.17-.124.336-.253.497-.386 3.902 1.803 8.13 1.803 11.987 0 .162.133.329.262.497.386-.645.386-1.323.71-2.026.974.371.738.802 1.438 1.285 2.098a19.876 19.876 0 0 0 5.995-3.03c.468-4.891-.795-9.13-3.5-13.876ZM8.68 14.813c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Zm7.324 0c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Z"/></svg>
+          Join the Discord
+        </a>
+        <div class="discord-widget" id="discordWidget" hidden aria-live="polite">
+          <span class="dw-dot"></span>
+          <span class="dw-avatars" id="dwAvatars"></span>
+          <span id="dwText"></span>
+        </div>
+    </div>
+    <nav>
+      <a class="btn" href="https://discord.com/oauth2/authorize?client_id=1550867869066076263" target="_blank" rel="noopener">Install Table Goblin</a>
+      <a class="top" href="index.html"><span>Home</span></a>
+      <a class="top" href="changelog.html"><span>Change Log</span></a>
+      <a class="top" href="wiki.html"><span>Wiki</span></a>
+      <div class="rail-sub">
+        <a href="wiki.html#start"><span>Getting Started</span></a>
+        <a href="wiki.html#gm"><span>GM Tools</span></a>
+        <a href="wiki.html#chars"><span>Characters</span></a>
+        <a href="wiki.html#chat"><span>Playing in Character</span></a>
+        <a href="wiki.html#npcs"><span>Creatures &amp; NPCs</span></a>
+        <a href="wiki.html#dice"><span>Dice Roller</span></a>
+        <a href="wiki.html#combat"><span>Encounters</span></a>
+        <a href="wiki.html#maps"><span>Battle Maps</span></a>
+        <a href="wiki.html#loot"><span>Loot &amp; the Purse</span></a>
+        <a href="wiki.html#towns"><span>Towns &amp; Shops</span></a>
+        <a href="wiki.html#lookup"><span>Reference Lookup</span></a>
+        <a href="wiki.html#coming"><span>Coming Features</span></a>
+      </div>
+      <a class="top" href="map-prep.html"><span>Map prep</span></a>
+      <a class="top" href="builder.html"><span>Character builder</span></a>
+      <a class="top" href="npc-builder.html"><span>NPC builder</span></a>
+      <a class="top" href="town-builder.html"><span>Town builder</span></a>
+      <a class="top" href="treasure.html" aria-current="page"><span>Treasure planner</span></a>
+      <a class="top" href="class-commands.html"><span>Class Commands</span></a>
+    </nav>
+  </aside>
+  <main class="tool-page">
+    <div class="wrap">
+      <header class="hero tool-hero">
+        <div class="eyebrow">GM tool</div>
+        <h1>Treasure planner</h1>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="town-builder.html">Town builder</a><a href="treasure.html" aria-current="page">Treasure planner</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a></nav>
+        <p class="lede">A whole level's treasure for your party, rolled from GM Core's Party Treasure by Level on the official treasure tables (the same as <code>/tgm treasure</code>), then split across the encounters you plan to run so each one is worth about the same.</p>
+        <ol class="steps"><li><strong>Set the party's level and size</strong>, and how many encounters the level's treasure should cover.</li><li><strong>Choose whether uncommon or rare items may turn up</strong>; anything else is rolled again.</li><li><strong>Press Roll treasure.</strong> Press 🎲 beside an item to roll it again; change the encounters to split it again.</li><li><strong>Copy as text</strong> or <strong>Print</strong> the plan. It is kept in this browser.</li></ol>
+      </header>
+
+      <div class="tool-body">
+        <div class="panel controls"><div class="grid4">
+          <label>Party level<input type="number" id="level" min="1" max="20"></label>
+          <label>Players<input type="number" id="players" min="1" max="10"></label>
+          <label>Encounters<input type="number" id="encounters" min="1" max="20"><span class="hint">How many parts to split the treasure into.</span></label>
+          <div><span class="tiny-label">Items</span><div class="checks"><label><input type="checkbox" id="uncommon"> Uncommon items</label><label><input type="checkbox" id="rare"> Rare items</label></div></div>
+        </div>
+        <div class="btns"><button type="button" class="tbtn primary" id="rollTreasure">Roll treasure</button>
+          <button type="button" class="tbtn" id="copyText">Copy as text</button><button type="button" class="tbtn" id="printPlan">Print</button><span class="hint" id="copyHint"></span></div></div>
+        <div id="plan"></div>
+      </div>
+
+      <footer class="site-footer">
+        A reference, not a rules substitute &mdash; when in doubt, check Archives of Nethys.
+        Table Goblin is an unofficial tool and is not affiliated with Paizo Inc.
+        <a href="terms.html">Terms of Service</a> &middot; <a href="privacy.html">Privacy Policy</a>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<script src="town-loot-data.js"></script>
+<script>
+(function () {
+  "use strict";
+  // D1048 -- the treasure planner: GM Core's Party Treasure by Level rolled on Foundry's treasure tables (as /tgm treasure does), split across encounters.
+  var D = window.TG_TOWN, ITEMS = D.items, TR = D.treasure, STORE = "tg-treasure-v1", TRIES = 20;
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function gp(cp) { return (Math.round(cp) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 }) + " gp"; }
+
+  var state = { level: 3, players: 4, encounters: 6, uncommon: false, rare: false, plan: null };
+  try { var saved = JSON.parse(localStorage.getItem(STORE) || "null"); if (saved && saved.level) state = saved; } catch (e) { /* private window */ }
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* storage blocked */ } }
+
+  function allowed(rarity) { return rarity === "common" || (rarity === "uncommon" && state.uncommon) || (rarity === "rare" && state.rare); }
+  // A rune or material result ("Magic Armor (+1)") names no single item: valued at the table's typical price, as a guide.
+  var typical = {};
+  function typicalPrice(key) {
+    if (typical[key] != null) return typical[key];
+    var prices = TR.tables[key].results.filter(function (r) { return r[3] >= 0; }).map(function (r) { return ITEMS[r[3]][2]; }).sort(function (a, b) { return a - b; });
+    return (typical[key] = prices.length ? prices[Math.floor(prices.length / 2)] : 0);
+  }
+  function rollOnce(key) {
+    var t = TR.tables[key], roll = 1 + Math.floor(Math.random() * t.faces);
+    var hit = t.results.filter(function (r) { return r[0] <= roll && roll <= r[1]; })[0];
+    if (!hit) hit = t.results.reduce(function (best, r) { var d = Math.min(Math.abs(r[0] - roll), Math.abs(r[1] - roll)); return !best || d < best[0] ? [d, r] : best; }, null)[1];
+    return hit;
+  }
+  function rollItem(level, kind) {
+    var key = level + "-" + kind;
+    if (!TR.tables[key]) return null;
+    for (var i = 0; i < TRIES; i++) {
+      var r = rollOnce(key);
+      if (r[3] < 0 || allowed(ITEMS[r[3]][4])) {
+        var it = r[3] >= 0 ? ITEMS[r[3]] : null;
+        return { name: it ? it[0] : r[2], level: it ? it[1] : level, price: it ? it[2] : typicalPrice(key), estimate: !it, rarity: it ? it[4] : "", kind: kind, table: level };
+      }
+    }
+    return null;
+  }
+
+  function currency(level, players) { var row = TR.byLevel[String(level)]; return Math.max(1, row.currency + (players - 4) * row.per_extra_pc); }
+
+  // Balanced by value: biggest item first to the encounter worth least so far; then coin fills the lowest encounters up (water-filling).
+  function split(items, coinCp, n) {
+    var enc = []; for (var i = 0; i < n; i++) enc.push({ items: [], coin: 0, value: 0 });
+    items.slice().sort(function (a, b) { return b.price - a.price; }).forEach(function (it) {
+      var low = enc.reduce(function (m, e) { return e.value < m.value ? e : m; }, enc[0]);
+      low.items.push(it); low.value += it.price;
+    });
+    var left = coinCp;
+    var order = enc.slice().sort(function (a, b) { return a.value - b.value; });
+    for (var k = 0; k < order.length && left > 0; k++) {
+      var next = k + 1 < order.length ? order[k + 1].value : Infinity, group = order.slice(0, k + 1), base = order[k].value + 0;
+      var need = (next - group[group.length - 1].value) * group.length;
+      if (next === Infinity || need >= left) {
+        var each = Math.floor(left / group.length), extra = left - each * group.length;
+        group.forEach(function (e, j) { var add = each + (j < extra ? 1 : 0); e.coin += add; e.value += add; });
+        left = 0;
+      } else {
+        group.forEach(function (e) { var add = next - e.value; e.coin += add; e.value += add; });
+        left -= need;
+      }
+    }
+    // Whole gold pieces read better; the cents go to the first encounter.
+    var spare = 0; enc.forEach(function (e) { var whole = Math.floor(e.coin / 100) * 100; spare += e.coin - whole; e.value -= e.coin - whole; e.coin = whole; });
+    enc[0].coin += spare; enc[0].value += spare;
+    return enc;
+  }
+
+  function plan() {
+    var row = TR.byLevel[String(state.level)], items = [];
+    ["permanent", "consumable"].forEach(function (kind) {
+      Object.keys(row[kind]).map(Number).sort(function (a, b) { return b - a; }).forEach(function (lvl) {
+        for (var c = 0; c < row[kind][lvl]; c++) { var it = rollItem(lvl, kind); if (it) items.push(it); }
+      });
+    });
+    var coin = currency(state.level, state.players) * 100;
+    state.plan = { level: state.level, players: state.players, total: row.total, coin: coin, encounters: split(items, coin, state.encounters) };
+  }
+  function rebalance() {
+    var p = state.plan, all = []; p.encounters.forEach(function (e) { all = all.concat(e.items); });
+    p.encounters = split(all, p.coin, state.encounters);
+  }
+
+  function render() {
+    $("level").value = state.level; $("players").value = state.players; $("encounters").value = state.encounters;
+    $("uncommon").checked = state.uncommon; $("rare").checked = state.rare;
+    var p = state.plan;
+    if (!p) { $("plan").innerHTML = '<p class="hint">Set the party and press <b>Roll treasure</b>.</p>'; save(); return; }
+    var itemsTotal = 0, count = 0;
+    p.encounters.forEach(function (e) { e.items.forEach(function (it) { itemsTotal += it.price; count++; }); });
+    var h = ['<div class="panel"><h2>Level ' + p.level + " treasure for " + p.players + " player" + (p.players === 1 ? "" : "s") + "</h2>" +
+      '<p>' + count + " items worth about " + gp(itemsTotal) + " and " + gp(p.coin) + " in coin, split across " + p.encounters.length + " encounter" + (p.encounters.length === 1 ? "" : "s") +
+      ". GM Core's budget for a level of play is " + p.total.toLocaleString() + " gp for four players; the coin changes with party size, the items don't.</p></div>"];
+    p.encounters.forEach(function (e, i) {
+      var rows = e.items.map(function (it, j) {
+        var name = it.estimate ? esc(it.name) + ' <span class="rar est" title="A rune or material: pick the base item">choose base item</span>'
+          : '<a href="https://2e.aonprd.com/Search.aspx?q=' + encodeURIComponent(it.name) + '" target="_blank" rel="noopener">' + esc(it.name) + "</a>" +
+            (it.rarity && it.rarity !== "common" ? ' <span class="rar ' + it.rarity + '">' + it.rarity + "</span>" : "");
+        return "<tr><td>" + name + "</td><td>" + (it.kind === "permanent" ? "Permanent" : "Consumable") + "</td><td>" + it.level + "</td><td>" + (it.estimate ? "≈ " : "") + gp(it.price) +
+          '</td><td><button type="button" class="die" data-reroll="' + i + ":" + j + '" title="Roll this item again" aria-label="Roll this item again">🎲</button></td></tr>';
+      }).join("");
+      h.push('<div class="panel enc"><div class="card-head"><b>Encounter ' + (i + 1) + "</b><span>worth about " + gp(e.value) + "</span></div>" +
+        (rows ? '<div class="table-scroll"><table class="stock"><thead><tr><th>Item</th><th>Kind</th><th>Lvl</th><th>Value</th><th></th></tr></thead><tbody>' + rows + "</tbody></table></div>" : "") +
+        "<p><b>Coin:</b> " + gp(e.coin) + "</p></div>");
+    });
+    $("plan").innerHTML = h.join("");
+    save();
+  }
+
+  function asText() {
+    var p = state.plan; if (!p) return "";
+    var out = ["Level " + p.level + " treasure, " + p.players + " players, " + p.encounters.length + " encounters", ""];
+    p.encounters.forEach(function (e, i) {
+      out.push("Encounter " + (i + 1) + " (about " + gp(e.value) + ")");
+      e.items.forEach(function (it) { out.push("  - " + it.name + " (" + it.kind + ", level " + it.level + ", " + (it.estimate ? "about " : "") + gp(it.price) + ")" + (it.rarity && it.rarity !== "common" ? " [" + it.rarity + "]" : "")); });
+      out.push("  - Coin: " + gp(e.coin), "");
+    });
+    return out.join("\n");
+  }
+
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("button"); if (!t) return;
+    if (t.id === "rollTreasure") { plan(); render(); }
+    else if (t.id === "copyText") { navigator.clipboard && navigator.clipboard.writeText(asText()).then(function () { $("copyHint").textContent = "Copied."; }); }
+    else if (t.id === "printPlan") { window.print(); }
+    else if (t.dataset.reroll) {
+      var ij = t.dataset.reroll.split(":"), enc = state.plan.encounters[+ij[0]], old = enc.items[+ij[1]];
+      var fresh = rollItem(old.table, old.kind);
+      if (fresh) { enc.items[+ij[1]] = fresh; enc.value += fresh.price - old.price; }
+      render();
+    }
+  });
+  document.addEventListener("change", function (e) {
+    var t = e.target;
+    if (t.id === "level") state.level = Math.max(1, Math.min(20, +t.value || 1));
+    else if (t.id === "players") state.players = Math.max(1, Math.min(10, +t.value || 4));
+    else if (t.id === "encounters") { state.encounters = Math.max(1, Math.min(20, +t.value || 1)); if (state.plan) rebalance(); }
+    else if (t.id === "uncommon" || t.id === "rare") state[t.id] = t.checked;
+    else return;
+    if (state.plan && (t.id === "players")) { state.plan.players = state.players; var dc = currency(state.plan.level, state.players) * 100; state.plan.coin = dc; rebalance(); }
+    render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

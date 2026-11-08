@@ -53,6 +53,8 @@
       <a class="top" href="map-prep.html"><span>Map prep</span></a>
       <a class="top" href="builder.html" aria-current="page"><span>Character builder</span></a>
       <a class="top" href="npc-builder.html"><span>NPC builder</span></a>
+      <a class="top" href="town-builder.html"><span>Town builder</span></a>
+      <a class="top" href="treasure.html"><span>Treasure planner</span></a>
       <a class="top" href="class-commands.html"><span>Class Commands</span></a>
     </nav>
   </aside>
@@ -62,7 +64,7 @@
       <header class="hero tool-hero">
         <div class="eyebrow">Player tool</div>
         <h1>Character builder</h1>
-        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html" aria-current="page">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a></nav>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html" aria-current="page">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a></nav>
         <p class="lede">Plan a character and its starting gear here, where searching for equipment is easy, then download a recipe file. Already have a recipe? Open it first to add the next level. In Discord, give it to <code>/tgchar build</code> as <code>tg_file</code>: the bot checks every choice against your campaign's rules, works out the sheet itself, and asks you for anything this page doesn't cover. Nothing you choose here is uploaded anywhere.</p>
         
       </header>
@@ -728,6 +730,9 @@
   var KIND = { weapon: "weapon", armor: "armor" };
   function fmtPrice(cp) { if (S.systems.length === 1 && S.systems[0] === "sf2e") return cp ? Math.floor(cp / 10).toLocaleString("en-US") + " credits" : "free"; /* Starfinder: 1 credit = 1 sp */ var gp = Math.floor(cp / 100), sp = Math.floor((cp % 100) / 10), c = cp % 10, out = []; if (gp) out.push(gp + " gp"); if (sp) out.push(sp + " sp"); if (c) out.push(c + " cp"); return out.join(" ") || "free"; }
   function gearCost() { var t = 0; S.gear.forEach(function (g) { t += g.price * g.qty; }); return t; }
+  /* D1050: ammunition is sold in stacks of 10 -- its price and Bulk in the item list are a stack's; the recipe carries rounds (what the sheet holds). */
+  var STACK = 10;
+  function isAmmo(name) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i][0] === name) return ITEMS[i][4] === "ammo"; return false; }
   function renderItems() {
     var q = $("itemFilter").value.trim().toLowerCase(), kind = $("itemKind").value, maxLevel = parseInt($("itemLevel").value, 10);
     var list = $("itemList"); list.textContent = ""; var shown = 0;
@@ -740,7 +745,7 @@
       (function (it) {
         var b = document.createElement("button"); b.type = "button"; b.className = "opt";
         var t = document.createElement("span"); t.textContent = it[0]; b.appendChild(t);
-        var s = document.createElement("small"); s.textContent = it[4] + " · level " + it[1] + " · " + fmtPrice(it[2]) + (it[3] ? " · bulk " + it[3] : ""); b.appendChild(s);
+        var s = document.createElement("small"); s.textContent = it[4] + " · level " + it[1] + " · " + fmtPrice(it[2]) + (it[4] === "ammo" ? " per stack of " + STACK : "") + (it[3] ? " · bulk " + it[3] : ""); b.appendChild(s);
         b.addEventListener("click", function () {
           var have = S.gear.filter(function (g) { return g.name === it[0]; })[0];
           if (have) have.qty++; else S.gear.push({ name: it[0], kind: KIND[it[4]] || "gear", qty: 1, price: it[2], equipped: false });
@@ -755,7 +760,7 @@
     var tb = $("gearTable").querySelector("tbody"); tb.textContent = "";
     S.gear.forEach(function (g, idx) {
       var tr = document.createElement("tr");
-      var name = document.createElement("td"); name.textContent = g.name; tr.appendChild(name);
+      var name = document.createElement("td"); name.textContent = g.name + (isAmmo(g.name) ? " (stack" + (g.qty > 1 ? "s" : "") + " of " + STACK + ": " + g.qty * STACK + " rounds)" : ""); tr.appendChild(name);
       var q = document.createElement("td"); var qi = document.createElement("input"); qi.type = "number"; qi.min = 1; qi.value = g.qty;
       qi.addEventListener("change", function () { g.qty = Math.max(1, parseInt(qi.value, 10) || 1); renderGear(); }); q.appendChild(qi); tr.appendChild(q);
       var cost = document.createElement("td"); cost.textContent = fmtPrice(g.price * g.qty); tr.appendChild(cost);
@@ -1373,7 +1378,8 @@
     ((doc.state && doc.state.equipment) || []).forEach(function (g) {
       var it = null; for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i][0] === g.name) { it = ITEMS[i]; break; }
       if (!it) { skipped.push(g.name); return; }
-      S.gear.push({ name: it[0], kind: KIND[it[4]] || "gear", qty: g.qty || 1, price: it[2], equipped: !!g.equipped });
+      var q = g.qty || 1; if (it[4] === "ammo") q = Math.max(1, Math.ceil(q / STACK));                     /* the recipe holds rounds; the page counts stacks */
+      S.gear.push({ name: it[0], kind: KIND[it[4]] || "gear", qty: q, price: it[2], equipped: !!g.equipped });
     });
     var last = doc.blocks[doc.blocks.length - 1].level || 1;
     S.buildLevel = Math.min(20, Math.max(1, last)); S.lvlTouched = true;
@@ -1429,7 +1435,7 @@
         name: payload.name, level: blocks[blocks.length - 1].level, source: "wiki-builder",
         rules: { campaign_code: S.code || null, systems: S.systems.slice(), variants: S.rules, allow_uncommon: S.allowUncommon, allow_rare: S.allowRare, exceptions: Object.keys(S.exceptions), level_cap: S.levelCap, used: usedRules(), owned_books: S.books.slice() },
         blocks: blocks, head: hash,
-        state: { coins: coins(), equipment: S.gear.map(function (g) { var o = { name: g.name, kind: g.kind, qty: g.qty }; if (g.equipped) o.equipped = true; return o; }) }
+        state: { coins: coins(), equipment: S.gear.map(function (g) { var o = { name: g.name, kind: g.kind, qty: isAmmo(g.name) ? g.qty * STACK : g.qty }; if (g.equipped) o.equipped = true; return o; }) }
       };
       var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 1)], { type: "application/json" }));
       var slug = payload.name.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "character";
