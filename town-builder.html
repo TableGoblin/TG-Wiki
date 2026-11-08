@@ -92,11 +92,14 @@
         <h1>Town builder</h1>
         <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="town-builder.html" aria-current="page">Town builder</a><a href="treasure.html">Treasure planner</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a></nav>
         <p class="lede">Roll up a settlement for your table: its name, its shops, the merchant behind each counter, and what is on the shelves. It uses the same tables and stocking rules as <code>/tgtown generate</code>: the town's level sets what can legally be sold, a bigger place has more and more specialist shops, and the shelves lean toward the best things the shop is allowed to carry.</p>
-        <ol class="steps"><li><strong>Set the level</strong> (and the size, or let the level choose it), then press <strong>Roll a town</strong>.</li><li><strong>Press 🎲</strong> beside any name, ancestry, personality or note to roll just that again, or type your own.</li><li><strong>Give a shop a level bonus</strong> to let it stock above the town's level, then <strong>Restock</strong>.</li><li><strong>Copy as text</strong> or <strong>Print</strong> it. Your town is kept in this browser.</li></ol>
+        <ol class="steps"><li><strong>Pick the game system</strong>: Pathfinder towns, Starfinder stations and colonies, or both.</li><li><strong>Set the level</strong> (and the size, or let the level choose it), then press <strong>Roll a town</strong>.</li><li><strong>Press 🎲</strong> beside any name, ancestry, personality or note to roll just that again, or type your own.</li><li><strong>Give a shop a level bonus</strong> to let it stock above the town's level, then <strong>Restock</strong>.</li><li><strong>Copy as text</strong> or <strong>Print</strong> it. Your town is kept in this browser.</li></ol>
       </header>
 
       <div class="tool-body">
-        <div class="panel controls"><div class="grid4">
+        <div class="panel controls">
+        <div class="checks" id="sysChecks" role="group" aria-label="Game systems"><span class="tiny-label">Game system</span>
+          <label><input type="checkbox" value="pf2e"> Pathfinder 2e</label><label><input type="checkbox" value="sf2e"> Starfinder 2e</label><span class="hint" id="sysMsg" role="status"></span></div>
+        <div class="grid4">
           <label>Town level<input type="number" id="level" min="0" max="25"></label>
           <label>Size<select id="size"><option value="">From the level</option><option value="village">Village</option><option value="town">Town</option><option value="city">City</option><option value="metropolis">Metropolis</option></select><span class="hint" id="sizeHint"></span></label>
           <label>Shop level bonus<input type="number" id="bonus" min="0" max="10"><span class="hint">For specialist shops; the general store stays at the town's level.</span></label>
@@ -121,7 +124,7 @@
 (function () {
   "use strict";
   // D1048 -- the town / shop builder. Rules from the bot (town_generator / settlement_repo.restock), data from town-loot-data.js.
-  var D = window.TG_TOWN, T = D.town, ITEMS = D.items, STORE = "tg-town-builder-v1";
+  var PF = window.TG_TOWN, T = PF.town, ITEMS = PF.items, PF_COUNT = PF.items.length, SF_ONLY = false, STORE = "tg-town-builder-v1";
   var KINDS = ["general", "weaponsmith", "armorer", "alchemist", "jeweller", "magic"];
   var KIND_LABEL = { general: "General store", weaponsmith: "Weaponsmith", armorer: "Armorer", alchemist: "Alchemist", jeweller: "Jeweler", magic: "Magic shop" };
 
@@ -130,11 +133,14 @@
   function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
   function randint(lo, hi) { return lo + Math.floor(Math.random() * (hi - lo + 1)); }
   function cap1(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
-  // D1050: ammunition is sold in stacks of 10; Foundry's price is for it[5] rounds, so a stack costs price x 10 / it[5].
-  var STACK = 10;
+  // D1050/D1052: ammunition is sold in stacks of 10, or as single rounds when Foundry prices it each (it[5] is 1); Foundry's price is
+  // for it[5] rounds, so a unit costs price x size / it[5].
   function isAmmo(it) { return it[3] === "ammo"; }
-  function unitPrice(it) { return isAmmo(it) ? Math.round(it[2] * STACK / (it[5] || 1)) : it[2]; }
-  function gp(cp) { if (cp >= 100) return (cp / 100).toLocaleString(undefined, { maximumFractionDigits: 2 }) + " gp"; if (cp >= 10) return (cp / 10) + " sp"; return cp + " cp"; }
+  function unitSize(it) { return (it[5] || 1) > 1 ? 10 : 1; }
+  function unitName(it) { return unitSize(it) > 1 ? "stack of 10" : "single round"; }
+  function unitPrice(it) { return isAmmo(it) ? Math.round(it[2] * unitSize(it) / (it[5] || 1)) : it[2]; }
+  // D1053: Starfinder prices are credits (1 credit = 1 sp, so 10 copper); shown in credits when Starfinder is the only system.
+  function gp(cp) { if (SF_ONLY) return Math.round(cp / 10).toLocaleString() + " credits"; if (cp >= 100) return (cp / 100).toLocaleString(undefined, { maximumFractionDigits: 2 }) + " gp"; if (cp >= 10) return (cp / 10) + " sp"; return cp + " cp"; }
   function weighted(pairs) {
     var total = pairs.reduce(function (s, p) { return s + p[1]; }, 0), r = Math.random() * total;
     for (var i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
@@ -145,10 +151,45 @@
     return level > 20 ? "metropolis" : "village";
   }
 
+  // ---------- game systems (D1053) ----------
+  // Starfinder's tables and items load when first ticked. Starfinder alone uses the science-fantasy tables (stations, colonies, sectors);
+  // with Pathfinder ticked too it keeps the fantasy tables, as /tgtown does, with both systems' ancestries and items.
+  function sfReady() { return !!window.TG_TOWN_SF2E; }
+  function loadScript(src) { return new Promise(function (ok, fail) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = fail; document.head.appendChild(s); }); }
+  function applySystems() {
+    var sys = state.systems, sf = sys.indexOf("sf2e") >= 0 && sfReady(), pf = sys.indexOf("pf2e") >= 0 || !sf, S2 = window.TG_TOWN_SF2E;
+    SF_ONLY = sf && !pf;
+    if (SF_ONLY) { T = S2.town; ITEMS = S2.items; PF_COUNT = 0; }
+    else {
+      T = PF.town; ITEMS = sf ? PF.items.concat(S2.items) : PF.items; PF_COUNT = PF.items.length;
+      if (sf) {
+        var have = {}; PF.town.ancestries.forEach(function (a) { have[a[0]] = 1; });
+        T = Object.assign({}, PF.town, { ancestries: PF.town.ancestries.concat(S2.town.ancestries.filter(function (a) { return !have[a[0]]; })) });
+      }
+    }
+    var boxes = document.querySelectorAll("#sysChecks input");
+    for (var i = 0; i < boxes.length; i++) boxes[i].checked = sys.indexOf(boxes[i].value) >= 0;
+  }
+  function setSystems(list, restockShops) {
+    state.systems = list.length ? list : ["pf2e"];
+    function done() { applySystems(); if (restockShops) state.shops.forEach(restock); render(); }
+    if (state.systems.indexOf("sf2e") < 0 || sfReady()) { done(); return; }
+    $("sysMsg").textContent = "Loading the Starfinder 2e options…";
+    loadScript("town-loot-data-sf2e.js").then(function () { $("sysMsg").textContent = ""; done(); }, function () {
+      $("sysMsg").textContent = "Couldn't load the Starfinder 2e options. Check your connection and try again.";
+      state.systems = state.systems.filter(function (s) { return s !== "sf2e"; }); if (!state.systems.length) state.systems = ["pf2e"];
+      applySystems(); if (restockShops) state.shops.forEach(restock); render();
+    });
+  }
+  function aon(i) { return i >= PF_COUNT || SF_ONLY ? "https://2e.aonsrd.com" : "https://2e.aonprd.com"; }
+
   // ---------- the tables (town_generator) ----------
-  function townName() { var n = pick(T.prefix) + pick(T.suffix); return Math.random() < 0.12 ? pick(T.qualifier) + " " + n : n; }
+  function townName() {
+    if (T.scienceFantasy) { var p = pick(T.prefix); if (Math.random() < 0.2) p += "-" + randint(2, 99); var s = p + " " + pick(T.suffix); return Math.random() < 0.12 ? pick(T.qualifier) + " " + s : s; }
+    var n = pick(T.prefix) + pick(T.suffix); return Math.random() < 0.12 ? pick(T.qualifier) + " " + n : n;
+  }
   function ancestry() { return cap1(weighted(T.ancestries)); }
-  function given(anc) { return pick(T.given[String(anc || "").toLowerCase()] || T.given.human); }
+  function given(anc) { var k = String(anc || "").toLowerCase(); return pick(T.given[k] || T.givenAny || T.given.human); }
   function surname(avoid) { var fresh = T.surname.filter(function (s) { return avoid.indexOf(s) < 0; }); return pick(fresh.length ? fresh : T.surname); }
   function shopName(kind, owner) {
     var noun = pick(T.shopNoun[kind] || T.shopNoun.general);
@@ -159,7 +200,8 @@
   function kindsFor(size) {
     var spec = T.shopsBySize[size] || T.shopsBySize.village, kinds = spec[0], cap = spec[1];
     var n = randint(Math.max(1, cap - 1), cap), out = kinds.slice(0, n);
-    if (size === "metropolis" && Math.random() < 0.5) out.push(pick(["general", "alchemist", "magic"]));
+    if (T.scienceFantasy && size === "metropolis") out.push(pick(["general", "magic", "weaponsmith"]));
+    else if (size === "metropolis" && Math.random() < 0.5) out.push(pick(["general", "alchemist", "magic"]));
     return out;
   }
 
@@ -191,8 +233,9 @@
   }
 
   // ---------- state ----------
-  var state = { name: "", region: "", level: 3, size: "", bonus: 0, uncommon: false, rare: false, shops: [] };
+  var state = { name: "", region: "", level: 3, size: "", bonus: 0, uncommon: false, rare: false, shops: [], systems: ["pf2e"] };
   try { var saved = JSON.parse(localStorage.getItem(STORE) || "null"); if (saved && saved.shops) state = saved; } catch (e) { /* private window */ }
+  if (!state.systems || !state.systems.length) state.systems = ["pf2e"];
   function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* storage blocked */ } }
   function size() { return state.size || sizeFor(state.level); }
   function surnames() { return state.shops.map(function (s) { return (s.merchant || "").split(" ").slice(-1)[0]; }); }
@@ -228,8 +271,8 @@
       var capLevel = state.level + (+s.bonus || 0), value = 0;
       var rows = s.stock.map(function (st) {
         var it = ITEMS[st[0]]; value += unitPrice(it) * st[1];
-        return "<tr><td><a href=\"https://2e.aonprd.com/Search.aspx?q=" + encodeURIComponent(it[0]) + '" target="_blank" rel="noopener">' + esc(it[0]) + "</a>" +
-          (it[4] !== "common" ? ' <span class="rar ' + it[4] + '">' + it[4] + "</span>" : "") + (isAmmo(it) ? ' <span class="rar">stack of ' + STACK + "</span>" : "") +
+        return "<tr><td><a href=\"" + aon(st[0]) + "/Search.aspx?q=" + encodeURIComponent(it[0]) + '" target="_blank" rel="noopener">' + esc(it[0]) + "</a>" +
+          (it[4] !== "common" ? ' <span class="rar ' + it[4] + '">' + it[4] + "</span>" : "") + (isAmmo(it) ? ' <span class="rar">' + unitName(it) + "</span>" : "") +
           "</td><td>" + it[1] + "</td><td>" + gp(unitPrice(it)) + "</td><td>" + st[1] + "</td></tr>";
       }).join("");
       h.push('<div class="panel shop"><div class="card-head"><b>' + esc(KIND_LABEL[s.kind] || s.kind) + "</b>" +
@@ -258,7 +301,7 @@
     state.shops.forEach(function (s) {
       out.push(s.name + " — " + (KIND_LABEL[s.kind] || s.kind) + " (stock to level " + (state.level + (+s.bonus || 0)) + ")");
       out.push("  " + s.merchant + ", " + s.ancestry + ". " + s.personality + " " + s.notes);
-      s.stock.forEach(function (st) { var it = ITEMS[st[0]]; out.push("  - " + it[0] + (isAmmo(it) ? " (stack of " + STACK + ")" : "") + " (level " + it[1] + ", " + gp(unitPrice(it)) + (isAmmo(it) ? " per stack" : "") + ")" + (st[1] > 1 ? " x" + st[1] : "") + (it[4] !== "common" ? " [" + it[4] + "]" : "")); });
+      s.stock.forEach(function (st) { var it = ITEMS[st[0]]; out.push("  - " + it[0] + (isAmmo(it) ? " (" + unitName(it) + ")" : "") + " (level " + it[1] + ", " + gp(unitPrice(it)) + (isAmmo(it) ? (unitSize(it) > 1 ? " per stack" : " each") : "") + ")" + (st[1] > 1 ? " x" + st[1] : "") + (it[4] !== "common" ? " [" + it[4] + "]" : "")); });
       out.push("");
     });
     return out.join("\n");
@@ -292,6 +335,11 @@
       state.shops.forEach(function (s) { if (s.kind !== "general" && (+s.bonus || 0) === old) { s.bonus = state.bonus; restock(s); } });
       render();
     }
+    else if (t.closest && t.closest("#sysChecks")) {
+      var list = [], boxes = document.querySelectorAll("#sysChecks input");
+      for (var b = 0; b < boxes.length; b++) if (boxes[b].checked) list.push(boxes[b].value);
+      setSystems(list, true);
+    }
     else if (t.id === "uncommon" || t.id === "rare") { state[t.id] = t.checked; state.shops.forEach(restock); render(); }
     else if (d.t) { state[d.t] = t.value; save(); }
     else if (d.s) {
@@ -301,7 +349,8 @@
       else { s[d.s] = t.value; save(); }
     }
   });
-  render();
+  if (state.systems.indexOf("sf2e") >= 0) { applySystems(); $("town").innerHTML = '<p class="hint">Loading…</p>'; setSystems(state.systems, false); }
+  else { applySystems(); render(); }
 })();
 </script>
 </body>

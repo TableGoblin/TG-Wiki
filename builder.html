@@ -730,9 +730,13 @@
   var KIND = { weapon: "weapon", armor: "armor" };
   function fmtPrice(cp) { if (S.systems.length === 1 && S.systems[0] === "sf2e") return cp ? Math.floor(cp / 10).toLocaleString("en-US") + " credits" : "free"; /* Starfinder: 1 credit = 1 sp */ var gp = Math.floor(cp / 100), sp = Math.floor((cp % 100) / 10), c = cp % 10, out = []; if (gp) out.push(gp + " gp"); if (sp) out.push(sp + " sp"); if (c) out.push(c + " cp"); return out.join(" ") || "free"; }
   function gearCost() { var t = 0; S.gear.forEach(function (g) { t += g.price * g.qty; }); return t; }
-  /* D1050: ammunition is sold in stacks of 10 -- its price and Bulk in the item list are a stack's; the recipe carries rounds (what the sheet holds). */
-  var STACK = 10;
-  function isAmmo(name) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i][0] === name) return ITEMS[i][4] === "ammo"; return false; }
+  /* D1050/D1052: ammunition is sold in stacks of 10, or as single rounds when priced each (the row's ninth field: rounds per unit) -- its
+     price and Bulk in the item list are one unit's; the recipe carries rounds (what the sheet holds). */
+  function itemRow(name) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i][0] === name) return ITEMS[i]; return null; }
+  function unitOf(it) { return it && it[4] === "ammo" ? (it[8] || 10) : 1; }
+  function isAmmo(name) { var it = itemRow(name); return !!it && it[4] === "ammo"; }
+  function unitLabel(it) { return unitOf(it) > 1 ? "stack of " + unitOf(it) : "round"; }
+  function roundsNote(name, qty) { var n = unitOf(itemRow(name)); return n > 1 ? " (stack" + (qty > 1 ? "s" : "") + " of " + n + ": " + qty * n + " rounds)" : " (" + qty + " round" + (qty > 1 ? "s" : "") + ")"; }
   function renderItems() {
     var q = $("itemFilter").value.trim().toLowerCase(), kind = $("itemKind").value, maxLevel = parseInt($("itemLevel").value, 10);
     var list = $("itemList"); list.textContent = ""; var shown = 0;
@@ -745,7 +749,7 @@
       (function (it) {
         var b = document.createElement("button"); b.type = "button"; b.className = "opt";
         var t = document.createElement("span"); t.textContent = it[0]; b.appendChild(t);
-        var s = document.createElement("small"); s.textContent = it[4] + " · level " + it[1] + " · " + fmtPrice(it[2]) + (it[4] === "ammo" ? " per stack of " + STACK : "") + (it[3] ? " · bulk " + it[3] : ""); b.appendChild(s);
+        var s = document.createElement("small"); s.textContent = it[4] + " · level " + it[1] + " · " + fmtPrice(it[2]) + (it[4] === "ammo" ? " per " + unitLabel(it) : "") + (it[3] ? " · bulk " + it[3] : ""); b.appendChild(s);
         b.addEventListener("click", function () {
           var have = S.gear.filter(function (g) { return g.name === it[0]; })[0];
           if (have) have.qty++; else S.gear.push({ name: it[0], kind: KIND[it[4]] || "gear", qty: 1, price: it[2], equipped: false });
@@ -760,7 +764,7 @@
     var tb = $("gearTable").querySelector("tbody"); tb.textContent = "";
     S.gear.forEach(function (g, idx) {
       var tr = document.createElement("tr");
-      var name = document.createElement("td"); name.textContent = g.name + (isAmmo(g.name) ? " (stack" + (g.qty > 1 ? "s" : "") + " of " + STACK + ": " + g.qty * STACK + " rounds)" : ""); tr.appendChild(name);
+      var name = document.createElement("td"); name.textContent = g.name + (isAmmo(g.name) ? roundsNote(g.name, g.qty) : ""); tr.appendChild(name);
       var q = document.createElement("td"); var qi = document.createElement("input"); qi.type = "number"; qi.min = 1; qi.value = g.qty;
       qi.addEventListener("change", function () { g.qty = Math.max(1, parseInt(qi.value, 10) || 1); renderGear(); }); q.appendChild(qi); tr.appendChild(q);
       var cost = document.createElement("td"); cost.textContent = fmtPrice(g.price * g.qty); tr.appendChild(cost);
@@ -1378,7 +1382,7 @@
     ((doc.state && doc.state.equipment) || []).forEach(function (g) {
       var it = null; for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i][0] === g.name) { it = ITEMS[i]; break; }
       if (!it) { skipped.push(g.name); return; }
-      var q = g.qty || 1; if (it[4] === "ammo") q = Math.max(1, Math.ceil(q / STACK));                     /* the recipe holds rounds; the page counts stacks */
+      var q = g.qty || 1; if (it[4] === "ammo") q = Math.max(1, Math.ceil(q / unitOf(it)));               /* the recipe holds rounds; the page counts units */
       S.gear.push({ name: it[0], kind: KIND[it[4]] || "gear", qty: q, price: it[2], equipped: !!g.equipped });
     });
     var last = doc.blocks[doc.blocks.length - 1].level || 1;
@@ -1435,7 +1439,7 @@
         name: payload.name, level: blocks[blocks.length - 1].level, source: "wiki-builder",
         rules: { campaign_code: S.code || null, systems: S.systems.slice(), variants: S.rules, allow_uncommon: S.allowUncommon, allow_rare: S.allowRare, exceptions: Object.keys(S.exceptions), level_cap: S.levelCap, used: usedRules(), owned_books: S.books.slice() },
         blocks: blocks, head: hash,
-        state: { coins: coins(), equipment: S.gear.map(function (g) { var o = { name: g.name, kind: g.kind, qty: isAmmo(g.name) ? g.qty * STACK : g.qty }; if (g.equipped) o.equipped = true; return o; }) }
+        state: { coins: coins(), equipment: S.gear.map(function (g) { var o = { name: g.name, kind: g.kind, qty: isAmmo(g.name) ? g.qty * unitOf(itemRow(g.name)) : g.qty }; if (g.equipped) o.equipped = true; return o; }) }
       };
       var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 1)], { type: "application/json" }));
       var slug = payload.name.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "character";

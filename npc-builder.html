@@ -155,6 +155,12 @@
       </header>
 
       <div class="tool-body">
+        <div class="inline-checks" id="sysChecks" role="group" aria-label="Game systems">
+          <span class="tiny">Weapons, spells, skills and gear from:</span>
+          <label><input type="checkbox" value="pf2e"> Pathfinder 2e</label>
+          <label><input type="checkbox" value="sf2e"> Starfinder 2e</label>
+          <span class="tiny" id="sysMsg" role="status"></span>
+        </div>
         <div class="npc-tabs" id="tabs"></div>
         <div class="layout">
           <div id="editor"></div>
@@ -196,7 +202,7 @@
             <tr><td><code>fortitude</code>, <code>reflex</code>, <code>will</code>, <code>perception</code>, <code>senses</code></td><td>Modifiers or tier words; senses separated by <code>;</code> (<code>darkvision; scent (imprecise) 30 feet</code>).</td></tr>
             <tr><td><code>speed</code>, <code>fly_speed</code>, <code>swim_speed</code>, <code>climb_speed</code>, <code>burrow_speed</code></td><td>Feet.</td></tr>
             <tr><td><code>str</code>, <code>dex</code>, <code>con</code>, <code>int</code>, <code>wis</code>, <code>cha</code></td><td>Attribute modifiers or tier words.</td></tr>
-            <tr><td><code>acrobatics</code> &hellip; <code>thievery</code></td><td>One column per skill (16); empty means none. Lores aren't kept on creatures.</td></tr>
+            <tr><td><code>acrobatics</code> &hellip; <code>thievery</code>, <code>computers</code>, <code>piloting</code></td><td>One column per skill (16, plus Starfinder's Computers and Piloting); empty means none. Lores aren't kept on creatures.</td></tr>
             <tr><td><code>resistances</code>, <code>weaknesses</code>, <code>immunities</code></td><td><code>fire 5; cold 5</code>, <code>silver 5</code>, <code>poison; sleep</code>. An exception goes in brackets: <code>physical 5 (except silver)</code>. Hits are matched by what they are as well as their damage type: a swarm has resistances <code>physical 5</code> and weaknesses <code>splash-damage 5; area-damage 5</code> (also <code>critical-hits</code>, <code>persistent-damage</code>, <code>energy</code>, <code>cold-iron</code>, <code>silver</code>).</td></tr>
             <tr><td><code>strike1_name</code> &hellip; <code>strike4_*</code></td><td>Up to 4 Strikes. A real weapon's name (Longsword, Shortbow) fills its die, damage type, traits and range.<br>
               <code>strikeN_attack_bonus</code>: <code>+15</code> or a tier.<br>
@@ -243,6 +249,44 @@
   D.propertyRunes.forEach(function (r) { RUNES[r[0]] = r; });
   var ITEM_BY_NAME = {};
   ITEMS.forEach(function (i) { ITEM_BY_NAME[i[0].toLowerCase()] = i; });
+
+  // ---------- game systems (D1053) ----------
+  // Starfinder's weapons, spells, skills (Computers, Piloting) and gear load when first ticked; with both ticked the lists merge and a
+  // Pathfinder name wins a shared one. The creature tables are the same GM Core numbers in both systems.
+  var BASE = { weapons: D.weapons, spells: D.spells, skills: D.skills, items: ITEMS };
+  function sfReady() { return !!(window.TG_NPC_SF2E && window.TG_ITEMS_SF2E); }
+  function loadScript(src) { return new Promise(function (ok, fail) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = fail; document.head.appendChild(s); }); }
+  function mergeNamed(lists, key) { var seen = {}, out = []; lists.forEach(function (l) { (l || []).forEach(function (x) { var k = key(x); if (!seen[k]) { seen[k] = 1; out.push(x); } }); }); return out; }
+  function first(x) { return String(x[0]).toLowerCase(); }
+  function applySystems() {
+    var sys = state.systems, sf = sys.indexOf("sf2e") >= 0 && sfReady(), pf = sys.indexOf("pf2e") >= 0 || !sf, S2 = window.TG_NPC_SF2E, parts = [];
+    if (pf) parts.push({ weapons: BASE.weapons, spells: BASE.spells, skills: BASE.skills, items: BASE.items });
+    if (sf) parts.push({ weapons: S2.weapons, spells: S2.spells, skills: S2.skills, items: window.TG_ITEMS_SF2E });
+    D.weapons = mergeNamed(parts.map(function (p) { return p.weapons; }), first);
+    D.skills = mergeNamed(parts.map(function (p) { return p.skills; }), function (k) { return k; });
+    D.spells = {};
+    D.traditions.forEach(function (t) {
+      D.spells[t] = {};
+      for (var r = 0; r <= 10; r++) D.spells[t][r] = mergeNamed(parts.map(function (p) { return (p.spells[t] || {})[r]; }), first).sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; });
+    });
+    ITEMS = mergeNamed(parts.map(function (p) { return p.items; }), first);
+    WEAPONS = {}; D.weapons.forEach(function (w) { WEAPONS[w[0].toLowerCase()] = w; });
+    ITEM_BY_NAME = {}; ITEMS.forEach(function (i) { ITEM_BY_NAME[i[0].toLowerCase()] = i; });
+    var boxes = document.querySelectorAll("#sysChecks input");
+    for (var i = 0; i < boxes.length; i++) boxes[i].checked = sys.indexOf(boxes[i].value) >= 0;
+  }
+  function setSystems(list) {
+    state.systems = list.length ? list : ["pf2e"];
+    save();
+    if (state.systems.indexOf("sf2e") < 0 || sfReady()) { applySystems(); render(); return; }
+    $("sysMsg").textContent = "Loading the Starfinder 2e options…";
+    Promise.all([loadScript("npc-builder-data-sf2e.js"), loadScript("builder-items-sf2e.js")]).then(function () {
+      $("sysMsg").textContent = ""; applySystems(); render();
+    }, function () {
+      $("sysMsg").textContent = "Couldn't load the Starfinder 2e options. Check your connection and try again.";
+      state.systems = state.systems.filter(function (s) { return s !== "sf2e"; }); if (!state.systems.length) state.systems = ["pf2e"]; save(); applySystems(); render();
+    });
+  }
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -299,8 +343,9 @@
     STATS.forEach(function (s) { n.stats[s[0]] = { tier: "moderate", value: 0 }; });
     return n;
   }
-  var state = { npcs: [newNpc()], cur: 0 };
+  var state = { npcs: [newNpc()], cur: 0, systems: ["pf2e"] };
   try { var saved = JSON.parse(localStorage.getItem(STORE) || "null"); if (saved && saved.npcs && saved.npcs.length) state = saved; } catch (e) { /* a private window */ }
+  if (!state.systems || !state.systems.length) state.systems = ["pf2e"];
   function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* storage blocked */ } }
   function npc() { return state.npcs[state.cur]; }
 
@@ -883,7 +928,14 @@
   document.addEventListener("focusin", function (e) { var d = e.target.dataset; if (d && d.search && d.search !== "gear") fillPicker(d.search, e.target.value); });
   function refreshFormulas() { renderSide(); save(); }
 
+  document.getElementById("sysChecks").addEventListener("change", function () {
+    var list = []; var boxes = document.querySelectorAll("#sysChecks input");
+    for (var i = 0; i < boxes.length; i++) if (boxes[i].checked) list.push(boxes[i].value);
+    setSystems(list);
+  });
+  applySystems();
   render();
+  if (state.systems.indexOf("sf2e") >= 0) setSystems(state.systems);
 })();
 </script>
 </body>

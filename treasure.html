@@ -96,7 +96,10 @@
       </header>
 
       <div class="tool-body">
-        <div class="panel controls"><div class="grid4">
+        <div class="panel controls">
+        <div class="checks" id="sysChecks" role="group" aria-label="Game systems"><span class="tiny-label">Game system</span>
+          <label><input type="checkbox" value="pf2e"> Pathfinder 2e</label><label><input type="checkbox" value="sf2e"> Starfinder 2e</label><span class="hint" id="sysMsg" role="status"></span></div>
+        <div class="grid4">
           <label>Party level<input type="number" id="level" min="1" max="20"></label>
           <label>Players<input type="number" id="players" min="1" max="10"></label>
           <label>Encounters<input type="number" id="encounters" min="1" max="20"><span class="hint">How many parts to split the treasure into.</span></label>
@@ -121,14 +124,48 @@
 (function () {
   "use strict";
   // D1048 -- the treasure planner: GM Core's Party Treasure by Level rolled on Foundry's treasure tables (as /tgm treasure does), split across encounters.
-  var D = window.TG_TOWN, ITEMS = D.items, TR = D.treasure, STORE = "tg-treasure-v1", TRIES = 20;
+  var D = window.TG_TOWN, ITEMS = D.items, TR = D.treasure, STORE = "tg-treasure-v1", TRIES = 20, SF_ONLY = false;
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
-  function gp(cp) { return (Math.round(cp) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 }) + " gp"; }
+  // D1053: Starfinder's Party Treasure by Level is this table x10 in credits (1 credit = 1 sp), so amounts show in credits when Starfinder
+  // is the only system.
+  function gp(cp) { if (SF_ONLY) return Math.round(cp / 10).toLocaleString() + " credits"; return (Math.round(cp) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 }) + " gp"; }
 
-  var state = { level: 3, players: 4, encounters: 6, uncommon: false, rare: false, plan: null };
+  var state = { level: 3, players: 4, encounters: 6, uncommon: false, rare: false, plan: null, systems: ["pf2e"] };
   try { var saved = JSON.parse(localStorage.getItem(STORE) || "null"); if (saved && saved.level) state = saved; } catch (e) { /* private window */ }
+  if (!state.systems || !state.systems.length) state.systems = ["pf2e"];
+
+  // ---------- game systems (D1053) ----------
+  // Foundry has no Starfinder treasure tables, so a Starfinder slot is a random Starfinder item of the slot's level and kind (permanent:
+  // weapons, armor and gear; consumable: consumables, ammunition and anything with the consumable trait, like a grenade), stepping down a level when none is allowed. With both systems ticked,
+  // each slot is one system or the other at random.
+  function sfReady() { return !!window.TG_TOWN_SF2E; }
+  function loadScript(src) { return new Promise(function (ok, fail) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = fail; document.head.appendChild(s); }); }
+  function useSf() { return state.systems.indexOf("sf2e") >= 0 && sfReady(); }
+  function usePf() { return state.systems.indexOf("pf2e") >= 0 || !useSf(); }
+  function applySystems() {
+    SF_ONLY = useSf() && !usePf();
+    var boxes = document.querySelectorAll("#sysChecks input");
+    for (var i = 0; i < boxes.length; i++) boxes[i].checked = state.systems.indexOf(boxes[i].value) >= 0;
+  }
+  function setSystems(list) {
+    state.systems = list.length ? list : ["pf2e"];
+    if (state.systems.indexOf("sf2e") < 0 || sfReady()) { applySystems(); render(); return; }
+    $("sysMsg").textContent = "Loading the Starfinder 2e options…";
+    loadScript("town-loot-data-sf2e.js").then(function () { $("sysMsg").textContent = ""; applySystems(); render(); }, function () {
+      $("sysMsg").textContent = "Couldn't load the Starfinder 2e options. Check your connection and try again.";
+      state.systems = state.systems.filter(function (s) { return s !== "sf2e"; }); if (!state.systems.length) state.systems = ["pf2e"]; applySystems(); render();
+    });
+  }
+  function rollSfItem(level, kind) {
+    var items = window.TG_TOWN_SF2E.items;
+    for (var lvl = level; lvl >= 0; lvl--) {
+      var pool = items.filter(function (it) { var used = it[6] === 1 || it[3] === "consumable" || it[3] === "ammo"; return it[1] === lvl && it[2] > 0 && allowed(it[4]) && (kind === "consumable") === used; });
+      if (pool.length) { var it = pool[Math.floor(Math.random() * pool.length)]; return { name: it[0], level: it[1], price: it[2], estimate: false, rarity: it[4], kind: kind, table: level, sys: "sf2e" }; }
+    }
+    return null;
+  }
   function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* storage blocked */ } }
 
   function allowed(rarity) { return rarity === "common" || (rarity === "uncommon" && state.uncommon) || (rarity === "rare" && state.rare); }
@@ -146,6 +183,7 @@
     return hit;
   }
   function rollItem(level, kind) {
+    if (useSf() && (!usePf() || Math.random() < 0.5)) return rollSfItem(level, kind);
     var key = level + "-" + kind;
     if (!TR.tables[key]) return null;
     for (var i = 0; i < TRIES; i++) {
@@ -211,11 +249,11 @@
     p.encounters.forEach(function (e) { e.items.forEach(function (it) { itemsTotal += it.price; count++; }); });
     var h = ['<div class="panel"><h2>Level ' + p.level + " treasure for " + p.players + " player" + (p.players === 1 ? "" : "s") + "</h2>" +
       '<p>' + count + " items worth about " + gp(itemsTotal) + " and " + gp(p.coin) + " in coin, split across " + p.encounters.length + " encounter" + (p.encounters.length === 1 ? "" : "s") +
-      ". GM Core's budget for a level of play is " + p.total.toLocaleString() + " gp for four players; the coin changes with party size, the items don't.</p></div>"];
+      ". GM Core's budget for a level of play is " + gp(p.total * 100) + " for four players; the coin changes with party size, the items don't.</p></div>"];
     p.encounters.forEach(function (e, i) {
       var rows = e.items.map(function (it, j) {
         var name = it.estimate ? esc(it.name) + ' <span class="rar est" title="A rune or material: pick the base item">choose base item</span>'
-          : '<a href="https://2e.aonprd.com/Search.aspx?q=' + encodeURIComponent(it.name) + '" target="_blank" rel="noopener">' + esc(it.name) + "</a>" +
+          : '<a href="' + (it.sys === "sf2e" ? "https://2e.aonsrd.com" : "https://2e.aonprd.com") + '/Search.aspx?q=' + encodeURIComponent(it.name) + '" target="_blank" rel="noopener">' + esc(it.name) + "</a>" +
             (it.rarity && it.rarity !== "common" ? ' <span class="rar ' + it.rarity + '">' + it.rarity + "</span>" : "");
         return "<tr><td>" + name + "</td><td>" + (it.kind === "permanent" ? "Permanent" : "Consumable") + "</td><td>" + it.level + "</td><td>" + (it.estimate ? "≈ " : "") + gp(it.price) +
           '</td><td><button type="button" class="die" data-reroll="' + i + ":" + j + '" title="Roll this item again" aria-label="Roll this item again">🎲</button></td></tr>';
@@ -257,11 +295,18 @@
     else if (t.id === "players") state.players = Math.max(1, Math.min(10, +t.value || 4));
     else if (t.id === "encounters") { state.encounters = Math.max(1, Math.min(20, +t.value || 1)); if (state.plan) rebalance(); }
     else if (t.id === "uncommon" || t.id === "rare") state[t.id] = t.checked;
+    else if (t.closest && t.closest("#sysChecks")) {
+      var list = [], boxes = document.querySelectorAll("#sysChecks input");
+      for (var b = 0; b < boxes.length; b++) if (boxes[b].checked) list.push(boxes[b].value);
+      setSystems(list); return;
+    }
     else return;
     if (state.plan && (t.id === "players")) { state.plan.players = state.players; var dc = currency(state.plan.level, state.players) * 100; state.plan.coin = dc; rebalance(); }
     render();
   });
-  render();
+  applySystems();
+  if (state.systems.indexOf("sf2e") >= 0) { $("plan").innerHTML = '<p class="hint">Loading…</p>'; setSystems(state.systems); }
+  else render();
 })();
 </script>
 </body>
