@@ -131,7 +131,7 @@
   <div class="wrap">
     <div class="eyebrow">Legal</div>
     <h1 class="title">Privacy Policy</h1>
-    <div class="updated">Last updated October 10, 2026</div>
+    <div class="updated">Last updated November 8, 2026</div>
 
     <p class="lede">
       This policy explains what Table Goblin sees and stores while it runs your Pathfinder
@@ -166,54 +166,29 @@
         exist), with no names or identifiers.
       </p>
       <p>
-        Table Goblin does not read the general message traffic of a server or channel it
-        is in. Outside of the commands and interactions above, the one exception is the
-        optional AI GM feature described below.
+        Table Goblin does not collect the general conversation of a server or channel it is
+        in. In channels linked to a campaign, it looks at each message only to see whether it
+        is a chat command for a character (a message starting with a character's alias and
+        <code>::</code>); every other message is ignored and nothing from it is kept. A chat
+        command's text is posted back as that character and kept for up to an hour so its
+        author can edit the post.
       </p>
     </section>
 
     <section>
-      <h2><span class="num">02</span>The AI GM Feature</h2>
-      <div class="note">
-        <p>
-          <strong>Opt-in only.</strong> This section applies only if your table
-          specifically enables the AI Game Master feature. If it isn't turned on, none of
-          this applies to your server.
-        </p>
-      </div>
-      <p>
-        The AI GM feature lets Table Goblin take part in a game's narrative — describing
-        scenes, voicing NPCs, and responding to what the party does in character. For it
-        to do that, once a table turns it on, the bot reads messages posted in the
-        specific in-character channel(s) that table designates for the feature, so it has
-        the conversation's context to work from.
-      </p>
-      <p>
-        Those messages, along with the relevant character and campaign context Table
-        Goblin already stores, are sent to the third-party AI service that powers this
-        feature in order to generate the bot's in-character responses. They are used for
-        that purpose only — to hold up the table's side of the conversation — and are not
-        used to build advertising profiles or sold to anyone.
-      </p>
-      <p>
-        A table can disable the AI GM feature at any time, which stops the bot from
-        reading that channel going forward.
-      </p>
-    </section>
-
-    <section>
-      <h2><span class="num">03</span>How We Use Information</h2>
+      <h2><span class="num">02</span>How We Use Information</h2>
       <ul>
         <li>To run the command or feature you invoked and return the correct result.</li>
         <li>To persist your table's own game state (characters, campaigns, encounters,
           loot, maps) between sessions so it's there the next time you play.</li>
-        <li>To power the AI GM feature, only for tables that have opted in.</li>
+        <li>To write the names, descriptions and shopkeepers of a town a GM generates with
+          <code>/tgtown generate</code>, as described under Sharing below.</li>
         <li>To diagnose and fix problems with the bot itself.</li>
       </ul>
     </section>
 
     <section>
-      <h2><span class="num">04</span>Storage and Retention</h2>
+      <h2><span class="num">03</span>Storage and Retention</h2>
       <p>
         Game data is stored in Table Goblin's own database, keyed to the Discord server and
         user IDs it belongs to, for as long as your table continues to use the bot. If a
@@ -227,7 +202,7 @@
     </section>
 
     <section>
-      <h2><span class="num">05</span>Sharing of Information</h2>
+      <h2><span class="num">04</span>Sharing of Information</h2>
       <p>
         We do not sell your data or your table's data. Information is shared only where
         it's needed to operate the service:
@@ -235,16 +210,19 @@
       <ul>
         <li><strong>Discord</strong> — as the platform the bot runs on, per Discord's own
           Terms of Service and Privacy Policy.</li>
-        <li><strong>Our AI service provider</strong> — only for tables that have enabled
-          the AI GM feature, and only the channel content and context needed to generate a
-          response, as described above.</li>
+        <li><strong>Google (the Gemini model)</strong> — only when a GM generates a town with
+          <code>/tgtown generate</code> and leaves its <code>ai</code> option on (the default). The
+          request carries the campaign's name and notes, and the town's size, region and kinds of
+          shop, so the model can write its names, descriptions and shopkeepers. Nothing about
+          players or characters is sent. Setting <code>ai:False</code> uses the bot's own name
+          tables instead, and nothing is sent.</li>
         <li><strong>Hosting infrastructure</strong> — the servers Table Goblin's database
           and code run on.</li>
       </ul>
     </section>
 
     <section>
-      <h2><span class="num">06</span>Data Security</h2>
+      <h2><span class="num">05</span>Data Security</h2>
       <p>
         We take reasonable steps to protect the information Table Goblin stores, but no
         method of storage or transmission is completely secure, and we can't guarantee
@@ -253,17 +231,16 @@
     </section>
 
     <section>
-      <h2><span class="num">07</span>Your Choices</h2>
+      <h2><span class="num">06</span>Your Choices</h2>
       <p>
         You can stop Table Goblin's access to your data at any time by removing it from
-        your server, or disable the AI GM feature specifically without removing the bot
-        entirely. To request deletion of your table's stored data, contact us using the
+        your server. To request deletion of your table's stored data, contact us using the
         details below.
       </p>
     </section>
 
     <section>
-      <h2><span class="num">08</span>Children's Privacy</h2>
+      <h2><span class="num">07</span>Children's Privacy</h2>
       <p>
         Table Goblin is intended for use on Discord, which requires users to meet
         Discord's own minimum age requirements. We do not knowingly collect information
@@ -273,7 +250,7 @@
     </section>
 
     <section>
-      <h2><span class="num">09</span>Changes to This Policy</h2>
+      <h2><span class="num">08</span>Changes to This Policy</h2>
       <p>
         We may update this policy as Table Goblin's features change. The "Last updated"
         date above reflects the most recent revision.
@@ -281,7 +258,7 @@
     </section>
 
     <section>
-      <h2><span class="num">10</span>Contact</h2>
+      <h2><span class="num">09</span>Contact</h2>
       <p>
         Questions about this policy, or requests to access or delete your data, can be
         sent to <a href="mailto:tablegoblinapp@gmail.com">tablegoblinapp@gmail.com</a>.
