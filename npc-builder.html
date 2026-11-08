@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Table Goblin — NPC Builder</title>
+<link rel="icon" href="table-goblin.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="tools.css">
+<script data-goatcounter="https://tablegoblin.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+<script src="events.js"></script>
+<style>
+  .npc-tabs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 14px; }
+  .npc-tabs .pill { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  @media (max-width: 640px) { .grid3, .grid4 { grid-template-columns: 1fr 1fr; } }
+  .stat { display: grid; grid-template-columns: 110px minmax(0, 1fr) 76px; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .stat:last-child { border-bottom: 0; }
+  .stat .sname { font-size: 13.5px; font-weight: 600; }
+  .stat .sname small { display: block; font-weight: 400; color: var(--text-3); font-size: 11.5px; }
+  .stat input[type=number] { width: 100%; padding: 5px 7px; }
+  .stat .seg { margin: 0; }
+  .stat .seg button { font-size: 12px; padding: 5px 2px; }
+  .stat .seg button:disabled { opacity: .35; cursor: default; }
+  .stat .note { grid-column: 2 / 4; font-size: 12px; color: var(--text-3); margin-top: -2px; }
+  .stat .note.warn { color: var(--danger); }
+  @media (max-width: 640px) { .stat { grid-template-columns: 1fr 76px; } .stat .seg { grid-column: 1 / 3; grid-row: 2; } .stat .note { grid-column: 1 / 3; } }
+  .card { border: 1px solid var(--line); border-radius: 8px; padding: 10px; margin: 0 0 10px; background: var(--ground); }
+  .card-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .card-head b { font-size: 14px; }
+  .x { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text-2); border-radius: 6px; padding: 3px 9px; cursor: pointer; font: inherit; font-size: 12.5px; }
+  .x:hover { color: var(--danger); border-color: var(--danger); }
+  .formula { font: 500 13px "IBM Plex Mono", monospace; color: var(--text); background: var(--surface-2); border-radius: 6px; padding: 6px 8px; margin: 6px 0 0; overflow-wrap: anywhere; }
+  .warns { margin: 0; padding: 0; list-style: none; }
+  .warns li { font-size: 13px; padding: 5px 0 5px 22px; position: relative; border-bottom: 1px solid var(--line); color: var(--text-2); }
+  .warns li:last-child { border-bottom: 0; }
+  .warns li::before { position: absolute; left: 0; top: 5px; }
+  .warns li.bad::before { content: "\26A0\FE0F"; }
+  .warns li.ok::before { content: "\2705"; }
+  .warns li.info::before { content: "\2139\FE0F"; }
+  .spell-ranks { display: grid; gap: 6px; }
+  .spell-rank { font-size: 13px; }
+  .spell-rank b { font: 600 12px "IBM Plex Mono", monospace; color: var(--accent); margin-right: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px 4px 2px 9px; margin: 2px 3px 2px 0; font-size: 12.5px; background: var(--surface); }
+  .chip button { border: 0; background: none; color: var(--text-3); cursor: pointer; font-size: 13px; padding: 0 3px; }
+  .chip button:hover { color: var(--danger); }
+  .chip select { border: 0; background: transparent; color: var(--text-2); font: inherit; font-size: 12px; padding: 0; }
+  .statblock { font-size: 13px; line-height: 1.45; }
+  .statblock h3 { font: 600 17px Fraunces, Georgia, serif; margin: 0; display: flex; justify-content: space-between; gap: 8px; }
+  .statblock .traits { display: flex; flex-wrap: wrap; gap: 3px; margin: 4px 0 6px; }
+  .statblock .traits span { font: 500 10.5px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .04em; border: 1px solid var(--line-strong); border-radius: 3px; padding: 1px 5px; }
+  .statblock p { margin: 0 0 3px; }
+  .statblock hr { border: 0; border-top: 1px solid var(--line-strong); margin: 6px 0; }
+  .side .btns { margin-top: 10px; }
+  .pick-inline { display: grid; grid-template-columns: minmax(0, 1fr) 90px; gap: 6px; margin-top: 6px; }
+  .tiny { font-size: 12px; color: var(--text-3); }
+  textarea.ab { width: 100%; min-height: 54px; padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--ground); color: var(--text); font: inherit; font-size: 13.5px; resize: vertical; }
+  .inline-checks { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 8px; }
+  .inline-checks label { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 13px; color: var(--text); }
+  .csv-guide { margin-top: 18px; }
+  .csv-guide .table-scroll { overflow-x: auto; }
+  .csv-cols { border-collapse: collapse; width: 100%; font-size: 14px; }
+  .csv-cols th, .csv-cols td { text-align: left; vertical-align: top; padding: 6px 8px; border-top: 1px solid var(--line, rgba(127,127,127,.25)); }
+  .csv-cols td:first-child { min-width: 160px; }
+  @media (max-width: 640px) {
+    .csv-cols thead { display: none; }
+    .csv-cols tr, .csv-cols td { display: block; }
+    .csv-cols td:first-child { min-width: 0; padding-bottom: 0; }
+    .csv-cols td + td { border-top: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+        <img class="rail-logo" src="table-goblin.png" alt="Table Goblin logo">
+        <b>Table Goblin</b>
+        <span>Pathfinder 2e for Discord</span>
+        <a class="btn" href="https://discord.gg/cHMex5xFsV" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.211.375-.457.879-.626 1.278a18.27 18.27 0 0 0-5.518 0A12.76 12.76 0 0 0 9.115 3 19.736 19.736 0 0 0 4.68 4.372C1.727 8.75.929 13.028 1.328 17.244a19.9 19.9 0 0 0 5.993 3.03c.483-.66.914-1.36 1.285-2.098a12.87 12.87 0 0 1-2.024-.973c.17-.124.336-.253.497-.386 3.902 1.803 8.13 1.803 11.987 0 .162.133.329.262.497.386-.645.386-1.323.71-2.026.974.371.738.802 1.438 1.285 2.098a19.876 19.876 0 0 0 5.995-3.03c.468-4.891-.795-9.13-3.5-13.876ZM8.68 14.813c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Zm7.324 0c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Z"/></svg>
+          Join the Discord
+        </a>
+        <div class="discord-widget" id="discordWidget" hidden aria-live="polite">
+          <span class="dw-dot"></span>
+          <span class="dw-avatars" id="dwAvatars"></span>
+          <span id="dwText"></span>
+        </div>
+    </div>
+    <nav>
+      <a class="btn" href="https://discord.com/oauth2/authorize?client_id=1550867869066076263" target="_blank" rel="noopener">Install Table Goblin</a>
+      <a class="top" href="index.html"><span>Home</span></a>
+      <a class="top" href="changelog.html"><span>Change Log</span></a>
+      <a class="top" href="wiki.html"><span>Wiki</span></a>
+      <div class="rail-sub">
+        <a href="wiki.html#start"><span>Getting Started</span></a>
+        <a href="wiki.html#gm"><span>GM Tools</span></a>
+        <a href="wiki.html#chars"><span>Characters</span></a>
+        <a href="wiki.html#chat"><span>Playing in Character</span></a>
+        <a href="wiki.html#npcs"><span>Creatures &amp; NPCs</span></a>
+        <a href="wiki.html#dice"><span>Dice Roller</span></a>
+        <a href="wiki.html#combat"><span>Encounters</span></a>
+        <a href="wiki.html#maps"><span>Battle Maps</span></a>
+        <a href="wiki.html#loot"><span>Loot &amp; the Purse</span></a>
+        <a href="wiki.html#towns"><span>Towns &amp; Shops</span></a>
+        <a href="wiki.html#lookup"><span>Reference Lookup</span></a>
+        <a href="wiki.html#coming"><span>Coming Features</span></a>
+      </div>
+      <a class="top" href="map-prep.html"><span>Map prep</span></a>
+      <a class="top" href="builder.html"><span>Character builder</span></a>
+      <a class="top" href="npc-builder.html" aria-current="page"><span>NPC builder</span></a>
+      <a class="top" href="class-commands.html"><span>Class Commands</span></a>
+    </nav>
+  </aside>
+
+  <main class="tool-page">
+    <div class="wrap">
+      <header class="hero tool-hero">
+        <div class="eyebrow">GM tool</div>
+        <h1>NPC builder</h1>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html" aria-current="page">NPC builder</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a></nav>
+        <p class="lede">Build one creature or a whole cast at the power level you mean, using GM Core's Building Creatures tables. Every number has Extreme, High, Moderate and Low buttons for the creature's level, and the page warns you when something runs past the table. Nothing here is uploaded; your work is kept in this browser until you download the file.</p>
+        <ol class="steps">
+          <li><strong>Pick a level</strong>, then a tier for each number. Change the level and every tiered number follows.</li>
+          <li><strong>Add Strikes, spells and gear.</strong> A weapon fills its die, damage type and traits; the tier sets the attack and damage.</li>
+          <li><strong>Check the warnings</strong> on the right: numbers past the table, too many Extremes, gear above the safe item level.</li>
+          <li><strong>Download the file</strong> and run <code>/tgnpc bulk_add</code> in your campaign with it attached.</li>
+        </ol>
+        <p class="hint">Rather use a spreadsheet, or build in Discord? <a href="#csv">Download the CSV template</a>, or run <code>/tgnpc build</code>.</p>
+      </header>
+
+      <div class="tool-body">
+        <div class="npc-tabs" id="tabs"></div>
+        <div class="layout">
+          <div id="editor"></div>
+          <div class="side">
+            <div class="panel">
+              <h2>Stat block</h2>
+              <div class="statblock" id="statblock"></div>
+              <h3>Checks</h3>
+              <ul class="warns" id="warns"></ul>
+              <div class="btns">
+                <button class="tbtn primary" id="download" type="button">Download file</button>
+                <label class="tbtn" style="margin:0;cursor:pointer">Open a file<input type="file" id="openFile" accept=".json,application/json" hidden></label>
+              </div>
+              <p class="hint" id="fileHint"></p>
+              <div class="error" id="fileError" role="alert"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="panel csv-guide" id="csv">
+        <h2>Spreadsheet import (CSV)</h2>
+        <p><a class="tbtn primary" href="npc-template.csv" download="npc-template.csv">Download the CSV template</a></p>
+        <p>One creature per row; save it as CSV (UTF-8) and attach it to <code>/tgnpc bulk_add</code>. Run the command with no file for the same template.
+          Everything is checked first: one problem and nothing is added, and every problem is listed with its line. The template's first row is a whole
+          custom NPC; the second is a bestiary creature.</p>
+        <p><b>Tier words.</b> Any stat, attack bonus, Strike damage or spell DC can be a number or a tier word (<code>extreme</code>, <code>high</code>,
+          <code>moderate</code>, <code>low</code>, <code>terrible</code>), and GM Core's table fills in the number for the creature's level, the same numbers
+          as the buttons above. An empty stat on a custom NPC is Moderate (Intelligence: Low).</p>
+        <div class="table-scroll"><table class="csv-cols">
+          <thead><tr><th>Columns</th><th>What goes in them</th></tr></thead>
+          <tbody>
+            <tr><td><code>creature</code></td><td>An exact bestiary name. Filled stat columns replace its own; Strikes, spells, gear and abilities are added to it. Leave empty for a custom NPC.</td></tr>
+            <tr><td><code>name</code>, <code>alias</code>, <code>count</code></td><td>A custom NPC needs only a <code>name</code>. The alias comes from the name if empty; <code>count</code> 3 makes shark1, shark2, shark3.</td></tr>
+            <tr><td><code>adjustment</code>, <code>level</code>, <code>size</code>, <code>rarity</code>, <code>traits</code>, <code>significant</code></td><td><code>elite</code> or <code>weak</code> (bestiary rows); level &minus;1 to 24; Tiny to Gargantuan; traits separated by <code>;</code>; <code>yes</code> for PC-style dying.</td></tr>
+            <tr><td><code>ac</code>, <code>hp</code>, <code>temp_hp</code>, <code>hardness</code></td><td>Numbers or tier words (HP takes the middle of the table's range; it has no Extreme, so it uses High).</td></tr>
+            <tr><td><code>fortitude</code>, <code>reflex</code>, <code>will</code>, <code>perception</code>, <code>senses</code></td><td>Modifiers or tier words; senses separated by <code>;</code> (<code>darkvision; scent (imprecise) 30 feet</code>).</td></tr>
+            <tr><td><code>speed</code>, <code>fly_speed</code>, <code>swim_speed</code>, <code>climb_speed</code>, <code>burrow_speed</code></td><td>Feet.</td></tr>
+            <tr><td><code>str</code>, <code>dex</code>, <code>con</code>, <code>int</code>, <code>wis</code>, <code>cha</code></td><td>Attribute modifiers or tier words.</td></tr>
+            <tr><td><code>acrobatics</code> &hellip; <code>thievery</code></td><td>One column per skill (16); empty means none. Lores aren't kept on creatures.</td></tr>
+            <tr><td><code>resistances</code>, <code>weaknesses</code>, <code>immunities</code></td><td><code>fire 5; cold 5</code>, <code>silver 5</code>, <code>poison; sleep</code>. An exception goes in brackets: <code>physical 5 (except silver)</code>.</td></tr>
+            <tr><td><code>strike1_name</code> &hellip; <code>strike4_*</code></td><td>Up to 4 Strikes. A real weapon's name (Longsword, Shortbow) fills its die, damage type, traits and range.<br>
+              <code>strikeN_attack_bonus</code>: <code>+15</code> or a tier.<br>
+              <code>strikeN_damage</code>: <code>2d8+7 slashing</code>, or a tier (<code>high</code>, or <code>high piercing</code> for a natural attack); a tier is built the GM Core way, with the extra damage counted toward the table's average.<br>
+              <code>strikeN_additional_damage</code>: <code>1d6 fire</code>. <code>strikeN_traits</code>: <code>agile; finesse</code>. <code>strikeN_range</code>: feet, empty for melee. <code>strikeN_reach</code>: feet.</td></tr>
+            <tr><td><code>spell_tradition</code>, <code>spell_type</code>, <code>spell_dc</code>, <code>spell_attack</code></td><td>arcane / divine / occult / primal; prepared / spontaneous / innate; a number or <code>extreme</code> / <code>high</code> / <code>moderate</code> (the attack follows the DC's tier if empty).</td></tr>
+            <tr><td><code>slots_rank1</code> &hellip; <code>slots_rank10</code></td><td>Slots per rank. Empty for a prepared or spontaneous caster: GM Core's slots for the level.</td></tr>
+            <tr><td><code>spell1_name</code> &hellip; <code>spell12_*</code></td><td>Up to 12 spells. <code>spellN_rank</code>: the rank it's cast at (empty: its own rank; a cantrip is always 0).<br>
+              <code>spellN_uses</code>: an innate spell's <code>at will</code>, <code>constant</code> or <code>2/day</code>; a prepared spell's number of copies.</td></tr>
+            <tr><td><code>gear1_name</code> &hellip; <code>gear6_*</code></td><td>Up to 6 real items, with <code>gearN_qty</code> and <code>gearN_runes</code> (<code>+1; striking; flaming</code>). The creature carries them, and they drop as loot when it is defeated.</td></tr>
+            <tr><td><code>ability1_name</code> &hellip; <code>ability6_*</code></td><td>Text on the sheet: <code>abilityN_actions</code> (<code>1</code>, <code>2</code>, <code>3</code>, <code>reaction</code>, <code>free</code>, or empty for passive) and <code>abilityN_text</code>.</td></tr>
+            <tr><td><code>sneak_attack</code></td><td>Dice, like <code>2d6</code>. Applied in combat: a Strike at an off-guard or flanked target adds it, and the sheet offers it beside each Strike.</td></tr>
+            <tr><td><code>rage_damage</code>, <code>rage_ac</code>, <code>rage_temp_hp</code></td><td>The creature's Rage (<code>4</code>, <code>-1</code>, <code>10</code>). Applied in combat: the Combat tab's Rage action gives the temporary HP, then melee Strikes add the damage and AC takes the penalty until <i>raging</i> ends.</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <footer class="site-footer">
+        A reference, not a rules substitute &mdash; when in doubt, check Archives of Nethys.
+        Table Goblin is an unofficial tool and is not affiliated with Paizo Inc.
+        <a href="terms.html">Terms of Service</a> &middot; <a href="privacy.html">Privacy Policy</a>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<script src="npc-builder-data.js"></script>
+<script src="builder-items.js"></script>
+<script>
+(function () {
+  "use strict";
+  var D = window.TG_NPC, TB = D.tables, ITEMS = window.TG_ITEMS || [];
+  var STORE = "tg-npc-builder-v1";
+  var T4 = ["extreme", "high", "moderate", "low"], T5 = T4.concat(["terrible"]), THP = ["high", "moderate", "low"];
+  var SHORT = { extreme: "Ext", high: "High", moderate: "Mod", low: "Low", terrible: "Ter" };
+  var ABIL = ["str", "dex", "con", "int", "wis", "cha"];
+  var ABIL_NAME = { str: "Strength", dex: "Dexterity", con: "Constitution", int: "Intelligence", wis: "Wisdom", cha: "Charisma" };
+  var STATS = [["per", "Perception", "perception", T5], ["ac", "AC", "ac", T4], ["fort", "Fortitude", "save", T5], ["ref", "Reflex", "save", T5],
+               ["will", "Will", "save", T5], ["hp", "Hit Points", "hp", THP]];
+  var DIES = [4, 6, 8, 10, 12];
+  var WEAPONS = {};
+  D.weapons.forEach(function (w) { WEAPONS[w[0].toLowerCase()] = w; });
+  var RUNES = {};
+  D.propertyRunes.forEach(function (r) { RUNES[r[0]] = r; });
+  var ITEM_BY_NAME = {};
+  ITEMS.forEach(function (i) { ITEM_BY_NAME[i[0].toLowerCase()] = i; });
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function sign(n) { return (n >= 0 ? "+" : "") + n; }
+  function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  function slug(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30); }
+  function row(table, level) { return TB[table][String(Math.max(-1, Math.min(24, level)))]; }
+
+  // ---------- the tables ----------
+  function tierValue(table, level, tier) {
+    var r = row(table, level);
+    if (table === "hp") { var h = r[tier]; return h ? Math.floor((h[0] + h[1]) / 2) : null; }
+    var v = r[tier];
+    return v == null ? null : v;
+  }
+  function tierOf(table, level, tiers, value) {
+    for (var i = 0; i < tiers.length; i++) {
+      if (table === "hp") { var h = row("hp", level)[tiers[i]]; if (value >= h[0] && value <= h[1]) return tiers[i]; }
+      else if (tierValue(table, level, tiers[i]) === value) return tiers[i];
+    }
+    return "custom";
+  }
+  function statValue(s, table, level) { return s.tier === "custom" ? s.value : tierValue(table, level, s.tier); }
+  function range(table, level) {           // [lowest the table prints, highest]
+    var r = row(table, level);
+    if (table === "hp") return [r.low[0], r.high[1]];
+    if (table === "skill") return [r.low_min, r.extreme];
+    var vals = Object.keys(r).map(function (k) { return r[k]; }).filter(function (v) { return typeof v === "number"; });
+    return [Math.min.apply(null, vals), Math.max.apply(null, vals)];
+  }
+  function damageFor(level, tier, die, extraAvg) {
+    // GM Core: the table's average (in parentheses) is the target; special damage (Flaming's 1d6 fire) counts toward it; roughly half from
+    // dice and half from the flat modifier, with the weapon's own die.
+    var avg = row("strike_damage", level)[tier][3] - (extraAvg || 0);
+    var per = (die + 1) / 2;
+    var dice = Math.max(1, Math.round(avg / (die + 1)));
+    var bonus = Math.max(0, Math.round(avg - dice * per));
+    return { dice: dice, bonus: bonus, avg: dice * per + bonus + (extraAvg || 0) };
+  }
+  function slotsFor(level, full) {
+    var top = Math.min(10, Math.max(1, Math.ceil(level / 2))), odd = Math.abs(level) % 2 === 1, out = {};
+    for (var r = 1; r <= top; r++) out[r] = r < top ? (full ? 4 : 3) : (odd ? (full ? 3 : 2) : (full ? 4 : 3));
+    return out;
+  }
+  function safeItem(level) { return row("safe_item", level); }
+
+  // ---------- state ----------
+  function newNpc() {
+    var n = { name: "", alias: "", count: 1, significant: false, level: 1, size: "Medium", rarity: "common", traits: "humanoid", speed: 25,
+              speeds: { fly: "", swim: "", climb: "", burrow: "" }, senses: "", abilities: {}, stats: {}, skills: [], resist: [], strikes: [],
+              casting: [], specials: [], gear: [] };
+    ABIL.forEach(function (a) { n.abilities[a] = { tier: "moderate", value: 0 }; });
+    n.abilities.int = { tier: "low", value: 0 };
+    STATS.forEach(function (s) { n.stats[s[0]] = { tier: "moderate", value: 0 }; });
+    return n;
+  }
+  var state = { npcs: [newNpc()], cur: 0 };
+  try { var saved = JSON.parse(localStorage.getItem(STORE) || "null"); if (saved && saved.npcs && saved.npcs.length) state = saved; } catch (e) { /* a private window */ }
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* storage blocked */ } }
+  function npc() { return state.npcs[state.cur]; }
+
+  // ---------- small builders ----------
+  function tierSeg(id, tiers, current, table, level) {
+    return '<div class="seg" role="group">' + tiers.map(function (t) {
+      var v = tierValue(table, level, t), dis = v == null, shown;
+      if (table === "hp") shown = row("hp", level)[t].join("–");
+      else if (table === "strike_damage") shown = v[0] + "d" + v[1] + (v[2] ? "+" + v[2] : "") + " (" + v[3] + ")";
+      else shown = sign(v);
+      return '<button type="button" data-tier="' + id + '" data-value="' + t + '" aria-pressed="' + (current === t) + '"' + (dis ? " disabled" : "") +
+        ' title="' + cap(t) + (dis ? "" : ": " + shown) + '">' + SHORT[t] + "</button>";
+    }).join("") + "</div>";
+  }
+  function statRow(id, label, sub, s, table, tiers, level, plainNumber) {
+    var v = statValue(s, table, level), rg = range(table, level), note = "", warn = false;
+    if (v != null && v > rg[1]) { note = "Above the table's highest (" + (plainNumber ? rg[1] : sign(rg[1])) + ") for level " + level + "."; warn = true; }
+    else if (v != null && v < rg[0] && table !== "attribute") note = "Below the table's lowest (" + (plainNumber ? rg[0] : sign(rg[0])) + ").";
+    else if (s.tier === "custom") note = "Your own number (no tier).";
+    return '<div class="stat"><div class="sname">' + esc(label) + (sub ? "<small>" + esc(sub) + "</small>" : "") + "</div>" +
+      tierSeg(id, tiers, s.tier, table, level) +
+      '<input type="number" data-num="' + id + '" value="' + (v == null ? "" : v) + '" aria-label="' + esc(label) + '">' +
+      (note ? '<div class="note' + (warn ? " warn" : "") + '">' + esc(note) + "</div>" : "") + "</div>";
+  }
+  function picker(id, placeholder) {
+    return '<div class="picker"><input type="text" data-search="' + id + '" placeholder="' + esc(placeholder) + '" autocomplete="off"><div class="plist" id="plist-' + id + '"></div></div>';
+  }
+
+  // ---------- render ----------
+  function render() {
+    renderTabs();
+    var n = npc(), L = n.level, h = [];
+    h.push('<div class="panel"><h2><span class="num">1</span>Identity</h2>' +
+      '<div class="row2"><label>Name<input type="text" data-f="name" maxlength="80" value="' + esc(n.name) + '" placeholder="Bandit Captain"></label>' +
+      '<label>Alias in Discord<input type="text" data-f="alias" maxlength="30" value="' + esc(n.alias) + '" placeholder="' + esc(slug(n.name) || "captain") + '"></label></div>' +
+      '<div class="grid4"><label>Level<select data-f="level">' + range2(-1, 24).map(function (l) { return "<option" + (l === L ? " selected" : "") + ">" + l + "</option>"; }).join("") + "</select></label>" +
+      '<label>Size<select data-f="size">' + D.sizes.map(function (s) { return "<option" + (s === n.size ? " selected" : "") + ">" + s + "</option>"; }).join("") + "</select></label>" +
+      '<label>Rarity<select data-f="rarity">' + ["common", "uncommon", "rare", "unique"].map(function (s) { return '<option value="' + s + '"' + (s === n.rarity ? " selected" : "") + ">" + cap(s) + "</option>"; }).join("") + "</select></label>" +
+      '<label>How many<input type="number" data-f="count" min="1" max="20" value="' + n.count + '"></label></div>' +
+      '<label>Traits (comma separated)<input type="text" data-f="traits" value="' + esc(n.traits) + '" placeholder="human, humanoid"></label>' +
+      '<div class="inline-checks"><label><input type="checkbox" data-f="significant"' + (n.significant ? " checked" : "") + '> Significant NPC (uses the dying rules, not just knocked out)</label></div>' +
+      '<p class="hint">Several copies get numbered aliases (<code>bandit1</code>, <code>bandit2</code>…) and each carries its own gear.</p></div>');
+
+    h.push('<div class="panel"><h2><span class="num">2</span>Attributes</h2><p class="hint" style="margin:0 0 6px">GM Core: one Extreme attribute at most, usually the creature\'s main one; most are High or Moderate, with a Low or worse where it is weak.</p>' +
+      ABIL.map(function (a) { return statRow("ab-" + a, ABIL_NAME[a], "", n.abilities[a], "attribute", T4, L); }).join("") + "</div>");
+
+    h.push('<div class="panel"><h2><span class="num">3</span>Defenses and Perception</h2>' +
+      STATS.map(function (s) {
+        var sub = s[0] === "hp" ? "High / Moderate / Low ranges" : (s[2] === "save" ? "a saving throw" : "");
+        return statRow("st-" + s[0], s[1], sub, n.stats[s[0]], s[2], s[3], L, s[0] === "ac" || s[0] === "hp");
+      }).join("") +
+      '<div class="grid4" style="margin-top:10px"><label>Speed<input type="number" data-f="speed" min="0" max="300" step="5" value="' + n.speed + '"></label>' +
+      ["fly", "swim", "climb", "burrow"].map(function (k) { return '<label>' + cap(k) + '<input type="number" data-speed="' + k + '" min="0" max="300" step="5" value="' + esc(n.speeds[k]) + '"></label>'; }).join("") + "</div>" +
+      '<label>Senses (comma separated)<input type="text" data-f="senses" value="' + esc(n.senses) + '" placeholder="darkvision, scent (imprecise) 30 feet"></label>' +
+      '<h3>Resistances, weaknesses and immunities</h3>' + n.resist.map(function (r, i) {
+        var rr = row("resistance", L);
+        return '<div class="card"><div class="card-head"><b>' + esc(cap(r.kind)) + "</b><button class=\"x\" type=\"button\" data-del=\"resist\" data-i=\"" + i + '">Remove</button></div><div class="grid3">' +
+          '<label>Kind<select data-r="kind" data-i="' + i + '">' + ["resistance", "weakness", "immunity"].map(function (k) { return '<option value="' + k + '"' + (k === r.kind ? " selected" : "") + ">" + cap(k) + "</option>"; }).join("") + "</select></label>" +
+          '<label>Damage type or effect<input type="text" list="dtypes" data-r="type" data-i="' + i + '" value="' + esc(r.type) + '"></label>' +
+          (r.kind === "immunity" ? "<span></span>" : '<label>Amount<input type="number" data-r="amount" data-i="' + i + '" min="1" value="' + esc(r.amount) + '"></label>') + "</div>" +
+          '<label>Except (optional)<input type="text" data-r="exceptions" data-i="' + i + '" value="' + esc(r.exceptions) + '" placeholder="cold iron"></label>' +
+          (r.kind === "immunity" ? "" : '<p class="tiny">Level ' + L + ": " + rr.min + " to " + rr.max + " (GM Core: the maximum for one narrow type, the minimum for a broad one such as all physical).</p>") + "</div>";
+      }).join("") + '<button class="tbtn" type="button" data-add="resist">Add one</button>' +
+      '<datalist id="dtypes">' + D.damageTypes.concat(["physical", "all-damage", "precision", "poison", "disease", "death effects", "mental", "paralyzed", "sleep"]).map(function (t) { return '<option value="' + t + '">'; }).join("") + "</datalist></div>");
+
+    h.push('<div class="panel"><h2><span class="num">4</span>Skills</h2>' + n.skills.map(function (s, i) {
+      return '<div class="stat"><div class="sname"><select data-sk="' + i + '">' + D.skills.map(function (k) { return '<option value="' + k + '"' + (k === s.skill ? " selected" : "") + ">" + cap(k) + "</option>"; }).join("") +
+        '</select></div>' + tierSeg("sk-" + i, T4, s.tier, "skill", L) + '<input type="number" data-num="sk-' + i + '" value="' + statValue(s, "skill", L) + '">' +
+        '<div class="note"><button class="x" type="button" data-del="skills" data-i="' + i + '">Remove</button></div></div>';
+    }).join("") + '<button class="tbtn" type="button" data-add="skill">Add a skill</button><p class="hint">Lores aren\'t kept on a creature by the bot, so they aren\'t offered.</p></div>');
+
+    h.push('<div class="panel"><h2><span class="num">5</span>Strikes</h2><p class="hint" style="margin:0 0 8px">GM Core: High damage for a melee brute\'s main attack, Moderate for agile weapons and ranged attacks, one step lower for a creature that mostly casts spells.</p>' +
+      n.strikes.map(strikeCard).join("") + '<div class="btns"><button class="tbtn" type="button" data-add="strike-weapon">Add a weapon Strike</button><button class="tbtn" type="button" data-add="strike-natural">Add a natural attack</button></div></div>');
+
+    h.push('<div class="panel"><h2><span class="num">6</span>Spells</h2>' + n.casting.map(castingCard).join("") +
+      '<button class="tbtn" type="button" data-add="casting">Add spellcasting</button><p class="hint">Prepared and spontaneous casters cast up to half their level, rounded up. Innate spells can be any rank, with uses you choose.</p></div>');
+
+    h.push('<div class="panel"><h2><span class="num">7</span>Gear</h2><p class="hint" style="margin:0 0 8px">Gear goes on the creature\'s sheet in Discord and drops into the loot when it is defeated. Level ' + L +
+      '\'s safe item level is <b>' + safeItem(L).item_level + "</b>" + (safeItem(L).example ? " (" + esc(safeItem(L).example) + ")" : "") +
+      ": one item of that level per creature keeps the party's treasure in line. A weapon it Strikes with is carried from its Strike (with its runes); add other weapons here.</p>" +
+      n.gear.map(gearCard).join("") + picker("gear", "Search items to add (rope, healing potion, leather armor…)") + "</div>");
+
+    h.push('<div class="panel"><h2><span class="num">8</span>Special abilities</h2>' + n.specials.map(function (a, i) {
+      return '<div class="card"><div class="card-head"><input type="text" data-sp="name" data-i="' + i + '" value="' + esc(a.name) + '" placeholder="Ability name"><button class="x" type="button" data-del="specials" data-i="' + i + '">Remove</button></div>' +
+        '<textarea class="ab" data-sp="summary" data-i="' + i + '" placeholder="What it does">' + esc(a.summary) + "</textarea>" +
+        '<div class="inline-checks"><label><input type="checkbox" data-sp="limited" data-i="' + i + '"' + (a.limited ? " checked" : "") + "> Limited use (Elite/Weak adjusts its damage note)</label></div></div>";
+    }).join("") + '<button class="tbtn" type="button" data-add="special">Add an ability</button><p class="hint">Shown on the creature\'s sheet in Discord; the GM resolves them. For an ability\'s damage, GM Core\'s area damage for level ' + L + " is " +
+      esc(row("area_damage", L).unlimited) + " (" + row("area_damage", L).unlimited_avg + ") if it can be used every round, " + esc(row("area_damage", L).limited) + " (" + row("area_damage", L).limited_avg + ") if limited.</p></div>");
+
+    $("editor").innerHTML = h.join("");
+    renderSide();
+    save();
+  }
+  function range2(a, b) { var o = []; for (var i = a; i <= b; i++) o.push(i); return o; }
+
+  function strikeCard(s, i) {
+    var n = npc(), L = n.level, c = strikeCalc(s, L), w = s.weapon ? WEAPONS[s.weapon.toLowerCase()] : null;
+    var head = s.weapon ? esc(s.weapon) : (esc(s.name) || "Natural attack");
+    var parts = ['<div class="card"><div class="card-head"><b>' + head + '</b><button class="x" type="button" data-del="strikes" data-i="' + i + '">Remove</button></div>'];
+    if (s.kind === "weapon") {
+      parts.push(s.weapon ? "" : picker("weapon-" + i, "Search weapons (longsword, shortbow…)"));
+      if (w) parts.push('<p class="tiny">' + cap(w[7]) + " " + esc(w[6]) + ", d" + w[1] + " " + esc(w[2]) + (w[4] ? ", range " + w[4] + " ft" : "") + (w[3].length ? ", " + esc(w[3].join(", ")) : "") +
+        ' <button class="x" type="button" data-sw="clear" data-i="' + i + '">Change weapon</button></p>');
+    } else {
+      parts.push('<div class="grid4"><label>Name<input type="text" data-s="name" data-i="' + i + '" value="' + esc(s.name) + '" placeholder="Jaws"></label>' +
+        '<label>Die<select data-s="die" data-i="' + i + '">' + DIES.map(function (d) { return '<option value="' + d + '"' + (d === s.die ? " selected" : "") + ">d" + d + "</option>"; }).join("") + "</select></label>" +
+        '<label>Damage type<input type="text" list="dtypes" data-s="dmgType" data-i="' + i + '" value="' + esc(s.dmgType) + '"></label>' +
+        '<label>Range (ft)<input type="number" data-s="range" data-i="' + i + '" min="0" step="5" value="' + esc(s.range) + '" placeholder="melee"></label></div>' +
+        '<label>Traits (comma separated)<input type="text" data-s="traits" data-i="' + i + '" value="' + esc(s.traits) + '" placeholder="agile, finesse, unarmed"></label>');
+    }
+    parts.push('<div class="row2"><label>Reach (ft, blank for the usual)<input type="number" data-s="reach" data-i="' + i + '" min="5" step="5" value="' + esc(s.reach) + '"></label><span></span></div>');
+    parts.push('<div class="stat"><div class="sname">Attack</div>' + tierSeg("sa-" + i, T4, s.atk.tier, "strike_attack", L) + '<input type="number" data-num="sa-' + i + '" value="' + c.toHit + '"></div>');
+    parts.push('<div class="stat"><div class="sname">Damage<small>avg ' + row("strike_damage", L)[s.dmg.tier === "custom" ? "moderate" : s.dmg.tier][3] + (s.dmg.tier === "custom" ? " (Moderate)" : "") + '</small></div>' +
+      tierSeg("sd-" + i, T4, s.dmg.tier, "strike_damage", L) +
+      '<input type="number" data-sdice="' + i + '" value="' + c.dice + '" min="0" max="12" title="Number of dice"></div>');
+    if (s.kind === "weapon" && s.weapon) {
+      var runeOpts = ['<option value="">None</option>'].concat(D.propertyRunes.map(function (r) { return '<option value="' + esc(r[0]) + '"' + (r[0] === s.rune ? " selected" : "") + ">" + esc(r[0]) + " (+" + r[2] + r[3] + " " + esc(r[4]) + ", level " + r[1] + ")</option>"; }));
+      parts.push('<div class="grid3"><label>Potency rune<select data-s="potency" data-i="' + i + '">' + [0, 1, 2, 3].map(function (p) { return '<option value="' + p + '"' + (p === s.potency ? " selected" : "") + ">" + (p ? "+" + p : "None") + "</option>"; }).join("") + "</select></label>" +
+        '<label>Striking rune<select data-s="striking" data-i="' + i + '">' + [["", "None"], ["striking", "Striking"], ["greater striking", "Greater"], ["major striking", "Major"]].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === s.striking ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></label>" +
+        '<label>Property rune (damage)<select data-s="rune" data-i="' + i + '">' + runeOpts.join("") + "</select></label></div>" +
+        '<div class="inline-checks"><label><input type="checkbox" data-s="carry" data-i="' + i + '"' + (s.carry ? " checked" : "") + "> Carried as gear (drops as loot)</label></div>" +
+        '<p class="tiny">Runes are the weapon\'s loot value. The table already sets the attack, so potency doesn\'t add to it; a property rune\'s damage counts toward the damage total, as GM Core says.</p>');
+    }
+    parts.push('<div class="formula">' + esc(strikeLine(s, c)) + "</div></div>");
+    return parts.join("");
+  }
+  function strikeCalc(s, L) {
+    var die = s.kind === "weapon" && s.weapon && WEAPONS[s.weapon.toLowerCase()] ? WEAPONS[s.weapon.toLowerCase()][1] : s.die;
+    var rune = s.rune ? RUNES[s.rune] : null, extraAvg = rune ? rune[2] * (parseInt(rune[3].slice(1), 10) + 1) / 2 : 0;
+    var toHit = s.atk.tier === "custom" ? s.atk.value : tierValue("strike_attack", L, s.atk.tier);
+    var dmg;
+    if (s.dmg.tier === "custom") dmg = { dice: s.dmg.dice, bonus: s.dmg.bonus, avg: s.dmg.dice * (die + 1) / 2 + s.dmg.bonus + extraAvg };
+    else dmg = damageFor(L, s.dmg.tier, die, extraAvg);
+    return { toHit: toHit, die: die, dice: dmg.dice, bonus: dmg.bonus, avg: dmg.avg, rune: rune };
+  }
+  function strikeName(s) { return s.kind === "weapon" ? (s.weapon || "Weapon") : (s.name || "Natural attack"); }
+  function strikeTraits(s) {
+    if (s.kind === "weapon") { var w = WEAPONS[(s.weapon || "").toLowerCase()]; var t = w ? w[3].slice() : []; if (s.potency || s.rune) t.push("magical"); return t; }
+    return String(s.traits || "").split(",").map(function (t) { return t.trim().toLowerCase(); }).filter(Boolean);
+  }
+  function strikeRange(s) { if (s.kind === "weapon") { var w = WEAPONS[(s.weapon || "").toLowerCase()]; return w && w[4] ? w[4] : null; } return s.range ? +s.range : null; }
+  function strikeType(s) { if (s.kind === "weapon") { var w = WEAPONS[(s.weapon || "").toLowerCase()]; return w ? w[2] : ""; } return s.dmgType || ""; }
+  function strikeLine(s, c) {
+    var r = strikeRange(s), t = strikeTraits(s);
+    return (r ? "Ranged " : "Melee ") + strikeName(s) + " " + sign(c.toHit) + (t.length ? " (" + t.join(", ") + (r ? ", range " + r + " ft" : "") + ")" : (r ? " (range " + r + " ft)" : "")) +
+      ", Damage " + c.dice + "d" + c.die + (c.bonus ? "+" + c.bonus : "") + " " + strikeType(s) + (c.rune ? " plus " + c.rune[2] + c.rune[3] + " " + c.rune[4] : "") + "  (avg " + (Math.round(c.avg * 10) / 10) + ")";
+  }
+
+  function castingCard(c, i) {
+    var n = npc(), L = n.level, sp = row("spell", L);
+    var dc = c.tier === "custom" ? c.dc : sp[c.tier].dc, atk = c.tier === "custom" ? c.attack : sp[c.tier].attack;
+    var maxRank = c.type === "innate" ? 10 : Math.min(10, Math.max(1, Math.ceil(L / 2)));
+    var slots = c.type === "innate" ? null : slotsFor(L, c.full);
+    var ranks = range2(0, maxRank);
+    var html = ['<div class="card"><div class="card-head"><b>' + esc(cap(c.tradition)) + " " + esc(cap(c.type)) + ' Spells</b><button class="x" type="button" data-del="casting" data-i="' + i + '">Remove</button></div>' +
+      '<div class="grid3"><label>Tradition<select data-c="tradition" data-i="' + i + '">' + D.traditions.map(function (t) { return '<option value="' + t + '"' + (t === c.tradition ? " selected" : "") + ">" + cap(t) + "</option>"; }).join("") + "</select></label>" +
+      '<label>Type<select data-c="type" data-i="' + i + '">' + ["prepared", "spontaneous", "innate"].map(function (t) { return '<option value="' + t + '"' + (t === c.type ? " selected" : "") + ">" + cap(t) + "</option>"; }).join("") + "</select></label>" +
+      '<label>DC / attack<select data-c="tier" data-i="' + i + '">' + ["extreme", "high", "moderate"].map(function (t) { return '<option value="' + t + '"' + (t === c.tier ? " selected" : "") + ">" + cap(t) + " (DC " + sp[t].dc + ", " + sign(sp[t].attack) + ")</option>"; }).join("") +
+      '<option value="custom"' + (c.tier === "custom" ? " selected" : "") + ">Your own</option></select></label></div>"];
+    if (c.tier === "custom") html.push('<div class="row2"><label>Spell DC<input type="number" data-c="dc" data-i="' + i + '" value="' + esc(c.dc) + '"></label><label>Spell attack<input type="number" data-c="attack" data-i="' + i + '" value="' + esc(c.attack) + '"></label></div>');
+    if (slots) html.push('<div class="inline-checks"><label><input type="checkbox" data-c="full" data-i="' + i + '"' + (c.full ? " checked" : "") + "> More slots (GM Core's larger option: 4 per rank, 3 or 4 at the top)</label></div>" +
+      '<p class="tiny">Slots: ' + Object.keys(slots).map(function (r) { return "rank " + r + " × " + slots[r]; }).join(", ") + "; 5 cantrips. " +
+      (c.type === "prepared" ? "Add a spell once per slot it's prepared in." : "These are the spells it knows (its repertoire).") + " GM Core: you usually only need the top three ranks and cantrips.</p>");
+    html.push('<div class="spell-ranks">' + ranks.map(function (r) {
+      var list = c.spells[r] || [], want = r === 0 ? 5 : (slots ? slots[r] : null);
+      return '<div class="spell-rank"><b>' + (r === 0 ? "Cantrips" : "Rank " + r) + (want ? " (" + list.length + "/" + want + ")" : "") + "</b>" +
+        list.map(function (name, j) {
+          var use = c.type === "innate" && r > 0 ? '<select data-use="' + i + '" data-r="' + r + '" data-j="' + j + '">' + ["at will", "constant", "1/day", "2/day", "3/day"].map(function (u) { return '<option' + (((c.uses || {})[name] || "1/day") === u ? " selected" : "") + ">" + u + "</option>"; }).join("") + "</select>" : "";
+          return '<span class="chip">' + esc(name) + use + '<button type="button" data-delspell="' + i + '" data-r="' + r + '" data-j="' + j + '" aria-label="Remove">×</button></span>';
+        }).join("") + "</div>";
+    }).join("") + "</div>");
+    html.push('<div class="pick-inline"><div>' + picker("spell-" + i, "Search " + c.tradition + " spells") + '</div><label style="margin:0">Rank<select data-c="pickRank" data-i="' + i + '">' + ranks.map(function (r) { return "<option" + (r === (c.pickRank || 0) ? " selected" : "") + ' value="' + r + '">' + (r === 0 ? "Cantrip" : r) + "</option>"; }).join("") + "</select></label></div>");
+    html.push('<div class="formula">DC ' + dc + ", attack " + sign(atk) + "</div></div>");
+    return html.join("");
+  }
+
+  function gearCard(g, i) {
+    var it = ITEM_BY_NAME[g.name.toLowerCase()], isArmor = it && it[4] === "armor" && !/shield/i.test(g.name), lvl = gearLevel(g);
+    return '<div class="card"><div class="card-head"><b>' + esc(g.name) + ' <span class="tiny">level ' + lvl + "</span></b>" + '<button class="x" type="button" data-del="gear" data-i="' + i + '">Remove</button></div>' +
+      '<div class="grid3"><label>How many<input type="number" data-g="qty" data-i="' + i + '" min="1" max="999" value="' + g.qty + '"></label>' +
+      (isArmor ? '<label>Potency rune<select data-g="potency" data-i="' + i + '">' + [0, 1, 2, 3].map(function (p) { return '<option value="' + p + '"' + (p === g.potency ? " selected" : "") + ">" + (p ? "+" + p : "None") + "</option>"; }).join("") + "</select></label>" +
+        '<label>Resilient rune<select data-g="resilient" data-i="' + i + '">' + [["", "None"], ["resilient", "Resilient"], ["greater resilient", "Greater"], ["major resilient", "Major"]].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === g.resilient ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></label>" : "") +
+      "</div></div>";
+  }
+  var POTENCY_LEVEL = { 1: 2, 2: 10, 3: 16 }, STRIKING_LEVEL = { "striking": 4, "greater striking": 12, "major striking": 19 };
+  var ARMOR_POTENCY_LEVEL = { 1: 5, 2: 11, 3: 18 }, RESILIENT_LEVEL = { "resilient": 8, "greater resilient": 14, "major resilient": 20 };
+  function gearLevel(g) {
+    var it = ITEM_BY_NAME[g.name.toLowerCase()], lvl = it ? it[1] : 0;
+    if (g.potency) lvl = Math.max(lvl, ARMOR_POTENCY_LEVEL[g.potency]);
+    if (g.resilient) lvl = Math.max(lvl, RESILIENT_LEVEL[g.resilient]);
+    return lvl;
+  }
+  function strikeGearLevel(s) {
+    var w = WEAPONS[(s.weapon || "").toLowerCase()], lvl = w ? w[9] : 0;
+    if (s.potency) lvl = Math.max(lvl, POTENCY_LEVEL[s.potency]);
+    if (s.striking) lvl = Math.max(lvl, STRIKING_LEVEL[s.striking]);
+    if (s.rune && RUNES[s.rune]) lvl = Math.max(lvl, RUNES[s.rune][1]);
+    return lvl;
+  }
+
+  function renderTabs() {
+    $("tabs").innerHTML = state.npcs.map(function (n, i) {
+      return '<button class="pill" type="button" data-tab="' + i + '" aria-pressed="' + (i === state.cur) + '">' + esc(n.name || "Unnamed") + " · " + n.level + (n.count > 1 ? " ×" + n.count : "") + "</button>";
+    }).join("") + '<button class="tbtn" type="button" data-npc="add">+ New NPC</button><button class="tbtn" type="button" data-npc="copy">Duplicate</button>' +
+      (state.npcs.length > 1 ? '<button class="tbtn" type="button" data-npc="remove">Remove this one</button>' : "") + '<button class="tbtn" type="button" data-npc="reset">Start over</button>';
+  }
+
+  // ---------- checks ----------
+  function checks(n) {
+    var L = n.level, out = [], extremes = [];
+    if (!n.name.trim()) out.push(["bad", "Give it a name."]);
+    ABIL.forEach(function (a) {
+      var v = statValue(n.abilities[a], "attribute", L), r = row("attribute", L);
+      var top = r.extreme == null ? r.high : r.extreme;
+      if (v > top) out.push(["bad", ABIL_NAME[a] + " " + sign(v) + " is above the table's highest (" + sign(top) + ")."]);
+      if (n.abilities[a].tier === "extreme") extremes.push(ABIL_NAME[a]);
+    });
+    var ab = ABIL.filter(function (a) { return n.abilities[a].tier === "extreme"; });
+    if (ab.length > 1) out.push(["bad", "More than one Extreme attribute (" + ab.map(function (a) { return ABIL_NAME[a]; }).join(", ") + "). GM Core gives at most one."]);
+    STATS.forEach(function (s) {
+      var v = statValue(n.stats[s[0]], s[2], L), rg = range(s[2], L);
+      if (v == null || isNaN(v)) out.push(["bad", s[1] + " is empty."]);
+      else if (v > rg[1]) out.push(["bad", s[1] + " " + v + " is above the table's highest (" + rg[1] + ") for level " + L + "."]);
+      if (n.stats[s[0]].tier === "extreme") extremes.push(s[1]);
+    });
+    n.skills.forEach(function (s) { var v = statValue(s, "skill", L); if (v > row("skill", L).extreme) out.push(["bad", cap(s.skill) + " is above Extreme."]); });
+    var seenSkill = {};
+    n.skills.forEach(function (s) { if (seenSkill[s.skill]) out.push(["bad", cap(s.skill) + " is listed twice."]); seenSkill[s.skill] = 1; });
+    n.strikes.forEach(function (s) {
+      var c = strikeCalc(s, L);
+      if (s.kind === "weapon" && !s.weapon) out.push(["bad", "A weapon Strike has no weapon picked."]);
+      if (s.kind !== "weapon" && !s.name.trim()) out.push(["bad", "A natural attack has no name."]);
+      if (s.kind !== "weapon" && !s.dmgType.trim()) out.push(["bad", (s.name || "A natural attack") + " has no damage type."]);
+      if (c.toHit > row("strike_attack", L).extreme) out.push(["bad", strikeName(s) + "'s attack " + sign(c.toHit) + " is above Extreme."]);
+      if (c.avg > row("strike_damage", L).extreme[3] + 0.5) out.push(["bad", strikeName(s) + " averages " + (Math.round(c.avg * 10) / 10) + " damage, above Extreme (" + row("strike_damage", L).extreme[3] + ")."]);
+      if (s.atk.tier === "extreme") extremes.push(strikeName(s) + " attack");
+      if (s.dmg.tier === "extreme") extremes.push(strikeName(s) + " damage");
+      if (s.rune && !s.potency) out.push(["bad", strikeName(s) + ": a property rune needs a potency rune (+1 or better) on the weapon."]);
+      if (s.kind === "weapon" && s.weapon && s.carry) {
+        var gl = strikeGearLevel(s);
+        if (gl > safeItem(L).item_level) out.push(["bad", strikeName(s) + " is a level " + gl + " item, above level " + L + "'s safe item level (" + safeItem(L).item_level + ")."]);
+      }
+    });
+    if (n.strikes.length === 0) out.push(["info", "No Strikes yet. Most creatures have at least one."]);
+    n.gear.forEach(function (g) {
+      var gl = gearLevel(g);
+      if (gl > safeItem(L).item_level) out.push(["bad", g.name + " is level " + gl + ", above the safe item level (" + safeItem(L).item_level + ")."]);
+    });
+    n.resist.forEach(function (r) {
+      if (!r.type.trim()) out.push(["bad", "A " + r.kind + " has no damage type."]);
+      if (r.kind !== "immunity" && +r.amount > row("resistance", L).max) out.push(["bad", cap(r.kind) + " " + r.type + " " + r.amount + " is above the table's maximum (" + row("resistance", L).max + ")."]);
+      if (r.kind !== "immunity" && !(+r.amount > 0)) out.push(["bad", cap(r.kind) + " " + (r.type || "") + " needs an amount."]);
+    });
+    n.casting.forEach(function (c) {
+      var total = 0; Object.keys(c.spells).forEach(function (r) { total += (c.spells[r] || []).length; });
+      if (!total) out.push(["bad", cap(c.tradition) + " " + c.type + " spells: no spells picked."]);
+      if (c.tier === "extreme") extremes.push("spell DC");
+      if (c.type !== "innate") {
+        var slots = slotsFor(L, c.full);
+        Object.keys(c.spells).forEach(function (r) {
+          if (+r > 0 && slots[r] != null && c.type === "prepared" && c.spells[r].length > slots[r]) out.push(["bad", "Rank " + r + " has more prepared spells (" + c.spells[r].length + ") than slots (" + slots[r] + ")."]);
+          if (+r > 0 && slots[r] == null) out.push(["bad", "Rank " + r + " spells are above what a level " + L + " caster casts."]);
+        });
+      }
+    });
+    if (extremes.length > 2) out.push(["bad", extremes.length + " Extreme numbers (" + extremes.join(", ") + "). GM Core: a creature usually has one or two, paid for with a Low or Terrible somewhere."]);
+    else if (extremes.length) out.push(["info", "Extreme: " + extremes.join(", ") + ". Balance it with a Low or Terrible number elsewhere."]);
+    var aliases = {}, clash = false;
+    state.npcs.forEach(function (o) { var a = slug(o.alias || o.name); if (a && aliases[a]) clash = true; aliases[a] = 1; });
+    if (clash) out.push(["bad", "Two NPCs in this file share an alias. Give each its own."]);
+    if (!out.some(function (o) { return o[0] === "bad"; })) out.unshift(["ok", "Within GM Core's tables for level " + L + "."]);
+    return out;
+  }
+
+  // ---------- the side panel ----------
+  function renderSide() {
+    var n = npc(), L = n.level, st = {};
+    STATS.forEach(function (s) { st[s[0]] = statValue(n.stats[s[0]], s[2], L); });
+    var traits = [cap(n.rarity) !== "Common" ? n.rarity : null, n.size].concat(n.traits.split(",").map(function (t) { return t.trim(); })).filter(Boolean);
+    var speeds = ["fly", "swim", "climb", "burrow"].filter(function (k) { return +n.speeds[k] > 0; }).map(function (k) { return k + " " + n.speeds[k] + " feet"; });
+    var skills = n.skills.map(function (s) { return cap(s.skill) + " " + sign(statValue(s, "skill", L)); });
+    var html = ['<h3><span>' + esc(n.name || "Unnamed") + "</span><span>Creature " + L + "</span></h3>",
+      '<div class="traits">' + traits.map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("") + "</div>",
+      "<p><b>Perception</b> " + sign(st.per) + (n.senses.trim() ? "; " + esc(n.senses) : "") + "</p>",
+      skills.length ? "<p><b>Skills</b> " + esc(skills.join(", ")) + "</p>" : "",
+      "<p>" + ABIL.map(function (a) { return "<b>" + cap(a) + "</b> " + sign(statValue(n.abilities[a], "attribute", L)); }).join(", ") + "</p>",
+      n.gear.length || n.strikes.some(function (s) { return s.carry && s.weapon; }) ? "<p><b>Items</b> " + esc(gearNames(n).join(", ")) + "</p>" : "",
+      "<hr><p><b>AC</b> " + st.ac + "; <b>Fort</b> " + sign(st.fort) + ", <b>Ref</b> " + sign(st.ref) + ", <b>Will</b> " + sign(st.will) + "</p>",
+      "<p><b>HP</b> " + st.hp + resistLine(n) + "</p>",
+      "<hr><p><b>Speed</b> " + n.speed + " feet" + (speeds.length ? ", " + speeds.join(", ") : "") + "</p>"];
+    n.strikes.forEach(function (s) { html.push("<p>" + esc(strikeLine(s, strikeCalc(s, L))) + "</p>"); });
+    n.casting.forEach(function (c) {
+      var sp = row("spell", L), dc = c.tier === "custom" ? c.dc : sp[c.tier].dc, atk = c.tier === "custom" ? c.attack : sp[c.tier].attack;
+      var ranks = Object.keys(c.spells).filter(function (r) { return (c.spells[r] || []).length; }).sort(function (a, b) { return b - a; });
+      html.push("<p><b>" + esc(cap(c.tradition) + " " + cap(c.type) + " Spells") + "</b> DC " + dc + ", attack " + sign(atk) + "; " +
+        esc(ranks.map(function (r) { return (+r === 0 ? "Cantrips" : rankName(+r)) + " " + c.spells[r].map(function (s) { return s + (c.type === "innate" && +r > 0 ? " (" + ((c.uses || {})[s] || "1/day") + ")" : ""); }).join(", "); }).join("; ")) + "</p>");
+    });
+    n.specials.forEach(function (a) { if (a.name.trim()) html.push("<p><b>" + esc(a.name) + "</b> " + esc(a.summary) + "</p>"); });
+    $("statblock").innerHTML = html.join("");
+    $("warns").innerHTML = checks(n).map(function (w) { return '<li class="' + w[0] + '">' + esc(w[1]) + "</li>"; }).join("");
+    var total = state.npcs.reduce(function (a, o) { return a + (+o.count || 1); }, 0);
+    $("fileHint").innerHTML = "The file holds " + state.npcs.length + " NPC" + (state.npcs.length > 1 ? "s" : "") + " (" + total + " creature" + (total > 1 ? "s" : "") + "). Open it here again to keep editing.";
+  }
+  function rankName(r) { return ["", "1st", "2nd", "3rd"][r] || r + "th"; }
+  function resistLine(n) {
+    var parts = { immunity: [], resistance: [], weakness: [] };
+    n.resist.forEach(function (r) { if (r.type.trim()) parts[r.kind].push(r.type + (r.kind === "immunity" ? "" : " " + r.amount) + (r.exceptions ? " (except " + r.exceptions + ")" : "")); });
+    return (parts.immunity.length ? "; <b>Immunities</b> " + esc(parts.immunity.join(", ")) : "") + (parts.resistance.length ? "; <b>Resistances</b> " + esc(parts.resistance.join(", ")) : "") +
+      (parts.weakness.length ? "; <b>Weaknesses</b> " + esc(parts.weakness.join(", ")) : "");
+  }
+  function runedName(base, pot, grade, runes) {
+    return [pot ? "+" + pot : "", grade ? grade.split(" ").map(cap).join(" ") : ""].concat(runes || []).concat([base]).filter(Boolean).join(" ");
+  }
+  function gearNames(n) {
+    return n.strikes.filter(function (s) { return s.kind === "weapon" && s.weapon && s.carry; }).map(function (s) { return runedName(s.weapon, s.potency, s.striking, s.rune ? [s.rune] : []); })
+      .concat(n.gear.map(function (g) { return runedName(g.name, g.potency, g.resilient, []) + (g.qty > 1 ? " (" + g.qty + ")" : ""); }));
+  }
+
+  // ---------- the file ----------
+  function exportNpc(n) {
+    var L = n.level, st = {}, out;
+    STATS.forEach(function (s) { st[s[0]] = statValue(n.stats[s[0]], s[2], L); });
+    var abilities = {}; ABIL.forEach(function (a) { abilities[a] = statValue(n.abilities[a], "attribute", L) || 0; });
+    var skills = {}; n.skills.forEach(function (s) { skills[s.skill] = statValue(s, "skill", L); });
+    var speeds = {}; ["fly", "swim", "climb", "burrow"].forEach(function (k) { if (+n.speeds[k] > 0) speeds[k] = +n.speeds[k]; });
+    var strikes = n.strikes.map(function (s) {
+      var c = strikeCalc(s, L), r = strikeRange(s);
+      return { name: strikeName(s), to_hit: c.toHit, dice: c.dice, die: "d" + c.die, damage_type: strikeType(s), damage_bonus: c.bonus, traits: strikeTraits(s),
+               additional_damage: c.rune ? { dice: c.rune[2], die: c.rune[3], bonus: 0, type: c.rune[4] } : null, range: r, reach: s.reach ? +s.reach : null, is_ranged: !!r };
+    });
+    var gear = n.strikes.filter(function (s) { return s.kind === "weapon" && s.weapon && s.carry; }).map(function (s) {
+      return { name: s.weapon, qty: 1, kind: "weapon", potency: s.potency || 0, striking: s.striking || "", runes: s.rune ? [s.rune] : [] };
+    }).concat(n.gear.map(function (g) { return { name: g.name, qty: g.qty, potency: g.potency || 0, resilient: g.resilient || "" }; }));
+    var casting = n.casting.map(function (c) {
+      var sp = row("spell", L), entry = { name: cap(c.tradition) + " " + cap(c.type) + " Spells", tradition: c.tradition, type: c.type,
+        dc: c.tier === "custom" ? +c.dc : sp[c.tier].dc, attack: c.tier === "custom" ? +c.attack : sp[c.tier].attack, slots: {}, spells: [], prepared: [], uses: {} };
+      if (c.type !== "innate") { var sl = slotsFor(L, c.full); Object.keys(sl).forEach(function (r) { entry.slots[r] = sl[r]; }); }
+      Object.keys(c.spells).forEach(function (r) {
+        (c.spells[r] || []).forEach(function (name) {
+          if (c.type === "prepared" && +r > 0) entry.prepared.push([String(r), name]); else entry.spells.push([String(r), name]);
+          if (c.type === "innate" && +r > 0) entry.uses[name] = (c.uses || {})[name] || "1/day";
+          if (c.type === "innate" && +r === 0) entry.uses[name] = "at will";
+        });
+      });
+      return entry;
+    });
+    var resist = n.resist.filter(function (r) { return r.type.trim(); }).map(function (r) {
+      return { damage_type: r.type.trim().toLowerCase(), kind: r.kind, amount: r.kind === "immunity" ? null : +r.amount, exceptions: r.exceptions || null };
+    });
+    out = { name: n.name.trim(), alias: slug(n.alias || n.name), count: +n.count || 1, significant: !!n.significant, level: L, size: n.size, rarity: n.rarity,
+            traits: n.traits.split(",").map(function (t) { return t.trim().toLowerCase(); }).filter(Boolean), perception: st.per,
+            senses: n.senses.split(",").map(function (t) { return t.trim(); }).filter(Boolean), abilities: abilities, ac: st.ac, hp: st.hp,
+            saves: { fortitude: st.fort, reflex: st.ref, will: st.will }, skills: skills, speed: +n.speed || 0, speeds: speeds, resistances: resist,
+            strikes: strikes, spellcasting: casting, special_abilities: n.specials.filter(function (a) { return a.name.trim(); }).map(function (a) { return { name: a.name.trim(), summary: a.summary.trim(), limited_use: !!a.limited }; }),
+            gear: gear, builder: JSON.parse(JSON.stringify(n)) };
+    return out;
+  }
+  $("download").addEventListener("click", function () {
+    var file = { format: D.format.name, version: D.format.version, made: new Date().toISOString().slice(0, 10), npcs: state.npcs.map(exportNpc) };
+    var blob = new Blob([JSON.stringify(file, null, 1)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "npcs-" + (slug(state.npcs[0].name) || "unnamed") + (state.npcs.length > 1 ? "-and-" + (state.npcs.length - 1) + "-more" : "") + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+    if (window.tgEvent) try { window.tgEvent("npc-builder-download"); } catch (e) { /* analytics is optional */ }
+  });
+  $("openFile").addEventListener("change", function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var data = JSON.parse(reader.result);
+        if (data.format !== D.format.name || !Array.isArray(data.npcs)) throw new Error("not an NPC builder file");
+        var loaded = data.npcs.map(function (x) { return x.builder || null; }).filter(Boolean);
+        if (!loaded.length) throw new Error("this file has no builder data to edit");
+        state = { npcs: loaded, cur: 0 };
+        $("fileError").textContent = "";
+        render();
+      } catch (err) { $("fileError").textContent = "Couldn't open that file: " + err.message + "."; }
+      e.target.value = "";
+    };
+    reader.readAsText(f);
+  });
+
+  // ---------- pickers ----------
+  function fillPicker(id, text) {
+    var box = $("plist-" + id); if (!box) return;
+    var q = text.trim().toLowerCase(), hits = [];
+    if (id === "gear") {
+      if (q.length < 2) { box.innerHTML = ""; return; }
+      ITEMS.forEach(function (it) { if (hits.length < 40 && it[0].toLowerCase().indexOf(q) >= 0) hits.push('<button class="opt" type="button" data-pick="gear" data-name="' + esc(it[0]) + '">' + esc(it[0]) + "<small>" + esc(cap(it[4])) + ", level " + it[1] + "</small></button>"); });
+    } else if (id.indexOf("weapon-") === 0) {
+      D.weapons.forEach(function (w) { if (hits.length < 40 && (!q || w[0].toLowerCase().indexOf(q) >= 0)) hits.push('<button class="opt" type="button" data-pick="' + id + '" data-name="' + esc(w[0]) + '">' + esc(w[0]) + "<small>d" + w[1] + " " + esc(w[2]) + (w[4] ? ", range " + w[4] + " ft" : "") + (w[3].length ? " · " + esc(w[3].join(", ")) : "") + "</small></button>"); });
+    } else if (id.indexOf("spell-") === 0) {
+      var c = npc().casting[+id.split("-")[1]], rank = +(c.pickRank || 0), lists = D.spells[c.tradition];
+      for (var r = rank === 0 ? 0 : 1; r <= (rank === 0 ? 0 : rank); r++) {
+        (lists[String(r)] || []).forEach(function (s) {
+          if (hits.length < 50 && (!q || s[0].toLowerCase().indexOf(q) >= 0)) hits.push('<button class="opt" type="button" data-pick="' + id + '" data-name="' + esc(s[0]) + '">' + esc(s[0]) + "<small>" + (r === 0 ? "cantrip" : "rank " + r) + (r < rank ? ", heightened to " + rank : "") + " · " + esc(s[1]) + "</small></button>");
+        });
+      }
+    }
+    box.innerHTML = hits.join("") || (q ? '<div class="opt">Nothing matches.</div>' : "");
+  }
+
+  // ---------- events ----------
+  function setTier(id, tier) {
+    var n = npc(), p = id.split("-"), kind = p[0], key = p.slice(1).join("-");
+    if (kind === "ab") n.abilities[key] = { tier: tier, value: 0 };
+    else if (kind === "st") n.stats[key] = { tier: tier, value: 0 };
+    else if (kind === "sk") n.skills[+key].tier = tier;
+    else if (kind === "sa") n.strikes[+key].atk = { tier: tier, value: 0 };
+    else if (kind === "sd") n.strikes[+key].dmg = { tier: tier, dice: 0, bonus: 0 };
+  }
+  function setNumber(id, value) {
+    var n = npc(), L = n.level, p = id.split("-"), kind = p[0], key = p.slice(1).join("-"), v = parseInt(value, 10);
+    if (isNaN(v)) return;
+    if (kind === "ab") n.abilities[key] = { tier: tierOf("attribute", L, T4, v), value: v };
+    else if (kind === "st") { var s = STATS.filter(function (x) { return x[0] === key; })[0]; n.stats[key] = { tier: tierOf(s[2], L, s[3], v), value: v }; }
+    else if (kind === "sk") { n.skills[+key].tier = tierOf("skill", L, T4, v); n.skills[+key].value = v; }
+    else if (kind === "sa") n.strikes[+key].atk = { tier: tierOf("strike_attack", L, T4, v), value: v };
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var n = npc(), d = b.dataset;
+    if (d.tier) { setTier(d.tier, d.value); render(); }
+    else if (d.tab != null) { state.cur = +d.tab; render(); }
+    else if (d.npc === "add") { state.npcs.push(newNpc()); state.cur = state.npcs.length - 1; render(); }
+    else if (d.npc === "copy") { var c = JSON.parse(JSON.stringify(n)); c.name = (c.name || "Unnamed") + " (copy)"; c.alias = ""; state.npcs.push(c); state.cur = state.npcs.length - 1; render(); }
+    else if (d.npc === "remove") { if (confirm("Remove " + (n.name || "this NPC") + "?")) { state.npcs.splice(state.cur, 1); state.cur = 0; render(); } }
+    else if (d.npc === "reset") { if (confirm("Clear every NPC on this page and start over? Download a file first if you want to keep them.")) { state = { npcs: [newNpc()], cur: 0 }; render(); } }
+    else if (d.add === "resist") { n.resist.push({ kind: "resistance", type: "", amount: row("resistance", n.level).min, exceptions: "" }); render(); }
+    else if (d.add === "skill") { var used = n.skills.map(function (s) { return s.skill; }); n.skills.push({ skill: D.skills.filter(function (k) { return used.indexOf(k) < 0; })[0] || "athletics", tier: "moderate", value: 0 }); render(); }
+    else if (d.add === "strike-weapon") { n.strikes.push({ kind: "weapon", weapon: "", name: "", die: 6, dmgType: "", traits: "", range: "", reach: "", atk: { tier: "high", value: 0 }, dmg: { tier: "high", dice: 0, bonus: 0 }, potency: 0, striking: "", rune: "", carry: true }); render(); }
+    else if (d.add === "strike-natural") { n.strikes.push({ kind: "natural", weapon: "", name: "", die: 8, dmgType: "piercing", traits: "unarmed", range: "", reach: "", atk: { tier: "high", value: 0 }, dmg: { tier: "high", dice: 0, bonus: 0 }, potency: 0, striking: "", rune: "", carry: false }); render(); }
+    else if (d.add === "casting") { n.casting.push({ type: "spontaneous", tradition: "arcane", tier: "high", dc: "", attack: "", full: false, spells: {}, uses: {}, pickRank: Math.min(10, Math.max(1, Math.ceil(n.level / 2))) }); render(); }
+    else if (d.add === "special") { n.specials.push({ name: "", summary: "", limited: false }); render(); }
+    else if (d.del) { n[d.del].splice(+d.i, 1); render(); }
+    else if (d.sw === "clear") { n.strikes[+d.i].weapon = ""; render(); }
+    else if (d.delspell != null) { var cc = n.casting[+d.delspell], nm = cc.spells[d.r][+d.j]; cc.spells[d.r].splice(+d.j, 1); if (cc.uses && cc.spells[d.r].indexOf(nm) < 0) delete cc.uses[nm]; render(); }
+    else if (d.pick === "gear") { n.gear.push({ name: d.name, qty: 1, potency: 0, resilient: "" }); render(); }
+    else if (d.pick && d.pick.indexOf("weapon-") === 0) { n.strikes[+d.pick.split("-")[1]].weapon = d.name; render(); }
+    else if (d.pick && d.pick.indexOf("spell-") === 0) {
+      var ci = +d.pick.split("-")[1], cs = n.casting[ci], rk = String(cs.pickRank || 0);
+      cs.spells[rk] = cs.spells[rk] || [];
+      if (cs.type === "prepared" || cs.spells[rk].indexOf(d.name) < 0) cs.spells[rk].push(d.name);
+      render();
+      var again = document.querySelector('[data-search="spell-' + ci + '"]'); if (again) again.focus();
+    }
+  });
+  document.addEventListener("input", function (e) {
+    var t = e.target, d = t.dataset;
+    if (d.search) { fillPicker(d.search, t.value); return; }
+    var n = npc();
+    if (d.f && (t.type === "text") && d.f !== "level") { n[d.f] = t.value; renderSide(); renderTabs(); save(); }
+    else if (d.r && t.type !== "select-one") { n.resist[+d.i][d.r] = t.value; renderSide(); save(); }
+    else if (d.s && (t.type === "text")) { n.strikes[+d.i][d.s] = t.value; refreshFormulas(); }
+    else if (d.sp && t.type !== "checkbox") { n.specials[+d.i][d.sp] = t.value; renderSide(); save(); }
+  });
+  document.addEventListener("change", function (e) {
+    var t = e.target, d = t.dataset, n = npc();
+    if (d.search) return;
+    if (d.f) {
+      if (d.f === "level") n.level = +t.value;
+      else if (d.f === "count") n.count = Math.max(1, Math.min(20, +t.value || 1));
+      else if (d.f === "speed") n.speed = +t.value || 0;
+      else if (d.f === "significant") n.significant = t.checked;
+      else n[d.f] = t.value;
+      render();
+    }
+    else if (d.speed) { n.speeds[d.speed] = t.value; render(); }
+    else if (d.num) { setNumber(d.num, t.value); render(); }
+    else if (d.sdice != null) { var s = n.strikes[+d.sdice], c = strikeCalc(s, n.level), dice = Math.max(0, Math.min(12, +t.value || 0)); s.dmg = { tier: "custom", dice: dice, bonus: c.bonus }; render(); }
+    else if (d.sk != null) { n.skills[+d.sk].skill = t.value; render(); }
+    else if (d.r) { n.resist[+d.i][d.r] = t.value; render(); }
+    else if (d.s) {
+      var st = n.strikes[+d.i];
+      if (d.s === "carry") st.carry = t.checked; else if (d.s === "potency" || d.s === "die") st[d.s] = +t.value; else st[d.s] = t.value;
+      render();
+    }
+    else if (d.c) {
+      var cs = n.casting[+d.i];
+      if (d.c === "full") cs.full = t.checked; else if (d.c === "pickRank") cs.pickRank = +t.value; else cs[d.c] = t.value;
+      if (d.c === "tradition") cs.spells = {};
+      render();
+    }
+    else if (d.use != null) { var cu = n.casting[+d.use]; cu.uses = cu.uses || {}; cu.uses[cu.spells[d.r][+d.j]] = t.value; render(); }
+    else if (d.g) { var g = n.gear[+d.i]; if (d.g === "qty") g.qty = Math.max(1, Math.min(999, +t.value || 1)); else if (d.g === "potency") g.potency = +t.value; else g[d.g] = t.value; render(); }
+    else if (d.sp === "limited") { n.specials[+d.i].limited = t.checked; render(); }
+  });
+  document.addEventListener("focusin", function (e) { var d = e.target.dataset; if (d && d.search && d.search !== "gear") fillPicker(d.search, e.target.value); });
+  function refreshFormulas() { renderSide(); save(); }
+
+  render();
+})();
+</script>
+</body>
+</html>
