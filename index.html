@@ -89,6 +89,20 @@
 
       <section id="recent" style="padding-top:34px">
         <h2 class="new-head">Recently added</h2>
+        <h3 class="new-date">Nov 8, 2026</h3>
+        <ul class="new-list">
+          <li><strong>Turn nudges for play-by-post:</strong> set a turn limit (1 to 48 hours) in <code>/tgm campaign_rules</code>. When a player's turn passes it, they are reminded; at twice the limit the GMs get <strong>Skip turn</strong> and <strong>Delay to end of round</strong> buttons. The bot never moves a turn by itself. A pinned turn board shows whose turn it is and since when.</li>
+          <li><strong>Session recap:</strong> <code>/tgm recap</code> lists what happened since the last recap: fights, loot, XP, and the gold and items each character gained. The GM sees a preview first. In a Society game it is also the Chronicle (player and character Society IDs, boons you add, items and gold per character) and can check every character back in.</li>
+          <li><strong>Society characters:</strong> a home record can't be changed while its character is checked out to a table. Starting gear goes home straight away, and each home record has a sheet post in the home campaign showing where it is.</li>
+          <li><strong>GM dashboard:</strong> switch it on in <code>/tgm campaign_rules</code> and the GM channel gets one pinned summary: each PC's HP and conditions, the running fight, the party's XP and treasure, the last recap and Society check-outs. It updates itself as play goes on.</li>
+          <li><strong>Undo buttons:</strong> <code>/tge damage</code>, <code>heal</code> and <code>condition</code> results carry an ↩️ Undo button for the GM. A <code>/tgmap move</code> has one too, for the mover's player or a GM, and puts the token back. An undo is refused if the creature has changed since.</li>
+          <li><strong>Encounter difficulty:</strong> GMs see a private Trivial-to-Extreme rating when they start, build or check a fight, with a warning for creatures far above the party. Players never see it.</li>
+          <li><strong>Complex hazards take turns:</strong> <code>/tghazard add</code> puts a complex hazard into initiative. On its turn the GM gets buttons for its Strikes and saves.</li>
+          <li><strong>Areas drawn on the map:</strong> <code>/tgmap area</code> now shades the area on the map, and can start from or aim at a square (a burst on an empty spot, a trap's cone).</li>
+          <li><strong>Lookups and treasure:</strong> <code>/tglookup</code> shows which books something is printed in and whether it is Society-legal. Rolled treasure now honours the campaign's chosen books.</li>
+          <li><strong>Rules:</strong> only the highest persistent damage of each type applies (two bleeds: the higher one). Kneel Before the Rightful Heir ends only when the creature uses the new <strong>Drop Prone</strong> action and is still prone at the end of that turn, and saving against it gives 24 hours' immunity. <strong>Drop Prone</strong> and <strong>Stand</strong> are on everyone's Combat tab. Telling Blow and Breath of Hungry Death now take their damage off Hit Points, and Defy Chains doubles on a critical hit.</li>
+          <li><strong>Strikes from the sheet ask for a target:</strong> pick a creature (its AC is checked and the damage applied) or <strong>No target</strong> for an enemy you can't see yet.</li>
+        </ul>
         <h3 class="new-date">Nov 7, 2026</h3>
         <ul class="new-list">
           <li><strong>Every roll shows its math:</strong> checks, saves, initiative, Strikes, spell attacks, maneuvers, social and skill actions and class and feat rolls now show the total first, then the d20 and every bonus or penalty with its source: <code>18 = d20 [11] + 4 (STR mod) + 7 (trained, lvl 5) + 1 (status: Courageous Anthem) - 5 (MAP, 2nd attack)</code>. A GM's creatures still show the short version.</li>
