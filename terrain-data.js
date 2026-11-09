@@ -93,6 +93,7 @@ window.TG_TERRAIN = {
  "maxRows": 60,
  "types": [
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -107,6 +108,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 5,
@@ -134,6 +136,7 @@ window.TG_TERRAIN = {
    ]
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 10,
@@ -161,6 +164,7 @@ window.TG_TERRAIN = {
    ]
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 5,
@@ -180,6 +184,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -199,6 +204,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": true,
    "blocksSight": true,
    "costExtra": 0,
@@ -218,6 +224,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -237,6 +244,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -256,6 +264,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": true,
    "blocksSight": false,
    "costExtra": 0,
@@ -275,6 +284,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -294,6 +304,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -313,6 +324,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -332,6 +344,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -351,6 +364,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": true,
    "blocksSight": true,
    "costExtra": 0,
@@ -405,6 +419,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": true,
    "blocksSight": false,
    "costExtra": 0,
@@ -557,6 +572,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -611,6 +627,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -699,6 +716,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -755,6 +773,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -811,6 +830,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -867,6 +887,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -987,6 +1008,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -1155,6 +1177,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -1371,6 +1394,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -1491,6 +1515,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -1659,6 +1684,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -1875,6 +1901,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -1995,6 +2022,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -2163,6 +2191,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -2379,6 +2408,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -2499,6 +2529,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -2667,6 +2698,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -2883,6 +2915,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -3003,6 +3036,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -3171,6 +3205,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -3387,6 +3422,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -3507,6 +3543,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -3675,6 +3712,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -3891,6 +3929,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -4011,6 +4050,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -4179,6 +4219,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -4395,6 +4436,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -4515,6 +4557,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -4683,6 +4726,7 @@ window.TG_TERRAIN = {
    "waves": null
   },
   {
+   "badge": null,
    "blocksMove": false,
    "blocksSight": false,
    "costExtra": 0,
@@ -4895,6 +4939,286 @@ window.TG_TERRAIN = {
      0.06
     ]
    ],
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    34,
+    120,
+    50,
+    "Fo"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83c\udf32",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-forest",
+   "label": "Forest",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    20,
+    140,
+    90,
+    "Ju"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83c\udf34",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-jungle",
+   "label": "Jungle",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    90,
+    150,
+    40,
+    "Ub"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83c\udf3f",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-underbrush",
+   "label": "Underbrush",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    85,
+    100,
+    55,
+    "Sw"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83d\udc38",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-swamp",
+   "label": "Swamp",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    200,
+    160,
+    70,
+    "De"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83c\udfdc\ufe0f",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-desert",
+   "label": "Desert",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    215,
+    190,
+    120,
+    "Sa"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\u23f3",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-sand",
+   "label": "Sand",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    225,
+    235,
+    245,
+    "Sn"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\u2744\ufe0f",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-snow",
+   "label": "Snow",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    150,
+    210,
+    235,
+    "Ic"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83e\uddca",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-ice",
+   "label": "Ice",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    120,
+    110,
+    100,
+    "Mt"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\u26f0\ufe0f",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-mountain",
+   "label": "Mountain",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    140,
+    135,
+    125,
+    "Ro"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83e\udea8",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-rocky",
+   "label": "Rocky ground",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    160,
+    105,
+    80,
+    "Ru"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83e\uddf1",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-rubble",
+   "label": "Rubble",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    175,
+    185,
+    80,
+    "Pl"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83c\udf3e",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-plains",
+   "label": "Plains",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    110,
+    115,
+    140,
+    "Ur"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83c\udfd9\ufe0f",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-urban",
+   "label": "Urban",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    80,
+    70,
+    90,
+    "Ug"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83d\udd73\ufe0f",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-underground",
+   "label": "Underground",
+   "shapes": null,
    "tint": null,
    "waves": null
   }

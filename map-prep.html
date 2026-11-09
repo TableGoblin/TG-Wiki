@@ -257,8 +257,25 @@
     var w = ts[0]; ts.forEach(function (t) { if (worse(t, w)) w = t; });
     return ts.concat([w]);
   }
+  /* An environment layer (forest, rubble, urban ...) is drawn as a small badge along the cell's top edge (map_render.environment_badges). */
+  function drawBadges(g, envs, x, y, cs) {
+    var bw = Math.max(6, Math.floor(cs * 0.34)), bh = Math.max(5, Math.floor(cs * 0.24));
+    envs.slice(0, 3).forEach(function (t, i) {
+      var b = t.badge, x0 = x + 1 + i * (bw + 1), y0 = y + 1, r = Math.max(1, Math.floor(bh / 3));
+      g.beginPath(); g.moveTo(x0 + r, y0); g.arcTo(x0 + bw, y0, x0 + bw, y0 + bh, r); g.arcTo(x0 + bw, y0 + bh, x0, y0 + bh, r);
+      g.arcTo(x0, y0 + bh, x0, y0, r); g.arcTo(x0, y0, x0 + bw, y0, r); g.closePath();
+      g.fillStyle = "rgba(" + b[0] + "," + b[1] + "," + b[2] + ",0.88)"; g.fill(); g.strokeStyle = "rgba(20,20,20,0.8)"; g.lineWidth = 1; g.stroke();
+      g.fillStyle = (b[0] + b[1] + b[2] > 520) ? "#141414" : "#fafafa";
+      g.font = "bold " + Math.max(6, Math.floor(bh * 0.78)) + "px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+      g.fillText(b[3], x0 + bw / 2, y0 + bh / 2 + 0.5);
+    });
+  }
   function drawLayers(g, list, x, y, cs) {
-    var ts = sectorTerrains(list.map(function (key) { return BY_KEY[key]; }).filter(Boolean));
+    var all = list.map(function (key) { return BY_KEY[key]; }).filter(Boolean);
+    var envs = all.filter(function (t) { return t.badge; });
+    var ts = sectorTerrains(all.filter(function (t) { return !t.badge; }));
+    if (envs.length) { if (ts.length) drawLayers(g, ts.map(function (t) { return t.key; }), x, y, cs); drawBadges(g, envs, x, y, cs); return; }
+    if (!ts.length) return;
     if (ts.length === 1) { g.drawImage(tileFor(ts[0], cs), x, y, cs, cs); return; }
     var polys = SECTORS[ts.length === 2 ? 2 : 4];
     ts.forEach(function (t, i) {
@@ -397,16 +414,19 @@
     else if (t.key === "water") bits.push("Small and Tiny creatures Swim");
     if (t.hidden) bits.push("hidden from players until shown or found");
     if (isCurrent(t.key)) bits.push("carries a creature at the end of its turn; difficult terrain to swim against (greater above 10 ft)");
+    if (t.badge) bits.push("the ground here counts as this terrain for feats; no movement cost by itself");
     return t.label + (bits.length ? " — " + bits.join(", ") : "");
   }
   /* Water currents (current-<dir>-<feet>, 24 of them) are one palette button with a direction and a speed menu. */
   var CURRENT = "current-";
   function isCurrent(key) { return String(key || "").indexOf(CURRENT) === 0; }
+  function isEnv(key) { return String(key || "").indexOf("env-") === 0; }
   function currentKey() { return CURRENT + $("curDir").value + "-" + $("curFt").value; }
   function buildPalette() {
-    var pal = $("palette"), currents = [];
+    var pal = $("palette"), currents = [], envs = [];
     DATA.types.forEach(function (t) {
       if (isCurrent(t.key)) { currents.push(t); return; }
+      if (t.badge) { envs.push(t); return; }
       pal.appendChild(palButton(t, t.key, t.label, function () { state.key = t.key; markPalette(); }));
     });
     if (currents.length) {
@@ -426,13 +446,20 @@
       $("curDir").value = "e";
       ["curDir", "curFt"].forEach(function (id) { $(id).addEventListener("change", function () { state.key = currentKey(); markPalette(); }); });
     }
+    if (envs.length) {                     /* owner 2026-11-08: forest, rubble, urban ... one button and a menu */
+      pal.appendChild(palButton(envs[0], "environment", "Environment", function () { state.key = $("envKind").value; markPalette(); }));
+      var erow = document.createElement("div"); erow.className = "pal-current"; erow.id = "envRow"; erow.dataset.key = "env-row";
+      erow.innerHTML = '<label>Ground <select id="envKind">' + envs.map(function (t) { return '<option value="' + t.key + '">' + t.label + '</option>'; }).join("") + '</select></label>';
+      pal.appendChild(erow);
+      $("envKind").addEventListener("change", function () { state.key = $("envKind").value; markPalette(); });
+    }
     markPalette();
   }
   function palButton(t, key, label, onClick) {
     var b = document.createElement("button"); b.type = "button"; b.className = "pal"; b.dataset.key = key; b.title = describe(t);
     var sw = document.createElement("canvas"); sw.width = 30; sw.height = 30;
     var g = sw.getContext("2d"); g.fillStyle = "#8a8a82"; g.fillRect(0, 0, 30, 30);
-    if (t.key !== DATA.floor) g.drawImage(tileFor(t, 30), 0, 0);
+    if (t.badge) drawBadges(g, [t], 2, 7, 76); else if (t.key !== DATA.floor) g.drawImage(tileFor(t, 30), 0, 0);
     var span = document.createElement("span"); span.textContent = label;
     b.appendChild(sw); b.appendChild(span);
     b.addEventListener("click", onClick);
@@ -441,8 +468,11 @@
   function markPalette() {
     Array.prototype.forEach.call($("palette").children, function (b) {
       if (b.dataset.key === "current-row") { b.hidden = !isCurrent(state.key); return; }
-      b.setAttribute("aria-pressed", (b.dataset.key === state.key || (b.dataset.key === "current" && isCurrent(state.key))) ? "true" : "false");
+      if (b.dataset.key === "env-row") { b.hidden = !isEnv(state.key); return; }
+      b.setAttribute("aria-pressed", (b.dataset.key === state.key || (b.dataset.key === "current" && isCurrent(state.key))
+                                      || (b.dataset.key === "environment" && isEnv(state.key))) ? "true" : "false");
     });
+    if (isEnv(state.key) && $("envKind")) $("envKind").value = state.key;
     if (isCurrent(state.key) && $("curDir")) { var p = state.key.slice(CURRENT.length).split("-"); $("curDir").value = p[0]; $("curFt").value = p[1]; }
     $("terrainHint").textContent = describe(BY_KEY[state.key]) + ". A cell holds up to " + MAX_LAYERS + " terrains: painting one it already has takes just that one off. Right-click or hold Alt to erase the cell.";
   }
