@@ -396,24 +396,54 @@
     if (t.forcesSwim) bits.push("everyone Swims (Athletics); a Swim Speed moves normally");
     else if (t.key === "water") bits.push("Small and Tiny creatures Swim");
     if (t.hidden) bits.push("hidden from players until shown or found");
+    if (isCurrent(t.key)) bits.push("carries a creature at the end of its turn; difficult terrain to swim against (greater above 10 ft)");
     return t.label + (bits.length ? " — " + bits.join(", ") : "");
   }
+  /* Water currents (current-<dir>-<feet>, 24 of them) are one palette button with a direction and a speed menu. */
+  var CURRENT = "current-";
+  function isCurrent(key) { return String(key || "").indexOf(CURRENT) === 0; }
+  function currentKey() { return CURRENT + $("curDir").value + "-" + $("curFt").value; }
   function buildPalette() {
-    var pal = $("palette");
+    var pal = $("palette"), currents = [];
     DATA.types.forEach(function (t) {
-      var b = document.createElement("button"); b.type = "button"; b.className = "pal"; b.dataset.key = t.key; b.title = describe(t);
-      var sw = document.createElement("canvas"); sw.width = 30; sw.height = 30;
-      var g = sw.getContext("2d"); g.fillStyle = "#8a8a82"; g.fillRect(0, 0, 30, 30);
-      if (t.key !== DATA.floor) g.drawImage(tileFor(t, 30), 0, 0);
-      var span = document.createElement("span"); span.textContent = t.label;
-      b.appendChild(sw); b.appendChild(span);
-      b.addEventListener("click", function () { state.key = t.key; markPalette(); });
-      pal.appendChild(b);
+      if (isCurrent(t.key)) { currents.push(t); return; }
+      pal.appendChild(palButton(t, t.key, t.label, function () { state.key = t.key; markPalette(); }));
     });
+    if (currents.length) {
+      var first = BY_KEY[CURRENT + "e-10"] || currents[0];
+      pal.appendChild(palButton(first, "current", "Water current", function () { state.key = currentKey(); markPalette(); }));
+      var row = document.createElement("div"); row.className = "pal-current"; row.id = "curRow"; row.dataset.key = "current-row";
+      var dirs = [], fts = [];
+      currents.forEach(function (t) {
+        var parts = t.key.slice(CURRENT.length).split("-");
+        if (dirs.indexOf(parts[0]) < 0) dirs.push(parts[0]);
+        if (fts.indexOf(parts[1]) < 0) fts.push(parts[1]);
+      });
+      var names = { n: "North", ne: "Northeast", e: "East", se: "Southeast", s: "South", sw: "Southwest", w: "West", nw: "Northwest" };
+      row.innerHTML = '<label>Flows <select id="curDir">' + dirs.map(function (d) { return '<option value="' + d + '">' + (names[d] || d) + '</option>'; }).join("") +
+        '</select></label><label>Speed <select id="curFt">' + fts.map(function (f) { return '<option value="' + f + '">' + f + ' ft</option>'; }).join("") + '</select></label>';
+      pal.appendChild(row);
+      $("curDir").value = "e";
+      ["curDir", "curFt"].forEach(function (id) { $(id).addEventListener("change", function () { state.key = currentKey(); markPalette(); }); });
+    }
     markPalette();
   }
+  function palButton(t, key, label, onClick) {
+    var b = document.createElement("button"); b.type = "button"; b.className = "pal"; b.dataset.key = key; b.title = describe(t);
+    var sw = document.createElement("canvas"); sw.width = 30; sw.height = 30;
+    var g = sw.getContext("2d"); g.fillStyle = "#8a8a82"; g.fillRect(0, 0, 30, 30);
+    if (t.key !== DATA.floor) g.drawImage(tileFor(t, 30), 0, 0);
+    var span = document.createElement("span"); span.textContent = label;
+    b.appendChild(sw); b.appendChild(span);
+    b.addEventListener("click", onClick);
+    return b;
+  }
   function markPalette() {
-    Array.prototype.forEach.call($("palette").children, function (b) { b.setAttribute("aria-pressed", b.dataset.key === state.key ? "true" : "false"); });
+    Array.prototype.forEach.call($("palette").children, function (b) {
+      if (b.dataset.key === "current-row") { b.hidden = !isCurrent(state.key); return; }
+      b.setAttribute("aria-pressed", (b.dataset.key === state.key || (b.dataset.key === "current" && isCurrent(state.key))) ? "true" : "false");
+    });
+    if (isCurrent(state.key) && $("curDir")) { var p = state.key.slice(CURRENT.length).split("-"); $("curDir").value = p[0]; $("curFt").value = p[1]; }
     $("terrainHint").textContent = describe(BY_KEY[state.key]) + ". A cell holds up to " + MAX_LAYERS + " terrains: painting one it already has takes just that one off. Right-click or hold Alt to erase the cell.";
   }
   function buildAmbients() {
