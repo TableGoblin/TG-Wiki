@@ -660,5 +660,28 @@
       .catch(function () { /* widget stays hidden -- Join the Discord link still works fine alone */ });
   })();
 </script>
+<script>
+  /* A collapse/expand button in the corner of each section (as on the character builder): fold away the image and light sections once
+     they're set, so the terrain palette sits next to the map. Each section remembers how you left it, in this browser only. */
+  (function () {
+    var KEY = "tg-map-prep-collapsed";
+    var saved = {};
+    try { saved = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { saved = {}; }
+    Array.prototype.forEach.call(document.querySelectorAll(".app .panel"), function (panel) {
+      var head = panel.querySelector(":scope > h2"); if (!head) return;
+      var id = head.textContent.replace(/[^A-Za-z]+/g, "").toLowerCase();
+      var btn = document.createElement("button"); btn.type = "button"; btn.className = "collapse-btn";
+      var set = function (collapsed, remember) {
+        panel.classList.toggle("collapsed", collapsed); btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+        var title = head.textContent.replace(/^[\d\s·]+/, "").trim();
+        btn.setAttribute("aria-label", (collapsed ? "Expand " : "Collapse ") + title); btn.title = collapsed ? "Expand this section" : "Collapse this section";
+        if (remember) { saved[id] = collapsed; try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* private window: not remembered */ } }
+      };
+      btn.addEventListener("click", function () { set(!panel.classList.contains("collapsed"), true); });
+      head.addEventListener("click", function () { if (panel.classList.contains("collapsed")) set(false, true); });
+      set(!!saved[id], false); panel.insertBefore(btn, head.nextSibling);
+    });
+  }());
+</script>
 </body>
 </html>
