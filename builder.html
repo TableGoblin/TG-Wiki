@@ -1409,7 +1409,8 @@
       return new Promise(function (resolve) { setSystems(systems, resolve); }).then(function () {
         renderBookChecks();
         var skipped = applyRecipe(doc);
-        msg.textContent = "Opened " + (S.name || "the recipe") + ", level " + (doc.level || 1) + "." + (skipped.length ? " Not found in this page's lists, so left out: " + skipped.join(", ") + "." : "");
+        msg.textContent = "Opened " + (S.name || "the recipe") + ", level " + (doc.level || 1) + "." + (skipped.length ? " Not found in this page's lists, so left out: " + skipped.join(", ") + "." : "")
+          + (doc.reconstructed ? " This recipe was worked out from the character's sheet (no build history was recorded): check the boosts, skills and feats." : "");
       });
     }).catch(function (e) { LOADED = null; msg.textContent = e.message || "Couldn't open that file."; }).then(function () { input.value = ""; });
   });
@@ -1427,7 +1428,7 @@
         if (!orig || orig.kind !== b.kind || orig.level !== b.level) return;
         if (base === stable(b.payload)) b.payload = orig.payload; else edited.push(b.level);
       });
-      if (edited.length && LOADED.doc.source !== "wiki-builder" && !window.confirm("You changed level " + edited.join(", ") + ", which the bot has already recorded. /tgchar levelup will refuse a file that rewrites earlier levels; it only suits a new character.\n\nDownload anyway?")) return;
+      if (edited.length && LOADED.doc.source !== "wiki-builder" && !LOADED.doc.reconstructed && !window.confirm("You changed level " + edited.join(", ") + ", which the bot has already recorded. /tgchar levelup will refuse a file that rewrites earlier levels; it only suits a new character.\n\nDownload anyway?")) return;
     }
     var chain = Promise.resolve(""), hashes = [];
     blocks.forEach(function (b) {                                                        /* each block's hash covers the one before it, as the bot works it out */
