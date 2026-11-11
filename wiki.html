@@ -657,6 +657,13 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           to back out. The sheet's Combat tab uses the same list.
         </p>
         <p>
+          <strong>Every skill action is in it.</strong> The <strong>Skill Actions</strong> category holds the whole table from the GM screen: Balance, Climb, Swim, High Jump, Lie, Request, Coerce,
+          Gather Information, Identify Magic, Pick a Lock, Steal, Track, Treat Poison and the rest. Each rolls exactly as <code>/tgcheck &hellip; action:</code> does, so your feat bonuses for that action apply.
+          An action several skills can roll asks which one, a target makes its defense the DC (Lie against Perception), or give a DC. <code>{climb}</code> or <code>{action: climb}</code> reaches one straight away.
+          The basic actions are there too: Avert Gaze, Arrest a Fall, Grab an Edge, Crawl, Leap, Fly, Burrow, Interact, Release, Delay, Sustain and Dismiss. So is <strong>Exploration Activity</strong>
+          (the <code>/tgbreak</code> list); <code>{hustle}</code> or <code>{scout}</code> reaches it, and <code>{mount}</code> reaches Mount or Dismount.
+        </p>
+        <p>
           <strong>Class and archetype actions are on the sheet too.</strong> Everything the per-class commands do (<code>/tgbeastmaster</code>, <code>/tgspiritwarrior</code>, <code>/tgsnipingduo</code> and the rest) is in that same list under
           <strong>Class Actions</strong>, and the choices those commands save (a Thaumaturge's implement benefits, a Barbarian's instinct pick, a Hedge Mage's skill, a Cleric's shield and so on) are under
           <strong>Choices</strong>. You only see the ones your character has. Pick one, fill in the targets and numbers it asks for, and press Use; or type <code>{action: name}</code> in chat. When a list has more than 25 entries
