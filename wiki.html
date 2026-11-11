@@ -54,6 +54,7 @@
       <a class="top" href="town-builder.html"><span>Town builder</span></a>
       <a class="top" href="treasure.html"><span>Treasure planner</span></a>
       <a class="top" href="class-commands.html"><span>Class Commands</span></a>
+      <a class="top" href="gm-screen.html"><span>GM Screen</span></a>
     </nav>
   </aside>
 
@@ -85,7 +86,7 @@
             <thead><tr><th>Permission</th><th>What breaks without it</th></tr></thead>
             <tbody>
               <tr><td><b>Manage Roles</b></td><td>It can't create your campaign's two roles, so nobody can be granted access to anything.</td></tr>
-              <tr><td><b>Manage Channels</b></td><td>No category, no channels, no permission model — <code>setup_channels</code> does nothing.</td></tr>
+              <tr><td><b>Manage Channels</b></td><td>No category, no channels, no permission model — <code>campaign_create</code> and <code>setup_channels</code> can't build anything.</td></tr>
               <tr><td><b>Manage Webhooks</b></td><td>Characters can't speak. Every in-character post goes out through a webhook so it wears the character's name and portrait.</td></tr>
               <tr><td><b>Manage Messages</b></td><td>Your <code>pc::{strike}</code> trigger stays in the channel instead of being tidied away after the character's post goes up.</td></tr>
               <tr><td><b>Manage Threads, Create Public Threads, Send Messages in Threads</b></td><td>The in-character forum can't be built or posted in. Discord also refuses to give players thread permissions the bot doesn't hold itself.</td></tr>
@@ -96,25 +97,25 @@
         </div>
 
         <div class="note">
-          <p><strong>Missing one?</strong> <code>/tgm setup_channels</code> checks before it builds anything and tells you exactly which permissions to enable on the bot's role (Server Settings &rarr; Roles), so nothing is left half-created.</p>
+          <p><strong>Missing one?</strong> <code>/tgm campaign_create</code> and <code>/tgm setup_channels</code> check before they build anything and tells you exactly which permissions to enable on the bot's role (Server Settings &rarr; Roles), so nothing is left half-created.</p>
         </div>
 
         <div class="note">
           <p><strong>Re-inviting wipes registered commands.</strong> If you re-authorise the bot and the slash commands vanish, that's expected — they come back when the bot next starts up. Give it a moment, then refresh Discord.</p>
         </div>
 
-        <h3>Two commands to a working table</h3>
+        <h3>One command to a working table</h3>
         <div class="cmds">
           <div class="cmd-row">
-            <div class="cmd">/tgm campaign_create <b>name</b> <span class="opt">[notes] [system] [is_society] [use_category] [new_category] [gm] [create_channels_default]</span></div>
+            <div class="cmd">/tgm campaign_create <b>name</b> <span class="opt">[notes] [system] [is_society] [use_category] [new_category] [gm] [create_channels_default] [include_voice] [include_dice]</span></div>
             <span class="badge b-gm">admin only</span>
-            <div class="desc">Registers the campaign, makes its GM (you, or the member you name in <code>gm</code>) and builds its channels in the same step. <code>is_society</code> marks a Pathfinder Society or Starfinder Society game (one system), whose GM, sheets and dice channels are threads of the out-of-character forum. <code>use_category</code> picks an existing category and <code>new_category</code> names a new one. With <code>create_channels_default</code> off, a picker lets you create, reuse or skip each channel. Run it from any channel that isn't already part of a campaign. The name's slug is unique <em>per server</em> — another Discord running "Curse of the Crimson Vault" is none of your business. <code>system</code> lists Pathfinder 2e only for now; the field exists so more can join it later. It then opens your campaign's rules panel, and says so, so the private message isn't a surprise.</div>
+            <div class="desc">Everything in one go: registers the campaign, makes its GM (you, or the member you name in <code>gm</code>, who gets the GM role) and builds its roles and channels. <code>include_voice</code> adds a voice channel and <code>include_dice</code> a dice rolls channel (a society game always gets its dice thread). <code>is_society</code> marks a Pathfinder Society or Starfinder Society game (one system), whose GM, sheets and dice channels are threads of the out-of-character forum. <code>use_category</code> picks an existing category and <code>new_category</code> names a new one. With <code>create_channels_default</code> off, a picker lets you create, reuse or skip each channel. Run it from any channel that isn't already part of a campaign. The name's slug is unique <em>per server</em> — another Discord running "Curse of the Crimson Vault" is none of your business. <code>system</code> is Pathfinder 2e (the default), Starfinder 2e, or both; the GM can change it later in <code>/tgm campaign_rules</code>. It then opens your campaign's rules panel, and says so, so the private message isn't a surprise.</div>
           </div>
           <div class="cmd-row">
-            <div class="cmd">/tgm setup_channels <b>campaign_name</b> <span class="opt">[layout] [mode] [include_voice] [category]</span></div>
+            <div class="cmd">/tgm setup_channels <b>campaign_name</b> <span class="opt">[layout] [mode] [include_voice] [category] [include_dice]</span></div>
             <span class="badge b-gm">gm only</span>
-            <div class="desc">Builds the two roles and the channels, then binds them. This is the only <code>/tgm</code> command that takes a campaign name, because the campaign has no channels yet to identify it by.
-              <b>Layout:</b> <em>Sandbox</em> is a category with an IC forum and OOC, GM-only, character-sheet and dice channels. <em>PFS</em> has no category: a private IC forum (GM and Members) and a private OOC forum (GM only) whose threads are GM, Character sheets and Dice rolls; players are added to the sheet and dice threads by <code>/tgm add_player</code>.
+            <div class="desc">Only needed when <code>campaign_create</code> didn't build the channels (you skipped them, or the campaign is older). Builds the two roles and the channels, then binds them. This is the only <code>/tgm</code> command that takes a campaign name, because the campaign has no channels yet to identify it by.
+              <b>Layout:</b> <em>Sandbox</em> is a category with an IC forum and OOC, GM-only, character-sheet and dice channels. <em>PFS</em> has no category: a private IC forum (GM and Members) and a private OOC forum (GM only) whose threads are GM, Character sheets and Dice rolls; players are added to the sheet and dice threads by <code>/tgm player add</code>.
               <b>Manual</b> mode opens a prompt where each piece can be created, bound to a channel you already have, or skipped.
               <b>Category:</b> pick an existing category to build in. A Sandbox game uses it instead of making one; a PFS game puts its two forums inside it (for example a shared <em>Society Campaigns</em> category) instead of at the root of the server.</div>
           </div>
@@ -144,12 +145,12 @@
             <span class="why">Somewhere to keep sheets that isn't the scene.</span>
           </div>
           <div class="chan">
-            <span class="nm">#dicerolls</span><span class="ty">Text</span>
-            <span class="why">For tables that like the dice kept out of the fiction.</span>
+            <span class="nm">#dicerolls <em>(optional)</em></span><span class="ty">Text</span>
+            <span class="why">For tables that like the dice kept out of the fiction. Pass <code>include_dice</code> (on <code>campaign_create</code> or <code>setup_channels</code>) to get one (a society game always has its dice thread).</span>
           </div>
           <div class="chan">
             <span class="nm">#voice <em>(optional)</em></span><span class="ty">Voice</span>
-            <span class="why">Pass <code>include_voice</code> to get one. Members can speak in it; nobody outside the campaign can see it.</span>
+            <span class="why">Pass <code>include_voice</code> (on <code>campaign_create</code> or <code>setup_channels</code>) to get one. Members can speak in it; nobody outside the campaign can see it.</span>
           </div>
         </div>
 
@@ -158,8 +159,8 @@
           <table>
             <thead><tr><th>Role</th><th>Granted by</th><th>What it allows</th></tr></thead>
             <tbody>
-              <tr><td><code>TG-&lt;campaign&gt;-GM</code></td><td><code>/tgm add_gm</code></td><td>Everything a member can do, plus managing the campaign's channels, messages and threads.</td></tr>
-              <tr><td><code>TG-&lt;campaign&gt;-Members</code></td><td><code>/tgm add_player</code></td><td>View, post, reply in forum threads, react, attach files, use the bot, and speak in voice.</td></tr>
+              <tr><td><code>TG-&lt;campaign&gt;-GM</code></td><td><code>/tgm gm add</code></td><td>Everything a member can do, plus managing the campaign's channels, messages and threads.</td></tr>
+              <tr><td><code>TG-&lt;campaign&gt;-Members</code></td><td><code>/tgm player add</code></td><td>View, post, reply in forum threads, react, attach files, use the bot, and speak in voice.</td></tr>
             </tbody>
           </table>
         </div>
@@ -215,14 +216,24 @@
 
         <h3>People</h3>
         <div class="cmds">
-          <div class="cmd-row"><div class="cmd">/tgm add_gm <b>user</b></div><span class="badge b-gm">gm only</span>
-            <div class="desc">Makes another user a GM of this campaign and gives them the GM role.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgm remove_gm <b>user</b></div><span class="badge b-gm">gm only</span>
-            <div class="desc">Revokes a user's GM status for this campaign and takes away the GM role. Works even if they've left the server.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgm add_player <b>user</b></div><span class="badge b-gm">gm only</span>
-            <div class="desc">Grants the Members role — this is what gives access to the campaign's channels.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgm remove_player <b>user</b></div><span class="badge b-gm">gm only</span>
-            <div class="desc">Takes it away again. The bot only ever removes a role it was asked to remove, so assigning these by hand in Discord stays perfectly valid. In a society game it also saves that player's characters back to the society home campaign and removes them from the game.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgm gm <b>add|remove</b> <b>players</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Makes users GMs of this campaign (with the GM role), or takes that away. Several at once, comma-separated: @mentions, user names or IDs. Removing works even for someone who has left the server.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgm player <b>add|remove</b> <b>players</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Grants or takes away the Members role, which is what gives access to the campaign's channels. Several at once, comma-separated. The bot only ever removes a role it was asked to remove, so assigning these by hand in Discord stays perfectly valid. In a society game, removing a player also saves their characters back to the society home campaign.</div></div>
+          <!-- RETIRED-GM-COMMANDS: keep until 2026-11-25 (owner 2026-11-11), then delete this block -->
+          <div class="cmd-row retired"><div class="cmd"><s>/tgm add_gm <b>user</b></s></div><span class="badge">retired</span>
+            <div class="desc">Retired on Nov 11, 2026. Use <code>/tgm gm add <b>players</b></code> instead (several at once, comma-separated).</div></div>
+          <div class="cmd-row retired"><div class="cmd"><s>/tgm remove_gm <b>user</b></s></div><span class="badge">retired</span>
+            <div class="desc">Retired on Nov 11, 2026. Use <code>/tgm gm remove <b>players</b></code> instead.</div></div>
+          <div class="cmd-row retired"><div class="cmd"><s>/tgm add_player <b>user</b></s></div><span class="badge">retired</span>
+            <div class="desc">Retired on Nov 11, 2026. Use <code>/tgm player add <b>players</b></code> instead (several at once, comma-separated).</div></div>
+          <div class="cmd-row retired"><div class="cmd"><s>/tgm remove_player <b>user</b></s></div><span class="badge">retired</span>
+            <div class="desc">Retired on Nov 11, 2026. Use <code>/tgm player remove <b>players</b></code> instead.</div></div>
+          <!-- /RETIRED-GM-COMMANDS -->
+          <div class="cmd-row"><div class="cmd">/tgm hero_points <b>amount</b> <span class="opt">[alias]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Awards Hero Points to one character, or to the whole party when <code>alias</code> is left blank. A negative amount takes them away.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgm screen</div><span class="badge b-gm">gm only</span>
+            <div class="desc">Opens the <a href="gm-screen.html">GM screen</a> privately: pick the rules sections (and parts of them) you want; your choice is remembered. Also the <b>📖 GM Screen</b> button under the pinned GM dashboard.</div></div>
         </div>
 
         <h3>GM narration persona</h3>
@@ -251,7 +262,7 @@
         </p>
         <div class="cmds">
           <div class="cmd-row"><div class="cmd">/tgm campaign_rules</div><span class="badge b-gm">gm only</span>
-            <div class="desc">The <i>Sell &middot; Start</i> form also turns on <b>turn reminders</b> and the <b>GM dashboard</b> (a pinned summary in your GM channel: party HP and conditions, the fight, XP and treasure). Runs itself automatically right after <code>campaign_create</code>, and is there whenever you want to change your mind. Saving also posts (and pins) the <b>campaign code</b> in your character channel: a short string such as <code>TG-BC3Y5-V95G5-0Y860</code> that carries your variant rules, rarity settings, rarity exceptions and party level. Give it to your players; the wiki's character builder will read it so they are only offered what your campaign allows. The pinned message updates itself whenever you change the rules or raise the party level.</div></div>
+            <div class="desc">The <i>Sell &middot; Start</i> form also turns on <b>turn reminders</b> and the <b>GM dashboard</b> (a pinned summary in your GM channel: party HP and conditions, the fight, XP and treasure, with a <b>📖 GM Screen</b> button). Runs itself automatically right after <code>campaign_create</code>, and is there whenever you want to change your mind. Saving also posts (and pins) the <b>campaign code</b> in your character channel: a short string such as <code>TG-BC3Y5-V95G5-0Y860</code> that carries your variant rules, rarity settings, rarity exceptions and party level. Give it to your players; the wiki's character builder will read it so they are only offered what your campaign allows. The pinned message updates itself whenever you change the rules or raise the party level.</div></div>
           <div class="cmd-row"><div class="cmd">/tgm levelup</div><span class="badge b-gm">gm only</span>
             <div class="desc">Also sends each player a direct message with the new campaign code, their recipe files and how to level up. Opens the next level to your players: raises the party level by one and tells the channel. Players can't level a character past the party level, so you can't be surprised by someone running ahead. Set it to any level in the panel's <b>Party level</b> dropdown instead (a campaign starting at level 10 sets it once and lets everyone build up to it). It starts with no limit.</div></div>
           <div class="cmd-row"><div class="cmd">Books</div><span class="badge b-gm">gm only</span>
@@ -516,12 +527,14 @@
             <div class="desc">A panel for a character's deity: the spells it adds to a cleric's list (search any tradition), the favored weapon and the sanctification. Use it after importing a Cleric from Pathbuilder, which has no field for deity spells.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar set_avatar <span class="opt">[image] [image_url] [form]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">The portrait on webhook posts and the token on the battle map. Upload a file or paste a link — both work. Add a <b>form</b> name (spider, rage, black bear&hellip;) to keep a separate image for a shape; it shows whenever your character is in that form, and the main one otherwise. Repeat the command with the same form to replace it, or <code>image_url:""</code> with the form to remove just that one.</div></div>
-          <div class="cmd-row"><div class="cmd">/tgchar learn_spell <b>rank</b> <b>name</b> <b>spell_list</b></div><span class="badge b-self">self / gm</span>
-            <div class="desc">Adds a spell outside Pathbuilder. Survives a routine <code>sync</code>.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgchar learn spell <b>rank</b> <b>name</b> <b>spell_list</b> <span class="opt">[replace_spell]</span> · formula <b>name</b> · language <b>name</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Adds a spell to a caster (<code>replace_spell</code> swaps one out of a full repertoire rank), an alchemical formula, or a language, outside the builder or an import.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar armor set <b>category</b> <b>armor_name</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Recomputes AC from the real armor entry. Switching from armor you own unequips it &mdash; it stays in your inventory, just no longer active.</div></div>
           <div class="cmd-row"><div class="cmd">/tgshield set <b>shield</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Which real shield your Shield Block reaction uses &mdash; its real Hardness and HP (tracked: Shield Block with the hit's damage lowers them; at half it's broken &mdash; no blocking, no AC when raised &mdash; until Repaired in a breather), for <em>any</em> class Shield Block works for, not just the two that grant it free. Shield Block needs the shield raised first (Raise a Shield). Needs the feat (or a class that grants it) first; its own root since <code>/tgchar</code> was already full.</div></div>
+          <div class="cmd-row"><div class="cmd">/tginnovation show · set <b>item</b> · pick <b>modification</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">An Inventor's innovation: <code>show</code> lists it and the modifications it can take, <code>set</code> flags one of your own weapons or armor as the innovation, and <code>pick</code> chooses (or replaces) a modification from the ones it's eligible for.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar weapon set <b>weapon</b> <span class="opt">[hand]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Equips a weapon already in your inventory to a hand. Real data decides one- vs two-handed &mdash; a Greatsword always takes both hands, a Bastard Sword can go either way. An empty main hand fills automatically; if it's already full and you don't say which hand, the bot asks with buttons instead of erroring. Equipping into an occupied hand unequips whatever was there.</div></div>
           <div class="cmd-row"><div class="cmd">/tgchar weapon edit <b>weapon</b> &middot; armor edit <b>armor</b></div><span class="badge b-self">self / gm</span>
@@ -938,6 +951,10 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
             <div class="desc">Applies a PF2e condition, with its value where it has one.</div></div>
           <div class="cmd-row"><div class="cmd">/tge resist <b>alias</b> <b>damage_type</b> <b>kind</b> <b>duration</b> <span class="opt">[amount] [minutes] [owner_alias] [sustain_of]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">A fight-only resistance, weakness or immunity on top of the sheet's own &mdash; a spell's <i>resist energy</i>, a hazard's weakness. <code>duration</code> picks how long it lasts (end of turn, end of next turn, minutes, while a spell is sustained, until dismissed); choose <b>Remove it</b> with the same type and kind to take one off again.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge remove <b>alias</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Takes a combatant out of the running encounter.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge cast_sustained <b>alias</b> <b>spell_name</b> <span class="opt">[target] [minutes]</span> · sustain · dismiss <b>alias</b> <b>spell_name</b></div><span class="badge b-self">self / gm</span>
+            <div class="desc">Tracks a spell you have to Sustain (with a maximum in <code>minutes</code> if it has one), Sustains it on your turn, or Dismisses it.</div></div>
           <div class="cmd-row"><div class="cmd">/tge reload <b>alias</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Load a crossbow, firearm or sling (spending its reload actions), or ready a special arrow for a bow (free &mdash; it's nocked as part of the Strike). Pick the round from what you carry, and optionally coat it with an injury poison. A round that forces a save (Freezing, Terrifying, Rattling, Black Tendril, Glue...) rolls it for the target and applies its condition. Only ammunition you carry that fits the weapon is offered, and a crossbow, firearm or sling with nothing loaded can't fire until you reload it. The next Strike with that weapon fires it: its extra damage, persistent damage and splash are rolled for you (Rhino Shot's force, Garrote Bolt's bleed, Elemental Ammunition's fire), a round that changes the damage type changes it, and a poisoned round exposes the target on a hit.</div></div>
           <div class="cmd-row"><div class="cmd">/tge affliction expose <b>alias</b> <b>affliction</b> <span class="opt">[dc]</span></div><span class="badge b-gm">gm only</span>
@@ -1041,6 +1058,15 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           show up the same way once they've taken them, substituting Driving Lore for the usual
           piloting check.
         </p>
+        <p>
+          Siege weapons are campaign-owned too, each keeping its own HP between sessions.
+        </p>
+        <div class="cmds">
+          <div class="cmd-row"><div class="cmd">/tgsiege create <b>weapon</b> <b>name</b> · list · status <b>name</b></div><span class="badge b-player">player</span>
+            <div class="desc">Brings a siege weapon onto the field from its real stat block (HP, AC, crew, Speed), lists the campaign's, or shows one's current state.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgsiege remove <b>name</b> · repair_manual <b>name</b> <b>hp</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Takes one off the field, or sets its current HP directly.</div></div>
+        </div>
 
         <h3>Hazards</h3>
         <p>A trap or hazard doesn't join the roster like a creature &mdash; it attacks or forces saves directly.</p>
@@ -1148,12 +1174,16 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
             <div class="desc">Sends back the map's terrain and light level as a file you can open on the <a href="map-prep.html">Map prep</a> page or give to an upload as <code>terrain_file</code>.</div></div>
           <div class="cmd-row"><div class="cmd">/tgmap place <b>alias</b> <b>cell</b> <span class="opt">[elevation]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">Puts a token down, e.g. <code>cell:H12</code>. Elevation is tracked and counted when distances are measured. A token you place at a height isn't treated as falling.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap unplace <b>alias</b> <span class="opt">[player]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Takes a token off the map without removing it from the encounter.</div></div>
           <div class="cmd-row"><div class="cmd">/tgmap move <span class="opt">[alias] [destination]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Arrow-key controls, or name a destination cell to jump straight there. A finished move has an <b>↩️ Undo</b> button for you or the GM: the token goes back, and so does anything the move did to you (a fall).</div></div>
           <div class="cmd-row"><div class="cmd">/tgmap terrain · terrain_clear <span class="opt">[slot]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">Paint walls, doors, windows, chests, levers, difficult terrain, hazards, water, deep water and fixed lights (torch, lamp) directly onto the grid. A cell can hold up to four terrains at once: painting a different one adds a layer, and the cell is drawn split (a diagonal for two, an X for three or four). In deep water everyone without a Swim Speed must Swim, and Small and Tiny creatures Swim even in shallow water. <b>Water current</b> (8 directions, 10/20/30 ft) carries a creature at the end of its turn and is harder to swim against. <b>Environment</b> marks the kind of ground (forest, swamp, desert, mountain, urban, rubble, snow, underbrush and more) with a small two-letter badge: it costs nothing by itself, and a creature standing there counts as in that terrain for its feats. The same menu sets the whole map's light: bright, dim or darkness. On a dim or dark map, what each token carries also lights it (a lit torch &mdash; tick it in the sheet's Situational toggles &mdash; a lantern, the Light spell), darkvision and low-light vision work as in the rules, and an attack on a creature you see in dim light or darkness first rolls the Concealed (DC 5) or Hidden (DC 11) flat check; failing it, the attack doesn't happen. Strikes now also roll that check against a creature with the Concealed, Hidden or Invisible condition, and so do Grapple, Trip, Shove, Disarm, Reposition and spells that target creatures. Magical darkness (painted, rank 2 or 4+, shown light and medium purple) blocks light; darkvision sees in the lower one, greater darkvision in both. An area effect is drawn as a grid of small green X's. A <b>Hazard (trap)</b> is pink and hidden from the players' map until you pick <b>Hazards</b> in the same menu (<b>Hazards &#9656;</b>, then show traps to players), or the party finds it with the explore panel's Search check (its report has a <b>Show found hazards on the map</b> button); your own copy always shows it. See the Unseen or truesight makes an Invisible creature only Concealed. In a fight, the Combat menu's Drop a light, Throw a light (20 ft) and Pick up a light put a lit torch or lantern down where it keeps shining.</div></div>
           <div class="cmd-row"><div class="cmd">/tgmap area <b>caster_alias</b> <b>shape</b> <b>size_ft</b> <span class="opt">[toward_alias]</span></div><span class="badge b-player">player</span>
             <div class="desc">Who a burst, emanation, cone, line or ring would catch, drawn on the map in red. Start it from a creature or from a square (<code>D7</code>); aim a cone or line at a creature or a square (<code>H7</code>). Walls block it. Players see their own view of the map, the GM sees everything. Nothing is rolled or changed.</div></div>
+          <div class="cmd-row"><div class="cmd">/tgmap hazard <b>name</b> <b>caster_alias</b> <b>shape</b> <b>size_ft</b> <b>damage_dice</b> <b>damage_die</b> <b>damage_type</b> <span class="opt">[toward_alias] [save_type] [save_dc] [duration_rounds]</span> · hazard_clear <b>name</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">An ongoing area that hurts each round (Spike Growth, Wall of Fire, Cloudkill): its shape as for <code>/tgmap area</code>, the damage, and a save if it allows one (leave <code>save_type</code> blank for unavoidable damage). It lasts <code>duration_rounds</code>, or until <code>hazard_clear</code> removes it.</div></div>
           <div class="cmd-row"><div class="cmd">/tgmap interact <b>cell</b> <span class="opt">[action] [alias]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Toggle (leave the action empty), open, close, lock or unlock the door, window, chest or lever painted at a cell; a cell with nothing togglable on it says so. <b>An open door is just floor</b>: movement and sight pass through and fog shows what's beyond. A closed window blocks movement but not sight. Players can open or close an unlocked one from the square next to it; the GM does anything from anywhere, including locking, since picking a lock is a skill check the GM runs.</div></div>
           <div class="cmd-row"><div class="cmd">/tgmap fog <b>enabled</b> <span class="opt">[radius] [reset] [slot]</span></div><span class="badge b-gm">gm only</span>
