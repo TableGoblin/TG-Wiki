@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Table Goblin — Encounter Builder</title>
+<link rel="icon" href="table-goblin.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="tools.css">
+<script data-goatcounter="https://tablegoblin.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+<script src="events.js"></script>
+<style>
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 12px; }
+  @media (max-width: 640px) { .grid2, .grid4 { grid-template-columns: 1fr; } }
+  .tiny-label { display: block; font-size: 13px; color: var(--text-2); }
+  .controls .checks { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 4px 0 10px; }
+  .controls .checks label { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 13.5px; color: var(--text); }
+  .eb-cols { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+  @media (max-width: 900px) { .eb-cols { grid-template-columns: 1fr; } }
+  .table-scroll { overflow-x: auto; }
+  table.stock { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  table.stock th, table.stock td { text-align: left; padding: 5px 6px; border-top: 1px solid var(--line); vertical-align: middle; }
+  table.stock th { font: 600 11.5px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .04em; color: var(--text-3); border-top: 0; }
+  .src { font-size: 11.5px; color: var(--text-3); display: block; }
+  .lvl { font: 600 12px "IBM Plex Mono", monospace; color: var(--text-2); white-space: nowrap; }
+  .rar { font: 600 10.5px "IBM Plex Mono", monospace; text-transform: uppercase; border-radius: 3px; padding: 1px 5px; margin-left: 4px; border: 1px solid var(--line-strong); color: var(--text-2); }
+  .rar.uncommon { border-color: #c45f24; color: #c45f24; } .rar.rare { border-color: #0b4f8a; color: #3b82c4; } .rar.unique { border-color: #6b4fbb; color: #8b6fdb; }
+  .rar.custom { border-color: #6b4fbb; color: #8b6fdb; } .rar.adj { text-transform: none; }
+  .seg3 { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; }
+  .seg3 button { border: 0; background: var(--ground); color: var(--text-2); padding: 3px 8px; font: 600 11.5px "IBM Plex Mono", monospace; cursor: pointer; }
+  .seg3 button.on { background: var(--accent); color: #fff; }
+  .add { border: 1px solid var(--accent); color: var(--accent); background: transparent; border-radius: 6px; padding: 3px 9px; cursor: pointer; font: inherit; font-size: 12.5px; font-weight: 600; }
+  .x { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text-2); border-radius: 6px; padding: 4px 9px; cursor: pointer; font: inherit; font-size: 13px; }
+  .x:hover { color: var(--danger); border-color: var(--danger); }
+  .qty { width: 58px !important; padding: 4px 6px !important; }
+  .card-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; margin-bottom: 8px; flex-wrap: wrap; }
+  .card-head b { font: 600 16px Fraunces, Georgia, serif; }
+  .meter { position: relative; height: 18px; border-radius: 9px; background: var(--ground); border: 1px solid var(--line); overflow: hidden; margin: 8px 0 4px; }
+  .meter .fill { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #2f9e6b, #d9a521 55%, #d2601a 75%, #b3261e); }
+  .ticks { position: relative; height: 32px; font: 600 11px "IBM Plex Mono", monospace; color: var(--text-3); }
+  .ticks span { position: absolute; transform: translateX(-50%); text-align: center; white-space: nowrap; }
+  .verdict { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .verdict b { font: 600 26px Fraunces, Georgia, serif; }
+  .sev { font: 600 12px "IBM Plex Mono", monospace; border-radius: 4px; padding: 2px 8px; border: 1px solid; text-transform: uppercase; }
+  .sev.Trivial, .sev.Low { color: #2f9e6b; } .sev.Moderate { color: #d9a521; } .sev.Severe { color: #d2601a; } .sev.Extreme { color: #b3261e; }
+  .warn { color: #c45f24; font-size: 13px; margin: 6px 0 0; }
+  .more { font-size: 12.5px; color: var(--text-3); margin-top: 6px; }
+  @media print { .rail, .topnav, .controls, .steps, .site-footer, .eb-pick, .btns, .x, .qty { display: none !important; } .eb-cols { grid-template-columns: 1fr; } .panel { box-shadow: none; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+        <img class="rail-logo" src="table-goblin.png" alt="Table Goblin logo">
+        <b>Table Goblin</b>
+        <span>Pathfinder 2e for Discord</span>
+        <a class="btn" href="https://discord.gg/cHMex5xFsV" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.211.375-.457.879-.626 1.278a18.27 18.27 0 0 0-5.518 0A12.76 12.76 0 0 0 9.115 3 19.736 19.736 0 0 0 4.68 4.372C1.727 8.75.929 13.028 1.328 17.244a19.9 19.9 0 0 0 5.993 3.03c.483-.66.914-1.36 1.285-2.098a12.87 12.87 0 0 1-2.024-.973c.17-.124.336-.253.497-.386 3.902 1.803 8.13 1.803 11.987 0 .162.133.329.262.497.386-.645.386-1.323.71-2.026.974.371.738.802 1.438 1.285 2.098a19.876 19.876 0 0 0 5.995-3.03c.468-4.891-.795-9.13-3.5-13.876ZM8.68 14.813c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Zm7.324 0c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Z"/></svg>
+          Join the Discord
+        </a>
+        <div class="discord-widget" id="discordWidget" hidden aria-live="polite">
+          <span class="dw-dot"></span>
+          <span class="dw-avatars" id="dwAvatars"></span>
+          <span id="dwText"></span>
+        </div>
+    </div>
+    <nav>
+      <a class="btn" href="https://discord.com/oauth2/authorize?client_id=1550867869066076263" target="_blank" rel="noopener">Install Table Goblin</a>
+      <a class="top" href="index.html"><span>Home</span></a>
+      <a class="top" href="changelog.html"><span>Change Log</span></a>
+      <a class="top" href="wiki.html"><span>Wiki</span></a>
+      <div class="rail-sub">
+        <a href="wiki.html#start"><span>Getting Started</span></a>
+        <a href="wiki.html#gm"><span>GM Tools</span></a>
+        <a href="wiki.html#chars"><span>Characters</span></a>
+        <a href="wiki.html#chat"><span>Playing in Character</span></a>
+        <a href="wiki.html#npcs"><span>Creatures &amp; NPCs</span></a>
+        <a href="wiki.html#dice"><span>Dice Roller</span></a>
+        <a href="wiki.html#combat"><span>Encounters</span></a>
+        <a href="wiki.html#maps"><span>Battle Maps</span></a>
+        <a href="wiki.html#loot"><span>Loot &amp; the Purse</span></a>
+        <a href="wiki.html#towns"><span>Towns &amp; Shops</span></a>
+        <a href="wiki.html#lookup"><span>Reference Lookup</span></a>
+        <a href="wiki.html#coming"><span>Coming Features</span></a>
+      </div>
+      <a class="top" href="map-prep.html"><span>Map prep</span></a>
+      <a class="top" href="builder.html"><span>Character builder</span></a>
+      <a class="top" href="npc-builder.html"><span>NPC builder</span></a>
+      <a class="top" href="town-builder.html"><span>Town builder</span></a>
+      <a class="top" href="treasure.html"><span>Treasure planner</span></a>
+      <a class="top" href="encounter-builder.html" aria-current="page"><span>Encounter builder</span></a>
+      <a class="top" href="class-commands.html"><span>Class Commands</span></a>
+      <a class="top" href="gm-screen.html"><span>GM Screen</span></a>
+    </nav>
+  </aside>
+  <main class="tool-page">
+    <div class="wrap">
+      <header class="hero tool-hero">
+        <div class="eyebrow">GM tool</div>
+        <h1>Encounter builder</h1>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="encounter-builder.html" aria-current="page">Encounter builder</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a><a href="gm-screen.html">GM Screen</a></nav>
+        <p class="lede">Plan a fight before the session: pick creatures from the bestiary (weak, normal or elite) and the custom creatures you made in the <a href="npc-builder.html">NPC builder</a>, and see its XP budget rating for your party, the same rating <code>/tge begin</code> shows you in Discord.</p>
+        <ol class="steps"><li><strong>Choose the game system and set the party's level and size.</strong></li><li><strong>Search the bestiary</strong> and add creatures as weak, normal or elite, or <strong>open</strong> your NPC builder file and add its creatures.</li><li><strong>Read the rating</strong>: the XP total against GM Core's Trivial to Extreme budgets for your party.</li><li><strong>Export</strong> the encounter file and start the fight in Discord with <code>/tge start encounter_file:</code> (add a <code>map_slot</code> for its map), or place the creatures on the <a href="map-prep.html">Map prep</a> page first. It is kept in this browser.</li></ol>
+      </header>
+
+      <div class="tool-body">
+        <div class="panel controls">
+          <div class="checks" role="radiogroup" aria-label="Game system" id="sysPick"><span class="tiny-label">Game system</span>
+            <label><input type="radio" name="sys" value="pf2e"> Pathfinder 2e</label><label><input type="radio" name="sys" value="sf2e"> Starfinder 2e</label><label><input type="radio" name="sys" value="both"> Both</label></div>
+          <div class="grid4">
+            <label>Party level<input type="number" id="level" min="1" max="20"></label>
+            <label>Players<input type="number" id="players" min="1" max="10"><span class="hint">The budgets move with party size.</span></label>
+            <label>Encounter name<input type="text" id="encName" maxlength="80" placeholder="Ambush at the mill"></label>
+            <div><span class="tiny-label">Show</span><div class="checks"><label><input type="checkbox" id="uncommon"> Uncommon</label><label><input type="checkbox" id="rare"> Rare</label><label><input type="checkbox" id="unique"> Unique</label></div></div>
+          </div>
+        </div>
+
+        <div class="eb-cols">
+          <div class="eb-pick">
+            <div class="panel">
+              <h2><span class="num">1</span> Bestiary</h2>
+              <div class="grid2">
+                <label>Search<input type="text" id="q" placeholder="ogre, dragon, skeleton..."></label>
+                <label>Level<select id="range"><option value="2">Party ±2</option><option value="4">Party ±4</option><option value="any">Any level</option></select></label>
+              </div>
+              <div class="grid2">
+                <label>Trait<select id="trait"><option value="">Any trait</option></select></label>
+                <label>Source<select id="source"><option value="">All sources</option></select></label>
+              </div>
+              <div class="table-scroll"><table class="stock"><thead><tr><th>Creature</th><th>Level</th><th>Version</th><th></th></tr></thead><tbody id="results"></tbody></table></div>
+              <div class="more" id="resultsMore"></div>
+            </div>
+            <div class="panel">
+              <h2><span class="num">2</span> Your creatures</h2>
+              <label>NPC builder file<input type="file" id="npcFile" accept=".json,application/json"><span class="hint">The .json the NPC builder exports. Its creatures appear here to add like any other.</span></label>
+              <label>Or open an encounter file<input type="file" id="encFile" accept=".json,application/json"><span class="hint">One exported here or from Map prep, to change it.</span></label>
+              <div class="table-scroll"><table class="stock"><tbody id="customs"></tbody></table></div>
+              <p class="hint" id="fileMsg" role="status"></p>
+            </div>
+          </div>
+
+          <div>
+            <div class="panel">
+              <div class="card-head"><b id="encTitle">Encounter</b><span class="src" id="partyLine"></span></div>
+              <div class="table-scroll"><table class="stock"><thead><tr><th>Creature</th><th>Level</th><th>Qty</th><th>XP each</th><th>XP</th><th></th></tr></thead><tbody id="list"></tbody></table></div>
+              <div id="warnings"></div>
+            </div>
+            <div class="panel" id="ratingPanel">
+              <h2>Rating</h2>
+              <div id="rating"></div>
+              <p class="hint">GM Core's encounter budget: each creature's XP by its level against the party's (−4 to +4; a creature further below counts as −4, one further above as +4), with weak one level lower and elite one level higher (two at the low end). The budgets are for four players; each extra or missing player moves them by 10 / 15 / 20 / 30 / 40.</p>
+              <div class="btns"><button type="button" class="tbtn primary" id="exportFile">Export file</button><button type="button" class="tbtn" id="copyText">Copy as text</button><button type="button" class="tbtn" id="printPlan">Print</button><button type="button" class="tbtn" id="clearAll">Clear</button><span class="hint" id="copyHint"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="site-footer">
+        A reference, not a rules substitute &mdash; when in doubt, check Archives of Nethys.
+        Table Goblin is an unofficial tool and is not affiliated with Paizo Inc.
+        <a href="terms.html">Terms of Service</a> &middot; <a href="privacy.html">Privacy Policy</a>
+      </footer>
+    </div>
+  </main>
+</div>
+<script src="encounter-data.js"></script>
+<script>
+(function () {
+  "use strict";
+  // Owner 2026-11-11 -- the encounter builder: bestiary creatures (weak / normal / elite) and NPC builder creatures, rated by GM Core's XP
+  // budget exactly as the bot's /tge begin rates them (encounter-data.js holds the bot's own tables), exported for /tge start encounter_file.
+  var D = window.TG_ENCOUNTER, STORE = "tg-encounter-v1", SHOW = 40, NPC_FORMAT = "tablegoblin-npcs";
+  // The older books' alignment traits (pre-remaster) aren't shown or offered as a filter.
+  var ALIGN = { lawful: 1, chaotic: 1, good: 1, evil: 1, neutral: 1 };
+  D.creatures.forEach(function (c) { c[6] = c[6].filter(function (t) { return !ALIGN[t]; }); });
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  var state = { system: "pf2e", level: 3, players: 4, name: "", uncommon: false, rare: false, unique: false, q: "", range: "2", trait: "", source: "",
+                list: [], customs: [], picks: {} };
+  try { var saved = JSON.parse(localStorage.getItem(STORE) || "null"); if (saved && saved.level) state = Object.assign(state, saved); } catch (e) { /* private window */ }
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* storage blocked */ } }
+
+  // ---------- the rules (pf2e_creature_tables.apply_elite_weak, loot_tables.creature_xp / encounter_severity) ----------
+  function adjusted(level, adj) {
+    if (adj === "elite") return level + (level === -1 || level === 0 ? 2 : 1);
+    if (adj === "weak") return level - (level === 1 ? 2 : 1);
+    return level;
+  }
+  function xpFor(level) { var d = Math.max(-4, Math.min(4, level - state.level)); return D.xp[String(d)]; }
+  function thresholds() { var extra = state.players - 4; return D.severity.map(function (s) { return [s[0], Math.max(0, s[1] + s[2] * extra)]; }); }
+  function severity(xp) { var best = "Trivial"; thresholds().forEach(function (t) { if (xp >= t[1]) best = t[0]; }); return best; }
+
+  // ---------- the bestiary ----------
+  function systemOk(sys) { return state.system === "both" || sys === state.system; }
+  function rarityOk(r) { return r === "common" || (r === "uncommon" && state.uncommon) || (r === "rare" && state.rare) || (r === "unique" && state.unique); }
+  function fillFilters() {
+    var traits = {}, sources = {};
+    D.creatures.forEach(function (c) { if (!systemOk(c[4])) return; sources[c[5]] = 1; c[6].forEach(function (t) { traits[t] = (traits[t] || 0) + 1; }); });
+    var tlist = Object.keys(traits).filter(function (t) { return traits[t] >= 5; }).sort();
+    $("trait").innerHTML = '<option value="">Any trait</option>' + tlist.map(function (t) { return '<option' + (t === state.trait ? " selected" : "") + ">" + esc(t) + "</option>"; }).join("");
+    $("source").innerHTML = '<option value="">All sources</option>' + Object.keys(sources).map(Number).sort(function (a, b) { return D.packs[a].localeCompare(D.packs[b]); })
+      .map(function (i) { return '<option value="' + i + '"' + (String(i) === String(state.source) ? " selected" : "") + ">" + esc(D.packs[i]) + "</option>"; }).join("");
+  }
+  function pick(key) { return state.picks[key] || "normal"; }
+  function seg(key) {
+    return '<span class="seg3">' + ["weak", "normal", "elite"].map(function (a) {
+      return '<button type="button" data-seg="' + esc(key) + '" data-adj="' + a + '"' + (pick(key) === a ? ' class="on"' : "") + ">" + a.charAt(0).toUpperCase() + a.slice(1) + "</button>"; }).join("") + "</span>";
+  }
+  function renderResults() {
+    var q = state.q.trim().toLowerCase(), lo = -99, hi = 99;
+    if (state.range !== "any") { lo = state.level - +state.range; hi = state.level + +state.range; }
+    var hits = D.creatures.filter(function (c) {
+      return systemOk(c[4]) && rarityOk(c[3]) && c[2] >= lo && c[2] <= hi && (!q || c[1].toLowerCase().indexOf(q) >= 0)
+        && (!state.trait || c[6].indexOf(state.trait) >= 0) && (state.source === "" || String(c[5]) === String(state.source));
+    });
+    $("results").innerHTML = hits.slice(0, SHOW).map(function (c) {
+      var rar = c[3] === "common" ? "" : '<span class="rar ' + c[3] + '">' + c[3] + "</span>";
+      return "<tr><td>" + esc(c[1]) + rar + '<span class="src">' + esc(c[6].slice(0, 4).join(" ")) + " · " + esc(D.packs[c[5]]) + (state.system === "both" ? " · " + (c[4] === "sf2e" ? "SF2e" : "PF2e") : "") +
+        '</span></td><td class="lvl">' + c[2] + "</td><td>" + seg(c[0]) + '</td><td><button type="button" class="add" data-add="' + esc(c[0]) + '">Add</button></td></tr>';
+    }).join("") || '<tr><td colspan="4" class="hint">No creature matches. Widen the level, or tick Uncommon / Rare.</td></tr>';
+    $("resultsMore").textContent = hits.length > SHOW ? "Showing " + SHOW + " of " + hits.length + " -- search to narrow it." : "";
+  }
+  var byKey = {};
+  D.creatures.forEach(function (c) { byKey[c[0]] = c; });
+
+  // ---------- custom creatures (the NPC builder's file) ----------
+  function renderCustoms() {
+    $("customs").innerHTML = state.customs.map(function (n, i) {
+      var key = "custom:" + i;
+      return "<tr><td>" + esc(n.name) + '<span class="rar custom">custom</span><span class="src">' + esc((n.size || "Medium") + (n.traits && n.traits.length ? " " + n.traits.slice(0, 3).join(" ") : "")) +
+        '</span></td><td class="lvl">' + (n.level == null ? "?" : n.level) + "</td><td>" + seg(key) + '</td><td><button type="button" class="add" data-addc="' + i + '">Add</button></td></tr>';
+    }).join("");
+  }
+  function readFile(input, then) {
+    var f = input.files && input.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () { try { then(JSON.parse(r.result)); } catch (e) { $("fileMsg").textContent = "That file isn't valid JSON."; } input.value = ""; };
+    r.readAsText(f);
+  }
+
+  // ---------- the encounter ----------
+  function addEntry(entry) {
+    var same = state.list.filter(function (e) { return e.source === entry.source && e.adjustment === entry.adjustment && (e.key || e.name) === (entry.key || entry.name); })[0];
+    if (same) same.count = Math.min(20, same.count + 1); else state.list.push(entry);
+  }
+  function entryLevel(e) { return adjusted(e.level, e.adjustment); }
+  function renderList() {
+    var total = 0, warn = [];
+    $("list").innerHTML = state.list.map(function (e, i) {
+      var lvl = entryLevel(e), each = xpFor(lvl), xp = each * e.count, diff = lvl - state.level;
+      total += xp;
+      if (diff > 4) warn.push(esc(e.name) + " is more than 4 levels above the party -- past what the budget can rate.");
+      if (diff < -4) warn.push(esc(e.name) + " is more than 4 levels below the party: it counts at the table's lowest, " + each + " XP.");
+      var adj = e.adjustment === "normal" ? "" : '<span class="rar adj">' + e.adjustment + "</span>";
+      return "<tr><td>" + esc(e.name) + adj + (e.source === "custom" ? '<span class="rar custom">custom</span>' : "") + '</td><td class="lvl">' + lvl +
+        '</td><td><input type="number" class="qty" min="1" max="20" data-qty="' + i + '" value="' + e.count + '"></td><td>' + each + "</td><td>" + xp +
+        '</td><td><button type="button" class="x" data-del="' + i + '" aria-label="Remove">✕</button></td></tr>';
+    }).join("") || '<tr><td colspan="6" class="hint">Add creatures from the bestiary or your NPC builder file.</td></tr>';
+    $("warnings").innerHTML = warn.map(function (w) { return '<p class="warn">⚠ ' + w + "</p>"; }).join("");
+    $("encTitle").textContent = state.name || "Encounter";
+    $("partyLine").textContent = "Party of " + state.players + " at level " + state.level;
+    var t = thresholds(), top = t[t.length - 1][1] * 1.25, sev = severity(total);
+    var nextUp = t.filter(function (x) { return x[1] > total; })[0];
+    $("rating").innerHTML = '<div class="verdict"><b>' + total + " XP</b>" + (state.list.length ? '<span class="sev ' + sev + '">' + sev + "</span>" : "") +
+      '<span class="src">' + (nextUp ? nextUp[0] + " starts at " + nextUp[1] + " XP for this party" : "Past Extreme for this party") + "</span></div>" +
+      '<div class="meter"><div class="fill" style="width:' + Math.min(100, total / top * 100) + '%"></div></div><div class="ticks">' +
+      t.map(function (x) { return '<span style="left:' + (x[1] / top * 100) + '%">' + x[0] + "<br>" + x[1] + "</span>"; }).join("") + "</div>";
+    return total;
+  }
+  function render() {
+    $("level").value = state.level; $("players").value = state.players; $("encName").value = state.name;
+    ["uncommon", "rare", "unique"].forEach(function (k) { $(k).checked = !!state[k]; });
+    $("q").value = state.q; $("range").value = state.range;
+    var radios = document.querySelectorAll("#sysPick input");
+    for (var i = 0; i < radios.length; i++) radios[i].checked = radios[i].value === state.system;
+    fillFilters(); renderResults(); renderCustoms(); renderList(); save();
+  }
+
+  // ---------- the file (encounter_import.py reads it) ----------
+  function exportData() {
+    return { format: D.format, version: D.version, name: state.name || "Encounter", system: state.system, party: { level: state.level, size: state.players },
+             creatures: state.list.map(function (e) {
+               var out = { source: e.source, name: e.name, level: e.level, adjustment: e.adjustment, count: e.count };
+               if (e.source === "bestiary") out.key = e.key; else out.npc = e.npc;
+               if (e.positions && e.positions.length) out.positions = e.positions.slice(0, e.count);
+               return out; }) };
+  }
+  function slug(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); }
+  function download() {
+    if (!state.list.length) { $("copyHint").textContent = "Add a creature first."; return; }
+    var blob = new Blob([JSON.stringify(exportData(), null, 1)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "encounter-" + (slug(state.name) || "unnamed") + ".json";
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  }
+  function asText() {
+    var total = 0, lines = [(state.name || "Encounter") + " -- party of " + state.players + " at level " + state.level];
+    state.list.forEach(function (e) { var lvl = entryLevel(e), xp = xpFor(lvl) * e.count; total += xp;
+      lines.push("- " + e.count + "x " + e.name + (e.adjustment === "normal" ? "" : " (" + e.adjustment + ")") + ", level " + lvl + ": " + xp + " XP"); });
+    lines.push("Total " + total + " XP: " + severity(total));
+    return lines.join("\n");
+  }
+  function openEncounter(d) {
+    if (!d || d.format !== D.format) { $("fileMsg").textContent = "That isn't an encounter file."; return; }
+    state.name = d.name || ""; if (d.system) state.system = d.system;
+    if (d.party) { state.level = +d.party.level || state.level; state.players = +d.party.size || state.players; }
+    state.list = (d.creatures || []).map(function (c) {
+      return { source: c.source, key: c.key, npc: c.npc, name: c.name || (c.npc && c.npc.name) || "?", level: +c.level || 0,
+               adjustment: c.adjustment || "normal", count: Math.max(1, Math.min(20, +c.count || 1)), positions: c.positions || [] }; });
+    $("fileMsg").textContent = "Opened " + state.list.length + " creature group(s).";
+    render();
+  }
+
+  // ---------- events ----------
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (t.dataset.seg) { state.picks[t.dataset.seg] = t.dataset.adj; renderResults(); renderCustoms(); save(); }
+    else if (t.dataset.add) { var c = byKey[t.dataset.add];
+      addEntry({ source: "bestiary", key: c[0], name: c[1], level: c[2], adjustment: pick(c[0]), count: 1 }); renderList(); save(); }
+    else if (t.dataset.addc != null) { var n = state.customs[+t.dataset.addc];
+      addEntry({ source: "custom", npc: n, name: n.name, level: +n.level || 0, adjustment: pick("custom:" + t.dataset.addc), count: 1 }); renderList(); save(); }
+    else if (t.dataset.del != null) { state.list.splice(+t.dataset.del, 1); renderList(); save(); }
+    else if (t.id === "exportFile") download();
+    else if (t.id === "copyText") {
+      var done = function () { $("copyHint").textContent = "Copied."; };
+      if (navigator.clipboard) navigator.clipboard.writeText(asText()).then(done, function () { $("copyHint").textContent = "Couldn't copy."; });
+    }
+    else if (t.id === "printPlan") window.print();
+    else if (t.id === "clearAll") { state.list = []; state.name = ""; render(); }
+  });
+  document.addEventListener("input", function (e) {
+    var t = e.target;
+    if (t.id === "q") { state.q = t.value; renderResults(); save(); }
+    else if (t.id === "encName") { state.name = t.value.slice(0, 80); $("encTitle").textContent = state.name || "Encounter"; save(); }
+  });
+  document.addEventListener("change", function (e) {
+    var t = e.target;
+    if (t.id === "level") state.level = Math.max(1, Math.min(20, +t.value || 1));
+    else if (t.id === "players") state.players = Math.max(1, Math.min(10, +t.value || 4));
+    else if (t.id === "uncommon" || t.id === "rare" || t.id === "unique") state[t.id] = t.checked;
+    else if (t.id === "range" || t.id === "trait" || t.id === "source") state[t.id] = t.value;
+    else if (t.name === "sys") { state.system = t.value; state.trait = ""; state.source = ""; }
+    else if (t.dataset.qty != null) { state.list[+t.dataset.qty].count = Math.max(1, Math.min(20, +t.value || 1)); renderList(); save(); return; }
+    else if (t.id === "npcFile") { readFile(t, function (d) {
+        if (!d || d.format !== NPC_FORMAT || !Array.isArray(d.npcs)) { $("fileMsg").textContent = "That isn't an NPC builder file."; return; }
+        state.customs = d.npcs.filter(function (n) { return n && n.name; }); $("fileMsg").textContent = state.customs.length + " creature(s) from the NPC builder."; render(); }); return; }
+    else if (t.id === "encFile") { readFile(t, openEncounter); return; }
+    else return;
+    render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

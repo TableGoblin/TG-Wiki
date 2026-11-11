@@ -11,6 +11,7 @@
 <script data-goatcounter="https://tablegoblin.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 <script src="events.js"></script>
+<style>.plan-steps{padding-left:22px;margin:10px 0 14px}.plan-steps li{margin:0 0 9px;line-height:1.55}</style>
 </head>
 <body>
 <div class="shell">
@@ -53,6 +54,7 @@
       <a class="top" href="npc-builder.html"><span>NPC builder</span></a>
       <a class="top" href="town-builder.html"><span>Town builder</span></a>
       <a class="top" href="treasure.html"><span>Treasure planner</span></a>
+      <a class="top" href="encounter-builder.html"><span>Encounter builder</span></a>
       <a class="top" href="class-commands.html"><span>Class Commands</span></a>
       <a class="top" href="gm-screen.html"><span>GM Screen</span></a>
     </nav>
@@ -62,7 +64,7 @@
     <div class="wrap">
       <header class="hero">
         <h1>Your table has a goblin in it now.</h1>
-        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html" aria-current="page">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a><a href="gm-screen.html">GM Screen</a></nav>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html" aria-current="page">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="encounter-builder.html">Encounter builder</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a><a href="gm-screen.html">GM Screen</a></nav>
         <p class="lede">Every command, what it does, and how the pieces fit together.</p>
       </header>
 
@@ -124,6 +126,11 @@
             <span class="badge b-gm">gm only</span>
             <div class="desc">Your table's rules, in a private panel: which optional rules you run, and how much of the game's uncommon and rare content your players may pick. See <a href="#gm">GM Tools</a>. Worth setting before anyone builds a character, because the builder follows it from the first step.</div>
           </div>
+        </div>
+
+        <div class="note">
+          <p><strong>New: plan fights on the site.</strong> Build a map, the creatures and where they stand on the site, then start it all with one
+          command. The steps are in <a href="#plan-encounter">Plan a whole encounter on the site</a>.</p>
         </div>
 
         <h3>What it builds</h3>
@@ -932,9 +939,50 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           <p class="sec-sub">Initiative, conditions, and the rules that run themselves.</p>
         </div>
 
+        <h3 id="plan-encounter">Plan a whole encounter on the site: map, creatures and where they stand</h3>
+        <p>
+          Build the fight before the session, on the site, and bring it to Discord in one command: the map with its terrain, every creature
+          (weak, normal or elite, your own NPC builder creatures too), and where each one stands. Two files do it, and each has one place to go.
+        </p>
+        <ol class="plan-steps">
+          <li><strong>Make the map</strong> on the <a href="map-prep.html">Map prep</a> page: load your map image, set the grid's columns and rows,
+            paint walls, water, doors and light, and <strong>download the terrain file</strong>.</li>
+          <li><strong>Build the fight</strong> on the <a href="encounter-builder.html">Encounter builder</a> page: choose Pathfinder 2e, Starfinder 2e
+            or both, set the party's level and size, add creatures from the bestiary as weak, normal or elite (or open your NPC builder file and add
+            yours), and watch the rating (Trivial to Extreme, the same one <code>/tge begin</code> shows). <strong>Export the encounter file</strong>.</li>
+          <li><strong>Place the creatures</strong> back on the <a href="map-prep.html">Map prep</a> page, step 5: open the encounter file, click each
+            creature onto its square (click again to take it off), and <strong>download the encounter file</strong>. It now remembers where everyone
+            stands; the terrain file is unchanged.</li>
+          <li><strong>Save the map in Discord</strong>: <code>/tgmap upload_gridless</code> (or <code>upload_gridded</code>) with your image, the same
+            columns and rows, the <strong>terrain file</strong> as <code>terrain_file</code>, and a library <code>slot</code> (1&ndash;5) and
+            <code>name</code>. Do it any time before the session.</li>
+          <li><strong>Start the fight</strong>: <code>/tge start map_slot:</code><em>that slot</em> <code>encounter_file:</code><em>the encounter
+            file</em> (add <code>add_party:true</code> to bring the party in). The map goes up, every creature is made and joins as an enemy, and
+            each one stands on the square you gave it. You alone are told the aliases the creatures got, and any square that couldn't take one.</li>
+        </ol>
+        <div class="t-wrap">
+          <table>
+            <thead><tr><th>File</th><th>Made on</th><th>Goes to</th></tr></thead>
+            <tbody>
+              <tr><td><b>Terrain file</b> (the map: grid, walls, water, doors, light)</td><td><a href="map-prep.html">Map prep</a>, steps 1&ndash;4</td>
+                <td><code>/tgmap upload_gridless</code> or <code>upload_gridded</code> as <code>terrain_file</code> (with a <code>slot</code> to keep it in your
+                library), or <code>/tgmap import_terrain</code> for a map you already uploaded</td></tr>
+              <tr><td><b>Encounter file</b> (the creatures, and where they stand once placed)</td><td><a href="encounter-builder.html">Encounter builder</a>;
+                placed on <a href="map-prep.html">Map prep</a>, step 5</td><td><code>/tge start encounter_file:</code>, with <code>map_slot:</code> for the map</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note">
+          <p><strong>Good to know.</strong> Keep the grid the same size (columns and rows) on the Map prep page and in the upload, or the squares won't
+          line up. Without a <code>map_slot</code> the creatures still join the fight; they just wait to be placed with <code>/tgmap place</code>.
+          The creatures become ordinary campaign NPCs, so you can look at, edit or reuse them like any other. The encounter file needs no map, so you
+          can skip step 3 and use the Encounter builder's file on its own.</p>
+        </div>
+
+
         <div class="cmds">
-          <div class="cmd-row"><div class="cmd">/tge start <span class="opt">[name] [add_party] [loot] [map_slot] [add_enemies]</span></div><span class="badge b-gm">gm only</span>
-            <div class="desc"><code>add_party:true</code> pulls in every PC and their companions; leave it out and nobody is added, so you can add just who's playing with <code>/tge add</code>. <code>add_enemies</code> takes your creatures' aliases, comma-separated (<code>goblin1, goblin2, boss</code>), so a whole fight can be written ahead of time and pasted in; only how many joined is shown to the table, and anything that didn't match is reported to you alone. Set <code>loot:true</code> and the fight pays out when it ends.</div></div>
+          <div class="cmd-row"><div class="cmd">/tge start <span class="opt">[name] [add_party] [loot] [map_slot] [add_enemies] [encounter_file]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc"><code>add_party:true</code> pulls in every PC and their companions; leave it out and nobody is added, so you can add just who's playing with <code>/tge add</code>. <code>add_enemies</code> takes your creatures' aliases, comma-separated (<code>goblin1, goblin2, boss</code>), so a whole fight can be written ahead of time and pasted in; only how many joined is shown to the table, and anything that didn't match is reported to you alone. Set <code>loot:true</code> and the fight pays out when it ends. <code>encounter_file</code> takes a fight planned on the <a href="encounter-builder.html">Encounter builder</a> page: its creatures are made (weak, normal or elite; your NPC builder creatures too) and join as enemies, and with a <code>map_slot</code> the ones you placed on the <a href="map-prep.html">Map prep</a> page stand where you put them.</div></div>
           <div class="cmd-row"><div class="cmd">/tge add <b>alias</b> <span class="opt">[side] [player]</span></div><span class="badge b-self">self / gm</span>
             <div class="desc">Adds a character, companion or creature to the running encounter, mid-fight included. Comma-separate several aliases to add a group at once. <code>side</code> is Party, Enemy or Neutral; creatures default to Enemy and characters to Party.</div></div>
           <div class="cmd-row"><div class="cmd">/tge roll <span class="opt">[alias]</span></div><span class="badge b-self">self / gm</span>
@@ -1260,6 +1308,10 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           Using a slot <em>copies</em> the map into the fight — image, grid, fog and terrain. Tokens are
           not copied, and nothing that happens in the fight touches the saved original, so the same
           ambush site can be used again next month.
+        </p>
+        <p>
+          Planning the whole fight ahead, creatures included? See <a href="#plan-encounter">Plan a whole encounter on the site</a>: the map and the
+          creatures are made on the site and start together with one <code>/tge start</code>.
         </p>
 
         <h3>What the map works out on its own</h3>

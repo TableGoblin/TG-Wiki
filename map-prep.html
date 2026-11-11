@@ -55,6 +55,7 @@
       <a class="top" href="npc-builder.html"><span>NPC builder</span></a>
       <a class="top" href="town-builder.html"><span>Town builder</span></a>
       <a class="top" href="treasure.html"><span>Treasure planner</span></a>
+      <a class="top" href="encounter-builder.html"><span>Encounter builder</span></a>
       <a class="top" href="class-commands.html"><span>Class Commands</span></a>
       <a class="top" href="gm-screen.html"><span>GM Screen</span></a>
     </nav>
@@ -65,13 +66,14 @@
       <header class="hero tool-hero">
         <div class="eyebrow">GM tool</div>
         <h1>Map prep</h1>
-        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html" aria-current="page">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a><a href="gm-screen.html">GM Screen</a></nav>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html" aria-current="page">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="encounter-builder.html">Encounter builder</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a><a href="gm-screen.html">GM Screen</a></nav>
         <p class="lede">Paint a map's walls, water, doors and lighting here, at your own pace, then take the file to Discord with the image. Nothing you load or paint on this page is uploaded anywhere; it stays in your browser until you download the file.</p>
         <ol class="steps">
       <li><strong>Load your map image</strong> and tell the page how many columns and rows the grid has.</li>
       <li><strong>Paint terrain</strong> the way <code>/tgmap terrain</code> does, and pick the whole map's light level.</li>
       <li><strong>Download the terrain file</strong> (a small .json).</li>
       <li><strong>In Discord</strong> run <code>/tgmap upload_gridless</code> or <code>upload_gridded</code> with your image and add the file as <code>terrain_file</code>.</li>
+      <li><strong>Placing an encounter?</strong> Open its file from the <a href="encounter-builder.html">Encounter builder</a> in step 5, click each creature onto the map, and download the encounter file: <code>/tge start encounter_file:</code> with the map's <code>map_slot</code> puts them where you placed them.</li>
     </ol>
       </header>
 
@@ -148,6 +150,19 @@
           </div>
           <p class="hint" id="pngHint">Your map image with the terrain painted on and the grid lines drawn, at the image's own size. The labelled version adds the column letters and row numbers around the edge, as Discord shows them. Hidden hazards (traps) are left off, so either picture can be shared with players. Load an image first.</p>
           <div class="error" id="pngError" role="alert"></div>
+        </div>
+
+        <div class="panel" style="margin-top:14px">
+          <h2>5 · Creatures</h2>
+          <label class="tbtn" style="margin:0;cursor:pointer;display:inline-block">Open an encounter file<input type="file" id="encFile" accept=".json,application/json" hidden></label>
+          <p class="hint">A file from the <a href="encounter-builder.html">Encounter builder</a>. Pick a creature below, then click its square on the map; the next one is picked for you. Click a placed creature's square again to take it off.</p>
+          <div id="encList"></div>
+          <div class="btns" style="margin-top:10px">
+            <button class="tbtn primary" id="encDownload" type="button" disabled>Download encounter file</button>
+            <button class="tbtn" id="encClear" type="button" disabled>Clear positions</button>
+          </div>
+          <p class="hint" id="encHint">The encounter file keeps its creatures and adds where each one stands; the map stays in the terrain file. Placing creatures doesn't change the terrain.</p>
+          <div class="error" id="encError" role="alert"></div>
         </div>
       </div>
     </div>
@@ -326,6 +341,7 @@
     for (var c = 0; c <= state.cols; c++) { var gx = Math.round(ox + c * cs) + .5; g.moveTo(gx, oy); g.lineTo(gx, oy + state.rows * cs); }
     for (var r = 0; r <= state.rows; r++) { var gy = Math.round(oy + r * cs) + .5; g.moveTo(ox, gy); g.lineTo(ox + state.cols * cs, gy); }
     g.stroke();
+    drawTokens(g, ox, oy, cs);
     if (drag && drag.rect) {
       var a = drag.rect; var rx = ox + (Math.min(a.c0, a.c1) - 1) * cs, ry = oy + (Math.min(a.r0, a.r1) - 1) * cs;
       g.strokeStyle = "#ffd24a"; g.lineWidth = 2; g.strokeRect(rx, ry, (Math.abs(a.c1 - a.c0) + 1) * cs, (Math.abs(a.r1 - a.r0) + 1) * cs);
@@ -336,6 +352,90 @@
     for (var cc = 1; cc <= state.cols; cc += every) g.fillText(colLetter(cc), MARGIN + ox + (cc - .5) * cs, MARGIN / 2);
     for (var rr = 1; rr <= state.rows; rr += every) g.fillText(String(rr), MARGIN / 2, MARGIN + oy + (rr - .5) * cs);
   }
+
+  /* ---- creatures (owner 2026-11-11): an Encounter builder file, each creature placed on a square; the file goes back with `positions` ---- */
+  var ENC_FORMAT = "tablegoblin-encounter", ENC_STORE = "tg-mapprep-encounter-v1";
+  var enc = null;                                 /* {data, pick: [group, copy] or null} */
+  try { var keptEnc = JSON.parse(localStorage.getItem(ENC_STORE) || "null"); if (keptEnc && keptEnc.format === ENC_FORMAT) enc = { data: keptEnc, pick: null }; } catch (e) { /* private window */ }
+  function encSave() { try { if (enc) localStorage.setItem(ENC_STORE, JSON.stringify(enc.data)); else localStorage.removeItem(ENC_STORE); } catch (e) { /* storage blocked */ } }
+  function initials(name) { return String(name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w.charAt(0).toUpperCase(); }).join(""); }
+  function slots() {                               /* [{g, i, label, pos}] -- every creature copy */
+    var out = [];
+    if (!enc) return out;
+    enc.data.creatures.forEach(function (c, g) {
+      var n = Math.max(1, +c.count || 1); c.positions = (c.positions || []).slice(0, n);
+      for (var i = 0; i < n; i++) out.push({ g: g, i: i, label: (c.name || "?") + (n > 1 ? " " + (i + 1) : "") + (c.adjustment && c.adjustment !== "normal" ? " (" + c.adjustment + ")" : ""),
+                                            short: initials(c.name) + (n > 1 ? String(i + 1) : ""), pos: c.positions[i] || null });
+    });
+    return out;
+  }
+  function tokenAt(c, r) { return slots().filter(function (s) { return s.pos && s.pos[0] === c && s.pos[1] === r; })[0] || null; }
+  function nextUnplaced() { var s = slots().filter(function (x) { return !x.pos; })[0]; return s ? [s.g, s.i] : null; }
+  function setPos(g, i, pos) {
+    var c = enc.data.creatures[g]; c.positions = c.positions || [];
+    while (c.positions.length < i) c.positions.push(null);
+    c.positions[i] = pos;
+    while (c.positions.length && !c.positions[c.positions.length - 1]) c.positions.pop();
+  }
+  function placeAt(c, r) {
+    var there = tokenAt(c, r);
+    if (there && (!enc.pick || (there.g === enc.pick[0] && there.i === enc.pick[1]) || !enc.pick)) { setPos(there.g, there.i, null); enc.pick = [there.g, there.i]; }
+    else if (enc.pick) {
+      if (there) { $("encError").textContent = "Another creature is on " + cellLabel(c, r) + "."; return; }
+      setPos(enc.pick[0], enc.pick[1], [c, r]); enc.pick = nextUnplaced(); $("encError").textContent = "";
+    }
+    encSave(); renderEnc(); draw();
+  }
+  function drawTokens(g, ox, oy, cs) {
+    slots().forEach(function (s) {
+      if (!s.pos) return;
+      var x = ox + (s.pos[0] - .5) * cs, y = oy + (s.pos[1] - .5) * cs, rad = cs * .42;
+      g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fillStyle = "rgba(178,38,30,.92)"; g.fill();
+      g.lineWidth = Math.max(1.5, cs * .06); g.strokeStyle = (enc.pick && enc.pick[0] === s.g && enc.pick[1] === s.i) ? "#ffd24a" : "#fff"; g.stroke();
+      g.fillStyle = "#fff"; g.font = "600 " + Math.max(8, Math.round(cs * .32)) + "px 'IBM Plex Mono', monospace"; g.textAlign = "center"; g.textBaseline = "middle";
+      g.fillText(s.short, x, y + 1);
+    });
+  }
+  function renderEnc() {
+    var box = $("encList"), list = slots();
+    $("encDownload").disabled = !enc; $("encClear").disabled = !enc;
+    if (!enc) { box.innerHTML = '<p class="hint">No encounter open.</p>'; return; }
+    var placed = list.filter(function (s) { return s.pos; }).length;
+    box.innerHTML = "<p><b>" + String(enc.data.name || "Encounter").replace(/[&<>]/g, "") + "</b> -- " + placed + " of " + list.length + " placed</p>" +
+      '<div class="palette">' + list.map(function (s) {
+        var on = enc.pick && enc.pick[0] === s.g && enc.pick[1] === s.i;
+        return '<button type="button" class="pal' + (on ? " pal-current" : "") + '" data-pick="' + s.g + ":" + s.i + '" aria-pressed="' + on + '">' + s.label.replace(/[&<>]/g, "") +
+          (s.pos ? " · " + cellLabel(s.pos[0], s.pos[1]) : "") + "</button>"; }).join("") + "</div>";
+  }
+  $("encFile").addEventListener("change", function () {
+    var f = this.files && this.files[0], input = this; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d || d.format !== ENC_FORMAT || !Array.isArray(d.creatures)) throw new Error("That isn't an encounter file from the Encounter builder.");
+        enc = { data: d, pick: null }; enc.pick = nextUnplaced(); $("encError").textContent = ""; encSave(); renderEnc(); draw();
+      } catch (e) { $("encError").textContent = e.message || "That file couldn't be read."; }
+      input.value = "";
+    };
+    rd.readAsText(f);
+  });
+  $("encList").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-pick]"); if (!b || !enc) return;
+    var p = b.getAttribute("data-pick").split(":").map(Number);
+    enc.pick = (enc.pick && enc.pick[0] === p[0] && enc.pick[1] === p[1]) ? null : p; renderEnc(); draw();
+  });
+  $("encClear").addEventListener("click", function () { if (!enc) return; enc.data.creatures.forEach(function (c) { c.positions = []; }); enc.pick = nextUnplaced(); encSave(); renderEnc(); draw(); });
+  $("encDownload").addEventListener("click", function () {
+    if (!enc) return;
+    var out = JSON.parse(JSON.stringify(enc.data));
+    out.creatures.forEach(function (c) { c.positions = (c.positions || []).filter(Boolean); if (!c.positions.length) delete c.positions; });
+    var blob = new Blob([JSON.stringify(out, null, 1)], { type: "application/json" }), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "encounter-" + (String(out.name || "unnamed").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "unnamed") + ".json";
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  });
+  renderEnc();
 
   /* ---- painting ---- */
   var drag = null;
@@ -365,6 +465,7 @@
   var mapEl = $("map");
   mapEl.addEventListener("pointerdown", function (ev) {
     var cell = cellAt(ev); if (!cell) return;
+    if (enc && (enc.pick || tokenAt(cell.c, cell.r))) { placeAt(cell.c, cell.r); return; }
     mapEl.setPointerCapture(ev.pointerId); snapshot();
     var erase = ev.button === 2 || ev.altKey, key = erase ? DATA.floor : state.key;
     if (state.tool === "rect") drag = { rect: { c0: cell.c, r0: cell.r, c1: cell.c, r1: cell.r }, key: key };

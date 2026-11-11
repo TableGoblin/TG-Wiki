@@ -53,6 +53,7 @@
       <a class="top" href="npc-builder.html"><span>NPC builder</span></a>
       <a class="top" href="town-builder.html"><span>Town builder</span></a>
       <a class="top" href="treasure.html"><span>Treasure planner</span></a>
+      <a class="top" href="encounter-builder.html"><span>Encounter builder</span></a>
       <a class="top" href="class-commands.html"><span>Class Commands</span></a>
       <a class="top" href="gm-screen.html"><span>GM Screen</span></a>
     </nav>
@@ -62,7 +63,7 @@
     <div class="wrap">
       <header class="hero">
         <h1>Change Log</h1>
-        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="changelog.html" aria-current="page">Change Log</a><a href="class-commands.html">Class Commands</a><a href="gm-screen.html">GM Screen</a></nav>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="encounter-builder.html">Encounter builder</a><a href="changelog.html" aria-current="page">Change Log</a><a href="class-commands.html">Class Commands</a><a href="gm-screen.html">GM Screen</a></nav>
         <p class="lede">Everything that has changed in Table Goblin, newest first. Jump to a month: <a href="#m-november-2026">November 2026</a> · <a href="#m-october-2026">October 2026</a></p>
       </header>
 
@@ -70,6 +71,29 @@
         <h2 class="new-head">November 2026</h2>
         <h3 class="new-date">Nov 11, 2026</h3>
         <ul class="new-list">
+          <li><strong>Plan whole encounters on the site, and start them with one command:</strong> the new <a href="encounter-builder.html">Encounter builder</a> page
+            builds a fight for your party (Pathfinder 2e, Starfinder 2e or both): creatures from the bestiary as weak, normal or elite, your own
+            <a href="npc-builder.html">NPC builder</a> creatures too, and its XP rating from Trivial to Extreme, the same one <code>/tge begin</code> shows.
+            The <a href="map-prep.html">Map prep</a> page now places those creatures on your map. How it fits together:
+            <ol>
+              <li>Map prep: load the map image, paint its terrain, <strong>download the terrain file</strong>.</li>
+              <li>Encounter builder: add the creatures, <strong>export the encounter file</strong>.</li>
+              <li>Map prep, step 5: open the encounter file, click each creature onto its square, <strong>download it again</strong>.</li>
+              <li>Discord: <code>/tgmap upload_gridless</code> with the image, the <strong>terrain file</strong> as <code>terrain_file</code>, and a <code>slot</code>.</li>
+              <li>Discord: <code>/tge start map_slot:</code> that slot <code>encounter_file:</code> the <strong>encounter file</strong>. The map goes up and every
+                creature is made, joins the fight and stands where you placed it.</li>
+            </ol>
+            The whole walkthrough is in the wiki: <a href="wiki.html#plan-encounter">Plan a whole encounter on the site</a>.</li>
+          <li><strong>Swashbucklers:</strong> Tumble Through and your style's actions (Feint for a Fencer, Demoralize for a Braggart, Grapple, Shove and the rest for a
+            Gymnast, and so on) now give you panache on a success, or until the end of your next turn on a failure, with Stylish Combatant's +1. Disarming
+            Flair makes Disarm count too.</li>
+          <li><strong>GM screen:</strong> each group of sections and each section on the <a href="gm-screen.html">GM Screen</a> page folds away, and it's in
+            every page's top bar.</li>
+          <li><strong>More class feats:</strong> Collateral Reinforcement, Summoner's Call, Reactive Dismissal, Protective Pose, Reason Rapidly, Turn Away
+            Misfortune, Connect the Dots, Storm Retribution, Scatter Swarm, One for All, Rapid Response, Warden's Boon, Additional Recollection, Manifold
+            Edge, Lessons of Flux, Wandering Thoughts, Helpful Tinkering, No! No! I Created You!, Siphon Power, Bond Conservation, Spellbinding Speech
+            (and a creature that can't use reactions now really can't), Rapid Spark, Fly on Shadowed Wings, Blanket Defense, Swift Banishment, Conduit
+            of Void and Vitality, Affliction Mercy, Ultimate Mercy, and Invigorating Elixir with its Improved and Supreme versions.</li>
           <li><strong>GM screen:</strong> a rules reference for the GM, with conditions, DCs by level, simple DCs, bonuses, actions and more. Tick the sections (and parts of them) you want. It's on the site as the <a href="gm-screen.html">GM Screen</a> page, and in Discord as the <strong>📖 GM Screen</strong> button under the GM dashboard or <code>/tgm screen</code>, which remembers your choice.</li>
           <li><strong>GMs and players:</strong> <code>/tgm gm add|remove</code> and <code>/tgm player add|remove</code> replace the four old add/remove commands, and take several people at once, comma-separated (@mentions, names or IDs). The old ones stay on the handbook, marked retired, until Nov 25.</li>
           <li><strong>New campaigns in one step:</strong> <code>/tgm campaign_create</code> now takes <code>include_voice</code> and <code>include_dice</code>, so the GM, roles, channels, voice and dice channel all come from the one command. <code>/tgm setup_channels</code> takes <code>include_dice</code> too.</li>
