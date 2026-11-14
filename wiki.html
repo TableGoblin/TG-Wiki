@@ -1145,14 +1145,24 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         </div>
 
         <h3>Hazards</h3>
-        <p>A trap or hazard doesn't join the roster like a creature &mdash; it attacks or forces saves directly.</p>
+        <p>Every hazard you add is kept as one of the campaign's hazards, with its Stealth DC, Disable checks, reset and state (armed, triggered, disabled, broken). It runs from its own stat block: when it goes off, the bot rolls its save at its own DC and applies the damage and conditions, deals its damage, or rolls its Strike. Traps go on the battle map and stay hidden from the players until found or set off.</p>
         <div class="cmds">
-          <div class="cmd-row"><div class="cmd">/tghazard add <b>hazard</b> <span class="opt">[cell]</span></div><span class="badge b-gm">gm only</span>
-            <div class="desc">Adds a complex hazard to the fight: it rolls initiative with its Stealth and takes turns. On its turn you get its routine with a Strike button for each of its attacks (you pick the targets; damage is applied) and a Save button (the save, the DC and who rolls). It has its stat block's saves, Hardness, immunities, weaknesses and resistances, so damage you deal it is reduced by its Hardness. It never acts on its own, and it goes away when the encounter ends.</div></div>
+          <div class="cmd-row"><div class="cmd">/tghazard add <b>hazard</b> <span class="opt">[cell]</span> <span class="opt">[hidden]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Adds a simple or complex hazard. In a running encounter with a <code>cell</code>, it is placed on the map (shown on your copy only while hidden); a creature walking onto it sets it off, unless a Searching character spots it first. A complex hazard that isn't hidden rolls initiative with its Stealth and takes turns (its turn post has its Strikes, a button for each routine action, and Save...). With no encounter running, it is prepped for later and survives <code>/tge end</code>. Your card has Disable, Party searches and Set it off buttons.</div></div>
           <div class="cmd-row"><div class="cmd">/tghazard attack <b>hazard</b> <b>target_alias</b></div><span class="badge b-gm">gm only</span>
-            <div class="desc">Rolls the hazard's own real Strike against someone.</div></div>
-          <div class="cmd-row"><div class="cmd">/tghazard save <b>hazard</b> <b>target_alias</b> <b>save_type</b> <b>dc</b></div><span class="badge b-gm">gm only</span>
-            <div class="desc">Forces a save against its effect. Most hazards' own DC isn't clean structured data, so you read it off the stat block and supply it.</div></div>
+            <div class="desc">Rolls the hazard's own real Strike against someone (its poison and riders too).</div></div>
+          <div class="cmd-row"><div class="cmd">/tghazard save <b>hazard</b> <b>target_alias</b> <span class="opt">[save_type]</span> <span class="opt">[dc]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Rolls the hazard's own save for one or more targets (comma list) and applies its damage and conditions. A typed DC overrides the stat block's; a hazard with no readable save needs both.</div></div>
+          <div class="cmd-row"><div class="cmd">/tghazard disable <b>hazard</b> <span class="opt">[character]</span> <span class="opt">[check]</span></div><span class="badge b-gm">gm / player</span>
+            <div class="desc">Tries to disable a found hazard with its listed skill and minimum proficiency. A critical success counts as two successes; a critical failure sets it off on you. A disabled haunt comes back after its reset time unless laid to rest.</div></div>
+          <div class="cmd-row"><div class="cmd">/tghazard trigger <b>hazard</b> <span class="opt">[targets]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Sets a hazard off on the named targets, or whoever stands on it. Its reset timer starts (game clock or rounds); a complex hazard rolls initiative.</div></div>
+          <div class="cmd-row"><div class="cmd">/tghazard reset <b>hazard</b></div><span class="badge b-gm">gm only</span>
+            <div class="desc">Arms a hazard again.</div></div>
+          <div class="cmd-row"><div class="cmd">/tghazard list <span class="opt">[hazard]</span></div><span class="badge b-gm">gm / player</span>
+            <div class="desc">The campaign's hazards and their state (players see the ones found); with a hazard, its card and buttons.</div></div>
+          <div class="cmd-row"><div class="cmd">/tghazard custom <b>name</b> <b>level</b> <span class="opt">[complex] [stealth_dc] [disable] [save] [damage] [effect] [reset] [hidden] [cell]</span></div><span class="badge b-gm">gm only</span>
+            <div class="desc">A homebrew hazard, run like a real one: e.g. disable <code>thievery 20 trained</code>, save <code>reflex 20 basic</code>, damage <code>2d8+4 piercing</code>, reset <code>1 hour</code>.</div></div>
         </div>
 
         <h3>Reaction alerts</h3>
