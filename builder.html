@@ -1310,6 +1310,8 @@
   $("bookClear").addEventListener("click", function () { S.books = []; saveBooks(); renderBookChecks(); refresh(); renderItems(); });
   $("bookSociety").addEventListener("click", function () {
     S.books = bookFamilies().filter(function (r) { return r[4]; }).map(function (r) { return r[0]; });
+    /* owner 2026-11-14: society legality is the books, not rarity -- uncommon and rare are open */
+    S.allowUncommon = true; S.allowRare = true; $("allowUncommon").checked = true; $("allowRare").checked = true;
     saveBooks(); renderBookChecks(); refresh(); renderItems();
   });
 
