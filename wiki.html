@@ -1174,6 +1174,15 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
             <div class="desc"><code>action</code> names what the check is for &mdash; Climb, Swim, Lie, Aid, Sense Motive and so on (the list follows the skill you picked). Your feats that help with that action apply automatically: Sure Feet turns a successful Climb into a critical success, for example. The result then has a <b>&#9734; Favorite</b> button: starred actions are listed first, with a star, the next time you pick one &mdash; and they also appear in your character sheet's skill dropdown, rolled with the skill they suit best. The sheet's Overview also has a <b>Situational toggles</b> menu listing the toggles your feats have (Tail Spin "using your tail", Risky Surgery, Staff Acrobat "wielding your staff"): tick what's true right now and the feat applies until you untick it. Give either a <code>dc</code> or a <code>target</code>: pick a creature in the encounter and its own defense is the DC (Reflex for Trip, Fortitude for Shove, Will for Demoralize, Perception for a Lie or a Feint). Trip, Shove, Grapple, Disarm, Reposition, Tumble Through, Demoralize and Feint against a target run the full action &mdash; the multiple attack penalty, Prone or Grabbed applied, and any follow-up buttons. <code>secret:true</code> posts the real result (feat upgrades for the action included) to the GM's own channel only &mdash; the table just sees that a roll happened.</div></div>
         </div>
 
+        <p>
+          Many actions also <b>resolve</b>: the post says what the result does and keeps track of it. Balancing leaves you off-guard
+          until your next turn; a failed Subsist makes you fatigued; a creature that sees through your Lie gets +4 against your Lies for
+          the conversation; Cover Tracks needs no roll and gives the DC trackers must beat. Some actions have a second form for a harder
+          situation &mdash; <b>Steal (closely guarded)</b> at &minus;5, <b>Force Open (prying)</b> at &minus;2 without a crowbar,
+          <b>Subsist (after exploring)</b> at &minus;5 &mdash; and your feats add more (Pickpocket's <b>Steal (in combat)</b>,
+          Shadow Mark's <b>Avoid Notice (shadowing)</b>, Quiet Allies' group check). Make an Impression can take up to five targets at &minus;2.
+        </p>
+
         <h3>Degrees of success</h3>
         <p>The bot resolves the whole ladder rather than printing all four and leaving you to find the row:</p>
         <div class="ladder">
