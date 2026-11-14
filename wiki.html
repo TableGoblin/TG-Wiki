@@ -1127,7 +1127,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         <p>A trap or hazard doesn't join the roster like a creature &mdash; it attacks or forces saves directly.</p>
         <div class="cmds">
           <div class="cmd-row"><div class="cmd">/tghazard add <b>hazard</b> <span class="opt">[cell]</span></div><span class="badge b-gm">gm only</span>
-            <div class="desc">Adds a complex hazard to the fight: it rolls initiative with its Stealth and takes turns. On its turn you get its routine with a Strike button for each of its attacks (you pick the targets; damage is applied) and a Save button (the save, the DC and who rolls). It never acts on its own, and it goes away when the encounter ends.</div></div>
+            <div class="desc">Adds a complex hazard to the fight: it rolls initiative with its Stealth and takes turns. On its turn you get its routine with a Strike button for each of its attacks (you pick the targets; damage is applied) and a Save button (the save, the DC and who rolls). It has its stat block's saves, Hardness, immunities, weaknesses and resistances, so damage you deal it is reduced by its Hardness. It never acts on its own, and it goes away when the encounter ends.</div></div>
           <div class="cmd-row"><div class="cmd">/tghazard attack <b>hazard</b> <b>target_alias</b></div><span class="badge b-gm">gm only</span>
             <div class="desc">Rolls the hazard's own real Strike against someone.</div></div>
           <div class="cmd-row"><div class="cmd">/tghazard save <b>hazard</b> <b>target_alias</b> <b>save_type</b> <b>dc</b></div><span class="badge b-gm">gm only</span>
