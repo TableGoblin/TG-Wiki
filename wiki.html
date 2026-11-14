@@ -483,6 +483,9 @@
           target's Hit Points, and the item's effect goes on their sheet: an Antidote's bonus against poison, an Eagle Eye Elixir's Perception, temporary Hit Points.
           What the bot can't read is listed as <em>not tracked</em> so you can apply it by hand. <code>{item}</code> does the same from chat, as a dropdown or
           <code>{item: healing potion}</code>.
+          It also lists every magic item you carry that has an <strong>Activate</strong> entry: pick the activation and who it is for, and the bot counts its
+          uses by its frequency (once a day comes back at daily preparations), refuses an item that must be invested and isn't (or is broken), rolls its save at the
+          item's DC, rolls healing and damage, applies its effect and casts the spell it grants.
           <strong>Scrolls, wands and staves</strong> are cast from: a blank scroll or wand first asks which spell it holds (one on your spell list, of its rank or lower),
           then the spell is cast with your own spell DC and attack. A scroll is used up; a wand casts once a day, and a second casting overcharges it (a DC 10 flat
           check: broken on a success, destroyed on a failure); a staff spends charges equal to the spell's rank from a pool equal to your highest-rank spell slot.
