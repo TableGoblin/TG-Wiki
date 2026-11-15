@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Table Goblin — Item Builder</title>
+<link rel="icon" href="table-goblin.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="tools.css">
+<script data-goatcounter="https://tablegoblin.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+<script src="events.js"></script>
+<style>
+  .item-tabs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 14px; }
+  .item-tabs .pill { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sys { display: inline-block; font: 600 10.5px "IBM Plex Mono", monospace; letter-spacing: .05em; text-transform: uppercase; border-radius: 4px;
+         padding: 2px 6px; margin-left: 6px; vertical-align: 1px; color: #fff; }
+  .sys.pf2e { background: #8A5CB8; }
+  .sys.sf2e { background: #3F7FB0; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .grid5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+  @media (max-width: 640px) { .grid3, .grid5 { grid-template-columns: 1fr 1fr; } }
+  .panel textarea { width: 100%; min-height: 80px; padding: 7px 9px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--ground);
+                    color: var(--text); font: inherit; font-size: 14px; resize: vertical; box-sizing: border-box; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px 4px 2px 9px;
+          margin: 2px 3px 2px 0; font-size: 12.5px; background: var(--surface); }
+  .chip.invented { border-style: dashed; }
+  .chip button { border: 0; background: none; color: var(--text-3); cursor: pointer; font-size: 13px; padding: 0 3px; }
+  .chip button:hover { color: var(--danger); }
+  .tdefs { margin: 4px 0 8px; padding: 0; list-style: none; }
+  .tdefs li { font-size: 12.5px; color: var(--text-2); padding: 3px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+  .tdefs li:last-child { border-bottom: 0; }
+  .tdefs b { color: var(--text); }
+  .warns { margin: 0; padding: 0; list-style: none; }
+  .warns li { font-size: 13px; padding: 5px 0 5px 22px; position: relative; border-bottom: 1px solid var(--line); color: var(--text-2); overflow-wrap: anywhere; }
+  .warns li:last-child { border-bottom: 0; }
+  .warns li::before { position: absolute; left: 0; top: 5px; }
+  .warns li.block::before { content: "\274C"; }
+  .warns li.warn::before { content: "\26A0\FE0F"; }
+  .warns li.info::before { content: "\2139\FE0F"; }
+  .warns li.ok::before { content: "\2705"; }
+  .warns .src { display: block; font: 500 10.5px "IBM Plex Mono", monospace; color: var(--text-3); letter-spacing: .03em; }
+  .closest { font-size: 12.5px; color: var(--text-2); margin: 6px 0 0; padding-left: 16px; }
+  .closest li { margin: 2px 0; overflow-wrap: anywhere; }
+  .card-prev { font-size: 13px; line-height: 1.45; }
+  .card-prev h3 { font: 600 17px Fraunces, Georgia, serif; margin: 0 0 4px; }
+  .card-prev .traits { display: flex; flex-wrap: wrap; gap: 3px; margin: 4px 0 6px; }
+  .card-prev .traits span { font: 500 10.5px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .04em; border: 1px solid var(--line-strong);
+                            border-radius: 3px; padding: 1px 5px; }
+  .card-prev p { margin: 0 0 3px; overflow-wrap: anywhere; }
+  .scorebar { position: relative; height: 10px; background: var(--surface-2); border-radius: 3px; margin: 4px 0 2px; }
+  .scorebar .fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 3px; background: var(--accent); }
+  .scorebar .mark { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--text-3); }
+  .scorecap { display: flex; justify-content: space-between; font: 500 10.5px "IBM Plex Mono", monospace; color: var(--text-3); }
+  .inline-checks { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 8px; }
+  .inline-checks label { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 13px; color: var(--text); }
+  .tiny { font-size: 12px; color: var(--text-3); }
+  .cmd { font: 500 12.5px "IBM Plex Mono", monospace; background: var(--surface-2); border-radius: 6px; padding: 6px 8px; margin: 6px 0 0; overflow-wrap: anywhere; }
+  .coming { opacity: .55; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+        <img class="rail-logo" src="table-goblin.png" alt="Table Goblin logo">
+        <b>Table Goblin</b>
+        <span>Pathfinder 2e for Discord</span>
+        <a class="btn" href="https://discord.gg/cHMex5xFsV" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.211.375-.457.879-.626 1.278a18.27 18.27 0 0 0-5.518 0A12.76 12.76 0 0 0 9.115 3 19.736 19.736 0 0 0 4.68 4.372C1.727 8.75.929 13.028 1.328 17.244a19.9 19.9 0 0 0 5.993 3.03c.483-.66.914-1.36 1.285-2.098a12.87 12.87 0 0 1-2.024-.973c.17-.124.336-.253.497-.386 3.902 1.803 8.13 1.803 11.987 0 .162.133.329.262.497.386-.645.386-1.323.71-2.026.974.371.738.802 1.438 1.285 2.098a19.876 19.876 0 0 0 5.995-3.03c.468-4.891-.795-9.13-3.5-13.876ZM8.68 14.813c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Zm7.324 0c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Z"/></svg>
+          Join the Discord
+        </a>
+        <div class="discord-widget" id="discordWidget" hidden aria-live="polite">
+          <span class="dw-dot"></span>
+          <span class="dw-avatars" id="dwAvatars"></span>
+          <span id="dwText"></span>
+        </div>
+    </div>
+    <nav>
+      <a class="btn" href="https://discord.com/oauth2/authorize?client_id=1550867869066076263" target="_blank" rel="noopener">Install Table Goblin</a>
+      <a class="top" href="index.html"><span>Home</span></a>
+      <a class="top" href="changelog.html"><span>Change Log</span></a>
+      <a class="top" href="wiki.html"><span>Wiki</span></a>
+      <div class="rail-sub">
+        <a href="wiki.html#start"><span>Getting Started</span></a>
+        <a href="wiki.html#gm"><span>GM Tools</span></a>
+        <a href="wiki.html#chars"><span>Characters</span></a>
+        <a href="wiki.html#chat"><span>Playing in Character</span></a>
+        <a href="wiki.html#npcs"><span>Creatures &amp; NPCs</span></a>
+        <a href="wiki.html#dice"><span>Dice Roller</span></a>
+        <a href="wiki.html#combat"><span>Encounters</span></a>
+        <a href="wiki.html#maps"><span>Battle Maps</span></a>
+        <a href="wiki.html#loot"><span>Loot &amp; the Purse</span></a>
+        <a href="wiki.html#towns"><span>Towns &amp; Shops</span></a>
+        <a href="wiki.html#lookup"><span>Reference Lookup</span></a>
+        <a href="wiki.html#coming"><span>Coming Features</span></a>
+      </div>
+      <a class="top" href="class-commands.html"><span>Class Commands</span></a>
+      <div class="rail-head">Tools</div>
+      <div class="rail-sub">
+        <a href="gm-screen.html"><span>GM Screen</span></a>
+        <a href="town-builder.html"><span>Town builder</span></a>
+        <a href="treasure.html"><span>Treasure planner</span></a>
+        <a href="builder.html"><span>Character builder</span></a>
+        <a href="npc-builder.html"><span>NPC builder</span></a>
+        <a href="item-builder.html" aria-current="page"><span>Item builder</span></a>
+        <a href="encounter-builder.html"><span>Encounter builder</span></a>
+        <a href="map-prep.html"><span>Map prep</span></a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="tool-page">
+    <div class="wrap">
+      <header class="hero tool-hero">
+        <div class="eyebrow">GM tool</div>
+        <h1>Item builder</h1>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="item-builder.html" aria-current="page">Item builder</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="encounter-builder.html">Encounter builder</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a><a href="gm-screen.html">GM Screen</a></nav>
+        <p class="lede">Make homebrew weapons, armor and shields for your campaign, and see at once how each one compares with the printed items: die sizes, traits, Armor Class, Hardness and price for its level. The checks are advice, not rules. GM Core's tables are labeled as such (Starfinder 2e has no item-building chapter of its own, so its items use "GM Core (applies to SF2e)"), and every comparison worked out from the printed items is marked [derived]. Nothing here is uploaded; your work is kept in this browser until you download the file. <strong>Premium coming:</strong> when subscriptions start, <code>/tgm homebrew add</code>, <code>edit</code> and <code>import</code> will need a campaign subscription (free while we test).</p>
+        <ol class="steps">
+          <li><strong>Add an item</strong> and pick its system and type. Start from a printed item, or from scratch.</li>
+          <li><strong>Set its stats.</strong> Damage, traits, AC or Hardness, level and price.</li>
+          <li><strong>Read the checks</strong> on the right, along with the three closest printed items. Only a broken item or a printed item's name is refused; everything else is your call.</li>
+          <li><strong>Download the file</strong> and run <code>/tgm homebrew import</code> in your campaign with it attached.</li>
+        </ol>
+        <p class="hint">A quick one? <code>/tgm homebrew add</code> makes a simple item in Discord, and this page can copy that command for you. Equipment (worn and held items) is coming next.</p>
+      </header>
+
+      <div class="tool-body">
+        <div class="inline-checks" id="sysChecks" role="group" aria-label="Game systems">
+          <span class="tiny">My campaign uses:</span>
+          <label><input type="checkbox" value="pf2e"> Pathfinder 2e</label>
+          <label><input type="checkbox" value="sf2e"> Starfinder 2e</label>
+          <span class="tiny" id="sysMsg" role="status"></span>
+        </div>
+        <div class="item-tabs" id="tabs"></div>
+        <div class="layout">
+          <div id="editor"></div>
+          <div class="side">
+            <div class="panel">
+              <h2>Preview</h2>
+              <div class="card-prev" id="preview"></div>
+              <h3>Checks</h3>
+              <div id="score"></div>
+              <ul class="warns" id="warns"></ul>
+              <h3>Closest printed items</h3>
+              <ul class="closest" id="closest"></ul>
+              <div class="btns" style="margin-top:10px">
+                <button class="tbtn primary" id="download" type="button">Download file</button>
+                <label class="tbtn" style="margin:0;cursor:pointer">Open a file<input type="file" id="openFile" accept=".json,application/json" hidden></label>
+                <button class="tbtn" id="copyCmd" type="button">Copy command</button>
+              </div>
+              <div class="cmd" id="cmd" hidden></div>
+              <p class="hint" id="fileHint"></p>
+              <div class="error" id="fileError" role="alert"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="site-footer">
+        A reference, not a rules substitute &mdash; when in doubt, check Archives of Nethys.
+        Table Goblin is an unofficial tool and is not affiliated with Paizo Inc.
+        <a href="terms.html">Terms of Service</a> &middot; <a href="privacy.html">Privacy Policy</a>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<script src="item-builder-data.js"></script>
+<script src="builder-items.js"></script>
+<script>
+(function () {
+  "use strict";
+  var DATA = { pf2e: window.TG_ITEMB, sf2e: window.TG_ITEMB_SF2E || null };
+  var NAMES = { pf2e: window.TG_ITEMS || [], sf2e: window.TG_ITEMS_SF2E || null };
+  var STORE = "tg-item-builder-v1";
+  var DIES = ["d4", "d6", "d8", "d10", "d12"];
+  var SYSLABEL = { pf2e: "Pathfinder 2e", sf2e: "Starfinder 2e" };
+  var HANDS = { "1": "held-in-one-hand", "1+": "held-in-one-plus-hands", "2": "held-in-two-hands" };
+  var RARITIES = ["common", "uncommon", "rare", "unique"];
+  var NAME_MAX = 60, LEVEL_MAX = 25;
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  function step(die) { return DIES.indexOf(die); }
+  function slugTrait(t) { return String(t || "").trim().toLowerCase().replace(/\s*ft\.?$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); }
+  function loadScript(src) { return new Promise(function (ok, fail) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = fail; document.head.appendChild(s); }); }
+
+  // ---------- state ----------
+  function blank(kind, system) {
+    var it = { kind: kind, system: system, name: "", level: 0, price: 0, coin: system === "sf2e" ? "credits" : "gp", bulk: kind === "armor" ? "1" : "L",
+               rarity: "common", traits: [], description: "" };
+    if (kind === "weapon") { it.category = "martial"; it.group = ""; it.hands = "1"; it.range = 0; it.die = "d6"; it.dtype = "slashing"; it.reload = ""; }
+    if (kind === "armor") { it.category = "light"; it.group = ""; it.ac = 1; it.dex = "4"; it.check = -1; it.speed = 0; it.strength = "0"; }
+    if (kind === "shield") { it.ac = 2; it.hardness = 5; it.hp = 20; it.speed = 0; }
+    return it;
+  }
+  var state = { systems: ["pf2e"], items: [blank("weapon", "pf2e")], current: 0, party: "" };
+  try { var saved = JSON.parse(localStorage.getItem(STORE) || "null"); if (saved && saved.items && saved.items.length) state = saved; } catch (e) { /* a private window */ }
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* storage blocked */ } }
+  function item() { return state.items[Math.min(state.current, state.items.length - 1)]; }
+  function D(sys) { return DATA[sys] || DATA.pf2e; }
+
+  // ---------- game systems ----------
+  function sfReady() { return !!(window.TG_ITEMB_SF2E && window.TG_ITEMS_SF2E); }
+  function ensureSystem(sys) {
+    if (sys !== "sf2e" || sfReady()) { DATA.sf2e = window.TG_ITEMB_SF2E || null; NAMES.sf2e = window.TG_ITEMS_SF2E || null; return Promise.resolve(); }
+    $("sysMsg").textContent = "Loading the Starfinder 2e items…";
+    return Promise.all([loadScript("item-builder-data-sf2e.js"), loadScript("builder-items-sf2e.js")]).then(function () {
+      DATA.sf2e = window.TG_ITEMB_SF2E; NAMES.sf2e = window.TG_ITEMS_SF2E; $("sysMsg").textContent = "";
+    }, function () { $("sysMsg").textContent = "Couldn't load the Starfinder 2e items. Check your connection and try again."; throw new Error("sf2e"); });
+  }
+  function setSystems(list) {
+    state.systems = list.length ? list : ["pf2e"];
+    var boxes = document.querySelectorAll("#sysChecks input");
+    for (var i = 0; i < boxes.length; i++) boxes[i].checked = state.systems.indexOf(boxes[i].value) >= 0;
+    save();
+    if (state.systems.indexOf("sf2e") >= 0) ensureSystem("sf2e").then(render, function () {
+      state.systems = state.systems.filter(function (s) { return s !== "sf2e"; }); if (!state.systems.length) state.systems = ["pf2e"]; render();
+    });
+    else render();
+  }
+
+  // ---------- traits ----------
+  function family(kind, sys, slug) {
+    var m = /^([a-z][a-z-]*?)-(d\d+|\d+(?:-ft)?|[a-z]{1,2}|[a-z]+-[a-z]+)$/.exec(slug);
+    var fams = (D(sys).families || {})[kind] || [];
+    return m && fams.indexOf(m[1]) >= 0 ? m[1] : slug;
+  }
+  function known(kind, sys, slug) {
+    var defs = (D(sys).traits || {})[kind] || {};
+    if (defs[slug]) return true;
+    var fam = family(kind, sys, slug), fams = (D(sys).families || {})[kind] || [];
+    return fam !== slug && fams.indexOf(fam) >= 0;
+  }
+  function traitDef(kind, sys, slug) {
+    var defs = (D(sys).traits || {})[kind] || {};
+    if (defs[slug]) return defs[slug];
+    var fam = family(kind, sys, slug);
+    for (var k in defs) if (family(kind, sys, k) === fam && defs[k][1]) return [slug.replace(/-/g, " "), defs[k][1]];
+    return null;
+  }
+  function isTag(sys, slug) { return (D(sys).tags || []).indexOf(slug) >= 0; }
+  function mechanical(it) { return it.traits.filter(function (t) { return known(it.kind, it.system, t) && !isTag(it.system, t); }); }
+
+  // ---------- the document (the file the bot imports) ----------
+  function pricePurse(it) {
+    var n = Math.max(0, Math.floor(+it.price || 0));
+    if (!n) return {};
+    if (it.coin === "credits") return { sp: n };
+    var o = {}; o[it.coin] = n; return o;
+  }
+  function priceCp(it) { var p = pricePurse(it); return (p.pp || 0) * 1000 + (p.gp || 0) * 100 + (p.sp || 0) * 10 + (p.cp || 0); }
+  function bulkValue(it) { return it.bulk === "L" ? 0.1 : (it.bulk === "-" ? 0 : +it.bulk || 0); }
+  function doc(it) {
+    var knownT = it.traits.filter(function (t) { return known(it.kind, it.system, t); });
+    var other = it.traits.filter(function (t) { return !known(it.kind, it.system, t); });
+    var s = { level: { value: +it.level || 0 }, price: { value: pricePurse(it) }, bulk: { value: bulkValue(it) },
+              traits: { rarity: it.rarity, value: knownT, otherTags: other },
+              description: { value: it.description.split(/\n+/).filter(function (p) { return p.trim(); }).map(function (p) { return "<p>" + esc(p.trim()) + "</p>"; }).join("") },
+              publication: { title: "Homebrew", license: "user-supplied", remaster: true, authors: "" }, rules: [], baseItem: null };
+    if (it.kind === "weapon") {
+      s.category = it.category; s.group = it.group || null; s.damage = { dice: 1, die: it.die, damageType: it.dtype };
+      s.usage = { value: HANDS[it.hands] || HANDS["1"] }; s.range = +it.range > 0 ? +it.range : null; s.reload = { value: +it.range > 0 ? (it.reload || null) : null };
+    } else if (it.kind === "armor") {
+      s.category = it.category; s.group = it.group || null; s.acBonus = +it.ac || 0; s.dexCap = it.dex === "" || it.dex === "-" ? null : +it.dex;
+      s.checkPenalty = +it.check || 0; s.speedPenalty = +it.speed || 0; s.strength = it.strength === "" || it.strength === "-" ? null : +it.strength;
+      s.usage = { value: "wornarmor" };
+    } else {
+      var hp = Math.max(0, +it.hp || 0);
+      s.acBonus = +it.ac || 0; s.hardness = +it.hardness || 0; s.hp = { max: hp, value: hp, brokenThreshold: Math.floor(hp / 2) }; s.speedPenalty = +it.speed || 0;
+      s.usage = { value: "held-in-one-hand" };
+    }
+    return { name: it.name.trim(), type: it.kind, system: s };
+  }
+
+  // ---------- the checks (the bot's item_balance.py, run here as advice; the bot's copy decides) ----------
+  function guide(sys) { return D(sys).label || "GM Core"; }
+  function printedName(name) {
+    var low = String(name || "").trim().toLowerCase();
+    if (!low) return null;
+    var lists = [NAMES.pf2e, NAMES.sf2e];
+    for (var l = 0; l < lists.length; l++) for (var i = 0; lists[l] && i < lists[l].length; i++) if (String(lists[l][i][0]).toLowerCase() === low) return lists[l][i][0];
+    return null;
+  }
+  function bucketOf(it) { return (+it.range > 0 ? "ranged" : "melee") + "-" + it.category + "-" + (it.hands === "2" ? 2 : 1) + "h"; }
+  function score(it) { return Math.max(0, step(it.die)) + mechanical(it).length; }
+  function checks(it) {
+    var out = [], d = D(it.system), T = d.tables, g = guide(it.system), lvl = +it.level || 0;
+    function add(level, code, text, src) { out.push({ level: level, code: code, text: text, src: src }); }
+    // broken: refused by the bot
+    var name = it.name.trim();
+    if (!name) add("block", "B1", "The item needs a name.", "broken");
+    else if (name.length > NAME_MAX) add("block", "B1", "The name is longer than " + NAME_MAX + " characters.", "broken");
+    var hit = printedName(name);
+    if (hit) add("block", "X1", hit + " is a printed item's name; give the homebrew item its own.", "collision");
+    if (!(lvl >= 0 && lvl <= LEVEL_MAX && Math.floor(lvl) === lvl)) add("block", "B3", "Item level is 0 to " + LEVEL_MAX + ".", "broken");
+    if (it.description.length > 4000) add("block", "B7", "The description is longer than 4,000 characters.", "broken");
+    var invented = it.traits.filter(function (t) { return !known(it.kind, it.system, t); });
+    if (invented.length) add("info", "W7", "GM-invented trait" + (invented.length > 1 ? "s " : " ") + invented.join(", ") + ": shown on the item, display only (no rules attached).", "owner ruling");
+    var closest = [];
+    if (it.kind === "weapon") {
+      var b = bucketOf(it), st = d.buckets[b], ma = d.buckets[b.replace(it.category, "martial")], melee = !(+it.range > 0), hands = it.hands === "2" ? 2 : 1;
+      var where = (melee ? "melee " : "ranged ") + it.category + " " + hands + "-handed", sc = score(it);
+      if (st) {
+        var ceiling = st.die;
+        if (it.category === "advanced" && ma && step(ma.die) > step(ceiling)) ceiling = ma.die;
+        if (step(it.die) > step(ceiling)) add("warn", "W1", "A " + it.die + " is bigger than any printed " + where + " weapon's die (largest " + ceiling + ").", "[derived]");
+        var top = st.max;
+        if (it.category === "advanced" && ma) top = Math.max(top, ma.max + 1);
+        if (sc > top) add("warn", "W2", "Score " + sc + " (die steps + mechanical traits) is above every printed " + where + " weapon (highest " + st.max + (it.category === "advanced" ? "; advanced may go one over martial" : "") + ").", "[derived]");
+        else if (sc > st.p90) add("info", "W3", "Score " + sc + " is in the top tenth of printed " + where + " weapons (90th percentile " + st.p90 + ", median " + st.median + ").", "[derived]");
+      }
+      if (melee && hands === 1 && step(it.die) >= step("d10")) add("warn", "W4", "No printed one-handed melee weapon has a d10 or d12 die.", "[derived]");
+      it.traits.forEach(function (t) {
+        var m = /^two-hand-(d\d+)$/.exec(t);
+        if (m) { var diff = step(m[1]) - step(it.die); if (!(diff > 0 && diff <= 2)) add("warn", "W4", "Two-hand " + m[1] + ": printed weapons go up one or two die sizes from their " + it.die + ".", "[derived]"); }
+        m = /^(deadly|fatal)-(d\d+)$/.exec(t);
+        if (m && step(m[2]) < step(it.die)) add("warn", "W5", cap(m[1]) + " " + m[2] + " is smaller than the weapon's own " + it.die + " (the trait does nothing useful).", "Player Core (trait rules)");
+        if (m && m[1] === "fatal" && step(it.die) >= step("d10")) add("warn", "W5", "Fatal on a " + it.die + " weapon: printed fatal weapons start at d4-d8.", "[derived]");
+      });
+      if (it.system === "sf2e") { var at = it.traits.filter(function (t) { return t === "analog" || t === "tech"; }); if (at.length !== 1) add("warn", "W6", "A Starfinder weapon is either analog or tech (exactly one).", "Player Core (SF2e)"); }
+      var pool = d.weapons.filter(function (w) { return w[11] === b; });
+      if (lvl === 0 && pool.length) {
+        var near = pool.slice().sort(function (x, y) { return Math.abs(x[10] - sc) - Math.abs(y[10] - sc); })[0];
+        if (near[9] && priceCp(it) > 2 * near[9]) add("info", "W8", "Priced over twice the nearest printed weapon (" + near[0] + ").", "[derived]");
+      }
+      closest = (pool.length ? pool : d.weapons).slice().sort(function (x, y) {
+        return (Math.abs(x[10] - sc) + Math.abs(step(x[4]) - step(it.die))) - (Math.abs(y[10] - sc) + Math.abs(step(y[4]) - step(it.die))) || (x[0] < y[0] ? -1 : 1);
+      }).slice(0, 3).map(function (w) { return w[0] + " (" + w[4] + " " + w[5] + "; " + (w[8].join(", ") || "no traits") + ")"; });
+      out.score = { score: sc, stats: st };
+    } else if (it.kind === "armor") {
+      var ac = +it.ac || 0, dex = it.dex === "" || it.dex === "-" ? null : +it.dex, total = T.armor_totals[it.category] || 5;
+      if (ac + (dex == null ? 5 : dex) > total) add("warn", "A1", "AC +" + ac + " with Dex cap " + (dex == null ? "none" : dex) + " is over the " + total + " every printed " + it.category + " armor totals.", "[derived]");
+      var mild = T.armor_mildest[it.category];
+      if (mild) {
+        var softer = [];
+        if ((+it.check || 0) > mild.check) softer.push("check penalty " + (+it.check || 0) + " (printed " + mild.check + ")");
+        if ((+it.speed || 0) > mild.speed) softer.push("Speed penalty " + (+it.speed || 0) + " (printed " + mild.speed + ")");
+        if (it.strength !== "" && it.strength !== "-" && +it.strength < mild.strength) softer.push("Strength " + it.strength + " (printed " + mild.strength + ")");
+        if (softer.length) add("warn", "A2", "Milder than every printed " + it.category + " armor: " + softer.join(", ") + ".", "[derived]");
+      }
+      var need = +T.bonus_min_level.ac["1"];
+      if (ac > total && lvl < need) add("warn", "A3", "An AC bonus above the category's printed total acts like an item bonus to AC: " + g + " puts a permanent +1 at level " + need + " or higher.", g);
+      var apool = d.armor.filter(function (a) { return a[1] === it.category; });
+      closest = (apool.length ? apool : d.armor).slice().sort(function (x, y) {
+        function dist(a) { return Math.abs(a[2] - ac) + Math.abs((a[3] == null ? 5 : a[3]) - (dex == null ? 5 : dex)); }
+        return dist(x) - dist(y) || (x[0] < y[0] ? -1 : 1);
+      }).slice(0, 3).map(function (a) { return a[0] + " (AC +" + a[2] + ", Dex cap " + (a[3] == null ? "-" : a[3]) + ", check " + a[4] + ", Speed " + a[5] + ", Str " + (a[6] == null ? "-" : a[6]) + ")"; });
+    } else {
+      var sac = +it.ac || 0, hard = +it.hardness || 0, hp = +it.hp || 0;
+      if (hard < 1) add("block", "B17", "A shield's Hardness is at least 1.", "broken");
+      if (hp < 1) add("block", "B18", "A shield's Hit Points are at least 1.", "broken");
+      var sturdy = T.sturdy_shields.rows.filter(function (r) { return r[0] <= lvl; });
+      if (sturdy.length) {
+        var c = sturdy[sturdy.length - 1];
+        if (hard > c[1] || hp > c[2]) add("warn", "S1", "Hardness " + hard + " / HP " + hp + " is above the sturdy shield of level " + c[0] + " (Hardness " + c[1] + ", HP " + c[2] + "), " + g + "'s ceiling for a shield at level " + lvl + ".", g);
+      } else {
+        var base = d.shields.filter(function (s) { return s[1] <= 3 && s[2] === sac && !s[6]; });
+        var th = base.length ? Math.max.apply(null, base.map(function (s) { return s[3]; })) : 5, thp = base.length ? Math.max.apply(null, base.map(function (s) { return s[4]; })) : 24;
+        if (hard > th || hp > thp) add("warn", "S1", "Hardness " + hard + " / HP " + hp + " is above every printed AC +" + sac + " shield of level 3 or lower (Hardness " + th + ", HP " + thp + ").", "[derived]");
+      }
+      if (sac >= 3 && !it.traits.some(function (t) { return t.indexOf("hefty") === 0; })) add("warn", "S2", "AC +3 or more: printed shields need the hefty trait for that.", "[derived]");
+      add("info", "S3", "Broken Threshold set to half its HP (" + Math.floor(hp / 2) + ").", "Player Core (shield rules)");
+      closest = d.shields.slice().sort(function (x, y) {
+        return Math.abs(x[1] - lvl) - Math.abs(y[1] - lvl) || Math.abs(x[2] - sac) - Math.abs(y[2] - sac) || Math.abs(x[3] - hard) - Math.abs(y[3] - hard) || (x[0] < y[0] ? -1 : 1);
+      }).slice(0, 3).map(function (s) { return s[0] + " (level " + s[1] + ", AC +" + s[2] + ", Hardness " + s[3] + ", HP " + s[4] + ")"; });
+    }
+    if (lvl >= 1) {
+      var band = T.permanent_price_gp[String(Math.min(lvl, 20))], gp = priceCp(it) / 100;
+      if (band && !(gp >= band[0] && gp <= band[1])) {
+        var sf = it.system === "sf2e";
+        add("warn", "P1", "Price " + (sf ? Math.round(gp * 10).toLocaleString() + " credits" : gp + " gp") + " is outside " + (sf ? (band[0] * 10).toLocaleString() + "-" + (band[1] * 10).toLocaleString() + " credits" : band[0].toLocaleString() + "-" + band[1].toLocaleString() + " gp") + " for a level " + lvl + " permanent item.", g);
+      }
+    }
+    if (state.party !== "" && lvl > +state.party + T.party_level_margin) add("info", "P2", "Level " + lvl + " is more than " + T.party_level_margin + " above the party (level " + state.party + ").", g);
+    out.closest = closest;
+    return out;
+  }
+
+  // ---------- rendering ----------
+  function opts(list, value, labels) { return list.map(function (v) { return '<option value="' + esc(v) + '"' + (String(v) === String(value) ? " selected" : "") + ">" + esc(labels ? labels(v) : v) + "</option>"; }).join(""); }
+  function renderTabs() {
+    var html = state.items.map(function (it, i) {
+      return '<button class="pill" type="button" data-tab="' + i + '" aria-pressed="' + (i === state.current) + '">' + esc(it.name || "(unnamed)") + '<span class="sys ' + it.system + '">' + (it.system === "sf2e" ? "SF2e" : "PF2e") + "</span></button>";
+    }).join("");
+    html += '<button class="tbtn" type="button" data-addkind="weapon">+ Weapon</button><button class="tbtn" type="button" data-addkind="armor">+ Armor</button>'
+          + '<button class="tbtn" type="button" data-addkind="shield">+ Shield</button><button class="tbtn coming" type="button" disabled title="Phase 2">+ Equipment (coming)</button>';
+    if (state.items.length > 1) html += '<button class="tbtn" type="button" id="delItem">Remove this item</button>';
+    $("tabs").innerHTML = html;
+  }
+  function baseOptions(it) {
+    var d = D(it.system), list = it.kind === "weapon" ? d.weapons : it.kind === "armor" ? d.armor : d.shields;
+    return '<option value="">Start from scratch</option>' + list.map(function (r, i) { return '<option value="' + i + '">' + esc(r[0]) + "</option>"; }).join("");
+  }
+  function renderEditor() {
+    var it = item(), d = D(it.system), sysBtns = ["pf2e", "sf2e"].map(function (s) {
+      var on = state.systems.indexOf(s) >= 0;
+      return '<button type="button" data-sys="' + s + '" aria-pressed="' + (it.system === s) + '"' + (on ? "" : " disabled") + ">" + SYSLABEL[s] + "</button>";
+    }).join("");
+    var h = '<div class="panel"><h2><span class="num">1</span> ' + cap(it.kind) + '<span class="sys ' + it.system + '">' + SYSLABEL[it.system] + "</span></h2>"
+      + '<div class="seg" role="group" aria-label="System">' + sysBtns + "</div>"
+      + '<label>Start from a printed ' + it.kind + '<select data-base>' + baseOptions(it) + "</select></label>"
+      + '<label>Name<input type="text" data-f="name" maxlength="60" value="' + esc(it.name) + '"></label>'
+      + '<div class="grid3"><label>Level<input type="number" min="0" max="25" data-f="level" value="' + esc(it.level) + '"></label>'
+      + '<label>Price<input type="number" min="0" data-f="price" value="' + esc(it.price) + '"></label>'
+      + '<label>Coin<select data-f="coin">' + (it.system === "sf2e" ? opts(["credits"], it.coin) : opts(["gp", "sp", "cp", "pp"], it.coin)) + "</select></label></div>"
+      + '<div class="grid2"><label>Bulk<select data-f="bulk">' + opts(["-", "L", "1", "2", "3", "4", "5", "6"], it.bulk) + "</select></label>"
+      + '<label>Rarity<select data-f="rarity">' + opts(RARITIES, it.rarity, cap) + "</select></label></div></div>";
+    h += '<div class="panel"><h2><span class="num">2</span> Stats</h2>';
+    if (it.kind === "weapon") {
+      h += '<div class="grid3"><label>Category<select data-f="category">' + opts(["simple", "martial", "advanced"], it.category, cap) + "</select></label>"
+        + '<label>Hands<select data-f="hands">' + opts(["1", "1+", "2"], it.hands) + "</select></label>"
+        + '<label>Group<input type="text" list="wgroups" data-f="group" value="' + esc(it.group) + '"></label></div>'
+        + '<datalist id="wgroups">' + (d.groups.weapon || []).map(function (g) { return '<option value="' + esc(g) + '">'; }).join("") + "</datalist>"
+        + '<div class="grid3"><label>Damage die<select data-f="die">' + opts(DIES, it.die) + "</select></label>"
+        + '<label>Damage type<select data-f="dtype">' + opts(d.damageTypes, it.dtype, cap) + "</select></label>"
+        + '<label>Range increment (ft, 0 = melee)<input type="number" min="0" max="500" step="5" data-f="range" value="' + esc(it.range) + '"></label></div>'
+        + (+it.range > 0 ? '<label>Reload<select data-f="reload">' + opts(["", "-", "0", "1", "2"], it.reload, function (v) { return v === "" ? "none" : v; }) + "</select></label>" : "");
+    } else if (it.kind === "armor") {
+      h += '<div class="grid2"><label>Category<select data-f="category">' + opts(["unarmored", "light", "medium", "heavy"], it.category, cap) + "</select></label>"
+        + '<label>Group<input type="text" list="agroups" data-f="group" value="' + esc(it.group) + '"></label></div>'
+        + '<datalist id="agroups">' + (d.groups.armor || []).map(function (g) { return '<option value="' + esc(g) + '">'; }).join("") + "</datalist>"
+        + '<div class="grid5"><label>AC bonus<input type="number" min="0" max="10" data-f="ac" value="' + esc(it.ac) + '"></label>'
+        + '<label>Dex cap<input type="text" data-f="dex" value="' + esc(it.dex) + '" placeholder="-"></label>'
+        + '<label>Check<input type="number" min="-10" max="0" data-f="check" value="' + esc(it.check) + '"></label>'
+        + '<label>Speed (ft)<input type="number" min="-30" max="0" step="5" data-f="speed" value="' + esc(it.speed) + '"></label>'
+        + '<label>Strength<input type="text" data-f="strength" value="' + esc(it.strength) + '" placeholder="-"></label></div>';
+    } else {
+      h += '<div class="grid2"><label>AC bonus<input type="number" min="0" max="5" data-f="ac" value="' + esc(it.ac) + '"></label>'
+        + '<label>Speed penalty (ft)<input type="number" min="-30" max="0" step="5" data-f="speed" value="' + esc(it.speed) + '"></label></div>'
+        + '<div class="grid2"><label>Hardness<input type="number" min="1" max="50" data-f="hardness" value="' + esc(it.hardness) + '"></label>'
+        + '<label>Hit Points (Broken Threshold ' + Math.floor((+it.hp || 0) / 2) + ')<input type="number" min="1" max="500" data-f="hp" value="' + esc(it.hp) + '"></label></div>';
+    }
+    h += "</div>";
+    var defs = (d.traits || {})[it.kind] || {};
+    h += '<div class="panel"><h2><span class="num">3</span> Traits and text</h2>'
+      + '<div>' + it.traits.map(function (t, i) { return '<span class="chip' + (known(it.kind, it.system, t) ? "" : " invented") + '">' + esc(t) + '<button type="button" data-untrait="' + i + '" aria-label="Remove ' + esc(t) + '">&times;</button></span>'; }).join("") + "</div>"
+      + '<label>Add a trait (a printed one, or your own: shown, display only)<input type="text" list="tlist" id="traitIn" placeholder="e.g. agile, deadly-d10, versatile-p"></label>'
+      + '<datalist id="tlist">' + Object.keys(defs).filter(function (k) { return !isTag(it.system, k) || k === "analog" || k === "tech"; }).map(function (k) { return '<option value="' + esc(k) + '">' + esc(defs[k][0]) + "</option>"; }).join("") + "</datalist>"
+      + '<ul class="tdefs">' + it.traits.map(function (t) { var td = traitDef(it.kind, it.system, t); return "<li><b>" + esc(td ? td[0] : t) + "</b> " + esc(td ? td[1] : "Your own trait: display only.") + "</li>"; }).join("") + "</ul>"
+      + '<label>Description (shown as written; the bot never reads it as rules)<textarea data-f="description" maxlength="4000">' + esc(it.description) + "</textarea></label>"
+      + '<label>Party level (optional, for the level check)<input type="number" min="1" max="20" id="partyIn" value="' + esc(state.party) + '"></label></div>';
+    $("editor").innerHTML = h;
+  }
+  function renderSide() {
+    var it = item(), c = checks(it), doc_ = doc(it), s = doc_.system;
+    var stats;
+    if (it.kind === "weapon") stats = cap(it.category) + " " + (it.group || "weapon") + ", " + ({ "1": "1 hand", "1+": "1+ hands", "2": "2 hands" })[it.hands] + ", 1" + it.die + " " + it.dtype + (+it.range > 0 ? ", range " + it.range + " ft" + (it.reload ? ", reload " + it.reload : "") : ", melee");
+    else if (it.kind === "armor") stats = cap(it.category) + " armor" + (it.group ? " (" + it.group + ")" : "") + ": AC +" + s.acBonus + ", Dex cap " + (s.dexCap == null ? "-" : s.dexCap) + ", check " + s.checkPenalty + ", Speed " + s.speedPenalty + " ft, Strength " + (s.strength == null ? "-" : s.strength);
+    else stats = "Shield: AC +" + s.acBonus + ", Hardness " + s.hardness + ", HP " + s.hp.max + " (BT " + s.hp.brokenThreshold + ")" + (s.speedPenalty ? ", Speed " + s.speedPenalty + " ft" : "");
+    var price = it.coin === "credits" ? (Math.floor(+it.price || 0)).toLocaleString() + " credits" : ((+it.price || 0) ? (+it.price) + " " + it.coin : "free");
+    $("preview").innerHTML = "<h3>" + esc(it.name || "(unnamed)") + '<span class="sys ' + it.system + '">' + SYSLABEL[it.system] + "</span></h3>"
+      + '<div class="traits">' + (it.rarity !== "common" ? "<span>" + esc(it.rarity) + "</span>" : "") + it.traits.map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("") + "</div>"
+      + "<p><b>Homebrew " + it.kind + "</b>, level " + esc(it.level) + " &middot; " + esc(price) + " &middot; Bulk " + esc(it.bulk) + "</p><p>" + esc(stats) + "</p>"
+      + (it.description ? "<p>" + esc(it.description).replace(/\n/g, "<br>") + "</p>" : "");
+    var sc = c.score;
+    $("score").innerHTML = sc && sc.stats ? '<div class="tiny">Weapon score ' + sc.score + " (median " + sc.stats.median + ", 90th percentile " + sc.stats.p90 + ", highest " + sc.stats.max + ") [derived]</div>"
+      + '<div class="scorebar"><div class="fill" style="width:' + Math.min(100, sc.score / Math.max(1, sc.stats.max + 2) * 100) + '%"></div><div class="mark" style="left:' + (sc.stats.p90 / Math.max(1, sc.stats.max + 2) * 100) + '%"></div>'
+      + '<div class="mark" style="left:' + (sc.stats.max / Math.max(1, sc.stats.max + 2) * 100) + '%"></div></div><div class="scorecap"><span>0</span><span>' + (sc.stats.max + 2) + "</span></div>" : "";
+    var lis = c.map(function (f) { return '<li class="' + f.level + '">' + esc(f.text) + '<span class="src">' + esc(f.code + " · " + f.src) + "</span></li>"; });
+    if (!c.some(function (f) { return f.level !== "info"; })) lis.unshift('<li class="ok">Nothing out of line with the printed items.</li>');
+    $("warns").innerHTML = lis.join("");
+    $("closest").innerHTML = c.closest.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("");
+    var blocked = c.some(function (f) { return f.level === "block"; });
+    $("fileHint").textContent = blocked ? "Fix the items marked with a cross: the bot refuses a broken item or a printed item's name." : state.items.length + " item(s) in the file.";
+  }
+  function render() { renderTabs(); renderEditor(); renderSide(); save(); }
+
+  // ---------- events ----------
+  function fromBase(it, idx) {
+    var d = D(it.system), r;
+    if (idx === "") return;
+    if (it.kind === "weapon") { r = d.weapons[+idx]; it.category = r[1]; it.hands = r[2] === 2 ? "2" : "1"; it.die = r[4]; it.dtype = r[5] || it.dtype; it.group = r[6] || ""; it.range = r[7] || 0; it.traits = r[8].slice(); it.price = Math.round(r[9] / (it.system === "sf2e" ? 10 : 100)) || 0; }
+    else if (it.kind === "armor") { r = d.armor[+idx]; it.category = r[1]; it.ac = r[2]; it.dex = r[3] == null ? "" : String(r[3]); it.check = r[4]; it.speed = r[5]; it.strength = r[6] == null ? "" : String(r[6]); it.bulk = r[7] === 0.1 ? "L" : String(r[7] || "-"); it.group = r[8] || ""; it.traits = r[9].slice(); }
+    else { r = d.shields[+idx]; it.level = r[1]; it.ac = r[2]; it.hardness = r[3]; it.hp = r[4]; it.traits = r[5].filter(function (t) { return t !== "magical"; }); }
+    if (!it.name) it.name = "Homebrew " + r[0];
+  }
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("button"); if (!t) return;
+    var d = t.dataset;
+    if (d.tab != null) { state.current = +d.tab; render(); }
+    else if (d.addkind) { var sys = state.systems[0] || "pf2e"; state.items.push(blank(d.addkind, sys)); state.current = state.items.length - 1; render(); }
+    else if (t.id === "delItem") { state.items.splice(state.current, 1); state.current = Math.max(0, state.current - 1); render(); }
+    else if (d.sys) { var it = item(); ensureSystem(d.sys).then(function () { it.system = d.sys; it.coin = d.sys === "sf2e" ? "credits" : "gp"; render(); }, function () {}); }
+    else if (d.untrait != null) { item().traits.splice(+d.untrait, 1); render(); }
+  });
+  document.addEventListener("change", function (e) {
+    var t = e.target, d = t.dataset, it = item();
+    if (t.id === "traitIn") { var sl = slugTrait(t.value); if (sl && it.traits.indexOf(sl) < 0) it.traits.push(sl); render(); var again = $("traitIn"); if (again) again.focus(); return; }
+    if (t.id === "partyIn") { state.party = t.value; renderSide(); save(); return; }
+    if (d.base != null) { fromBase(it, t.value); render(); return; }
+    if (d.f) { it[d.f] = t.value; render(); }
+  });
+  document.addEventListener("input", function (e) {
+    var t = e.target, d = t.dataset;
+    if (d.f && (t.type === "text" || t.tagName === "TEXTAREA" || t.type === "number")) { item()[d.f] = t.value; renderSide(); renderTabs(); save(); }
+  });
+  $("sysChecks").addEventListener("change", function () {
+    var list = [], boxes = document.querySelectorAll("#sysChecks input");
+    for (var i = 0; i < boxes.length; i++) if (boxes[i].checked) list.push(boxes[i].value);
+    setSystems(list);
+  });
+  $("download").addEventListener("click", function () {
+    $("fileError").textContent = "";
+    var bad = state.items.filter(function (it) { return checks(it).some(function (f) { return f.level === "block"; }); });
+    if (bad.length) { $("fileError").textContent = "Fix first: " + bad.map(function (it) { return it.name || "(unnamed)"; }).join(", ") + "."; return; }
+    var file = { format: "tablegoblin-items", version: 1, source: "Table Goblin Item builder",
+                 items: state.items.map(function (it) { return { type: it.kind, system: it.system, doc: doc(it) }; }) };
+    var blob = new Blob([JSON.stringify(file, null, 1)], { type: "application/json" });
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+    a.download = (state.items.length === 1 ? (state.items[0].name || "item").toLowerCase().replace(/[^a-z0-9]+/g, "-") : "homebrew-items") + ".items.json";
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  });
+  $("openFile").addEventListener("change", function (e) {
+    var f = e.target.files && e.target.files[0]; if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      $("fileError").textContent = "";
+      try {
+        var data = JSON.parse(reader.result);
+        if (!data || data.format !== "tablegoblin-items" || !Array.isArray(data.items)) throw new Error("not an Item builder file");
+        var items = data.items.map(function (x) {
+          var dd = x.doc || {}, s = dd.system || {}, kind = x.type || dd.type, sys = x.system === "sf2e" ? "sf2e" : "pf2e", it = blank(kind, sys);
+          var pr = (s.price || {}).value || {};
+          it.name = dd.name || ""; it.level = (s.level || {}).value || 0; it.rarity = (s.traits || {}).rarity || "common";
+          it.traits = ((s.traits || {}).value || []).concat((s.traits || {}).otherTags || []);
+          if (sys === "sf2e") { it.coin = "credits"; it.price = (pr.sp || 0) + (pr.gp || 0) * 10 + (pr.pp || 0) * 100; }
+          else { it.coin = pr.gp ? "gp" : pr.sp ? "sp" : pr.pp ? "pp" : pr.cp ? "cp" : "gp"; it.price = pr[it.coin] || 0; }
+          var bv = (s.bulk || {}).value; it.bulk = bv === 0.1 ? "L" : (bv ? String(bv) : "-");
+          it.description = String((s.description || {}).value || "").replace(/<\/p>\s*<p>/g, "\n").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+          if (kind === "weapon") { var dm = s.damage || {}; it.category = s.category || "martial"; it.group = s.group || ""; it.die = dm.die || "d6"; it.dtype = dm.damageType || "slashing";
+            it.hands = ({ "held-in-two-hands": "2", "held-in-one-plus-hands": "1+" })[(s.usage || {}).value] || "1"; it.range = s.range || 0; it.reload = (s.reload || {}).value || ""; }
+          else if (kind === "armor") { it.category = s.category || "light"; it.group = s.group || ""; it.ac = s.acBonus || 0; it.dex = s.dexCap == null ? "" : String(s.dexCap);
+            it.check = s.checkPenalty || 0; it.speed = s.speedPenalty || 0; it.strength = s.strength == null ? "" : String(s.strength); }
+          else { it.ac = s.acBonus || 0; it.hardness = s.hardness || 0; it.hp = (s.hp || {}).max || 0; it.speed = s.speedPenalty || 0; }
+          return it;
+        }).filter(function (it) { return ["weapon", "armor", "shield"].indexOf(it.kind) >= 0; });
+        if (!items.length) throw new Error("no weapons, armor or shields in it");
+        var needSf = items.some(function (it) { return it.system === "sf2e"; });
+        (needSf ? ensureSystem("sf2e") : Promise.resolve()).then(function () {
+          if (needSf && state.systems.indexOf("sf2e") < 0) state.systems.push("sf2e");
+          state.items = items; state.current = 0; setSystems(state.systems);
+        });
+      } catch (err) { $("fileError").textContent = "Couldn't open that file: " + err.message + "."; }
+      e.target.value = "";
+    };
+    reader.readAsText(f);
+  });
+  $("copyCmd").addEventListener("click", function () {
+    var it = item(), parts = ["/tgm homebrew add", "type:" + cap(it.kind), "name:" + it.name.trim(), "level:" + (+it.level || 0),
+                               "price:" + ((+it.price || 0) ? (+it.price) + " " + it.coin : "0")];
+    if (it.kind === "weapon") {
+      parts.push("stats:1" + it.die + " " + it.dtype, "category:" + cap(it.category), "hands:" + it.hands);
+      if (+it.range > 0) parts.push("range:" + it.range);
+      if (it.group) parts.push("group:" + it.group);
+    }
+    if (it.kind === "armor") { parts.push("stats:" + it.ac + "/" + (it.dex === "" ? "-" : it.dex) + "/" + it.check + "/" + it.speed + "/" + (it.strength === "" ? "-" : it.strength), "category:" + cap(it.category)); if (it.group) parts.push("group:" + it.group); }
+    if (it.kind === "shield") parts.push("stats:" + it.ac + "/" + it.hardness + "/" + it.hp);
+    if (it.traits.length) parts.push("traits:" + it.traits.join(", "));
+    parts.push("bulk:" + it.bulk);
+    if (it.rarity !== "common") parts.push("rarity:" + cap(it.rarity));
+    if (state.systems.length > 1) parts.push("system:" + SYSLABEL[it.system]);
+    if (it.description && it.description.length <= 1000 && it.description.indexOf("\n") < 0) parts.push("description:" + it.description);
+    var text = parts.join(" ");
+    $("cmd").hidden = false; $("cmd").textContent = text;
+    try { navigator.clipboard.writeText(text); } catch (err) { /* the text is shown to copy by hand */ }
+  });
+
+  setSystems(state.systems && state.systems.length ? state.systems : ["pf2e"]);
+})();
+</script>
+</body>
+</html>
