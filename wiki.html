@@ -1170,7 +1170,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           <div class="cmd-row"><div class="cmd">/tghazard trigger <b>hazard</b> <span class="opt">[targets]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">Sets a hazard off on the named targets, or whoever stands on it. Its reset timer starts (game clock or rounds); a complex hazard rolls initiative.</div></div>
           <div class="cmd-row"><div class="cmd">/tghazard reset <b>hazard</b></div><span class="badge b-gm">gm only</span>
-            <div class="desc">Arms a hazard again. When a map is reset (a library map put on, a new map image, the terrain replaced or cleared), the GM is asked privately to arm all the map's hazards, disarm them all, or leave them as they are.</div></div>
+            <div class="desc">Arms a hazard again; one the party had found is hidden again and must be spotted again (so is one its own timer re-arms). When a map is reset (a library map put on, a new map image, the terrain replaced or cleared), the GM is asked privately to arm all the map's hazards, disarm them all, or leave them as they are.</div></div>
           <div class="cmd-row"><div class="cmd">/tghazard list <span class="opt">[hazard]</span></div><span class="badge b-gm">gm / player</span>
             <div class="desc">The campaign's hazards and their state (players see the ones found); with a hazard, its card and buttons.</div></div>
           <div class="cmd-row"><div class="cmd">/tghazard custom <b>name</b> <b>level</b> <span class="opt">[complex] [stealth_dc] [disable] [save] [damage] [effect] [reset] [hidden] [cell]</span></div><span class="badge b-gm">gm only</span>
@@ -1267,7 +1267,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           <p class="sec-sub">Tokens, terrain, fog — and geometry the bot works out for you.</p>
         </div>
         <div class="note">
-          <p><strong>Premium coming.</strong> When subscriptions start, attaching and editing a battle map will need a campaign subscription: uploads, library maps (<code>use</code>, <code>save_current</code>, <code>rename</code>), terrain, fog, calibration, placing tokens and area effects, and Map prep terrain files. Moving, measuring and viewing a map that is already set stays free, a running encounter keeps its map until <code>/tge end</code>, and <code>/tgmap list</code>, <code>show</code>, <code>export_terrain</code> and <code>delete</code> always work. Free while we test.</p>
+          <p><strong>Premium coming.</strong> When subscriptions start, attaching and editing a battle map will need a campaign subscription: uploads, library maps (<code>use</code>, <code>save_current</code>), terrain, fog, calibration, placing tokens and area effects, and Map prep terrain files. Moving, measuring and viewing a map that is already set stays free, a running encounter keeps its map until <code>/tge end</code>, and <code>/tgmap list</code>, <code>show</code>, <code>export_terrain</code>, <code>delete</code>, <code>rename</code> and <code>terrain_clear</code> always work. Free while we test.</p>
         </div>
 
         <div class="cmds">
