@@ -44,6 +44,10 @@ window.TG_TERRAIN = {
    "ledge-40"
   ],
   [
+   "wall",
+   "wall-stone"
+  ],
+  [
    "darkness",
    "darkness-4"
   ],
@@ -220,6 +224,26 @@ window.TG_TERRAIN = {
     45,
     45,
     120
+   ],
+   "waves": null
+  },
+  {
+   "badge": null,
+   "blocksMove": true,
+   "blocksSight": true,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83e\udea8",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "wall-stone",
+   "label": "Wall (stone)",
+   "shapes": null,
+   "tint": [
+    120,
+    110,
+    100,
+    170
    ],
    "waves": null
   },
