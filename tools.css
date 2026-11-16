@@ -19,7 +19,15 @@ main.tool-page .wrap { max-width: 1240px; padding: 0 32px; }
   /* a tall map's height goes to the terrain row, and the palette stays in view beside it while you scroll and paint */
   .app > .panel[style*="grid-area:terrain"] { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; } }
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
-@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+/* a grid item's min-width is its content's by default: one long dropdown option then widened the whole page past a phone's width (D1511,
+   the item builder's local D1506 fix, now for every tool page) */
+.app > *, .layout > * { min-width: 0; }
+.panel select, .panel input, .panel textarea { max-width: 100%; }
+/* ... and every page's own grids and flex rows too (the encounter builder's .eb-cols, say): zero specificity, so a page's explicit
+   min-width still wins; only the browser's `auto` (and a fieldset's min-content) is replaced */
+:where(main.tool-page) :where(div, section, article, aside, form, fieldset, label, ul, ol, li, table, select, input, textarea) { min-width: 0; }
+:where(main.tool-page) :where(select) { max-width: 100%; }
 
 .panel { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; box-shadow: var(--shadow); margin: 0 0 14px; }
 .panel > h2 { padding-right: 34px; }
