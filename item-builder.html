@@ -23,7 +23,8 @@
   .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .grid5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
-  @media (max-width: 640px) { .grid3, .grid5 { grid-template-columns: 1fr 1fr; } }
+  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  @media (max-width: 640px) { .grid3, .grid4, .grid5 { grid-template-columns: 1fr 1fr; } }
   .panel textarea { width: 100%; min-height: 80px; padding: 7px 9px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--ground);
                     color: var(--text); font: inherit; font-size: 14px; resize: vertical; box-sizing: border-box; }
   .chip { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px 4px 2px 9px;
@@ -129,7 +130,7 @@
           <li><strong>Read the checks</strong> on the right, along with the three closest printed items. Only a broken item or a printed item's name is refused; everything else is your call.</li>
           <li><strong>Download the file</strong> and run <code>/tgm homebrew import</code> in your campaign with it attached.</li>
         </ol>
-        <p class="hint">A quick one? <code>/tgm homebrew add</code> makes a simple item in Discord, and this page can copy that command for you. Equipment (worn and held items) can give an item bonus to Perception or a skill and resistance to a damage type, which work while a character has it invested; spell activations are coming.</p>
+        <p class="hint">A quick one? <code>/tgm homebrew add</code> makes a simple item in Discord, and this page can copy that command for you. Equipment (worn and held items) can give a bonus to Perception, a skill or Lore, saves, AC or attack rolls -- the kinds a printed item worn or held the same way gives -- and resistance to a damage type, which work while a character has it invested; spell activations are coming.</p>
       </header>
 
       <div class="tool-body">
@@ -193,7 +194,39 @@
                  "wornshoes": "Worn: shoes", "tattooed-on-the-body": "Tattooed on the body", "held-in-one-hand": "Held in one hand",
                  "held-in-two-hands": "Held in two hands" };
   var BONUS_MAX = 4, RESIST_MAX = 30;
-  function statLabel(sel) { return sel === "perception" ? "Perception" : cap(sel); }
+  // D1512: a bonus to Perception, a skill or Lore, a save, AC or attack rolls; its type; what printed items of the slot give
+  var SAVE_SELS = ["saving-throw", "fortitude", "reflex", "will"], ATK_SELS = ["attack-roll", "strike-attack-roll", "spell-attack-roll"];
+  var BTYPES = ["item", "circumstance", "status", "untyped"], KINDS = ["perception", "skill", "save", "ac", "attack"];
+  var KIND_TEXT = { perception: "Perception", skill: "a skill", save: "saving throws", ac: "AC", attack: "attack rolls" };
+  var KIND_PLURAL = { perception: "Perception", skill: "skills", save: "saves", ac: "AC", attack: "attack rolls" };
+  var STAT_LABELS = { perception: "Perception", ac: "AC", "saving-throw": "all saves", "attack-roll": "attack rolls", "strike-attack-roll": "Strike attack rolls", "spell-attack-roll": "spell attack rolls" };
+  var STACKING = {
+    ac: "An item bonus to AC: armor's own AC bonus and its potency rune are item bonuses to AC too, and item bonuses don't stack -- a wearer in armor gets only the higher one (this item helps only someone whose armor gives less).",
+    save: "An item bonus to saves: resilient runes on armor give item bonuses to saves too, and item bonuses don't stack -- only the higher one counts.",
+    attack: "An item bonus to attack rolls: a weapon's potency rune (and handwraps) give item bonuses to attack rolls too, and item bonuses don't stack -- only the higher one counts." };
+  function statLabel(sel) { return STAT_LABELS[sel] || String(sel).split("-").map(cap).join(" "); }
+  function bonusKind(sel) {
+    if (sel === "perception") return "perception";
+    if (SAVE_SELS.indexOf(sel) >= 0) return "save";
+    if (sel === "ac") return "ac";
+    if (ATK_SELS.indexOf(sel) >= 0 || sel === "attack" || sel === "impulse-attack-roll") return "attack";
+    return "skill";
+  }
+  function statOptions(sys) { return ["ac", "saving-throw", "fortitude", "reflex", "will", "attack-roll", "strike-attack-roll", "spell-attack-roll"].concat(D(sys).bonusSelectors || [], ["lore"]); }
+  function effSel(e) { if (e.sel !== "lore") return e.sel; var l = slugTrait(e.lore || "").replace(/-lore$/, ""); return l ? l + "-lore" : ""; }
+  function selOk(sys, sel) { return (D(sys).bonusSelectors || []).indexOf(sel) >= 0 || SAVE_SELS.indexOf(sel) >= 0 || sel === "ac" || ATK_SELS.indexOf(sel) >= 0 || /^[a-z][a-z0-9]*(-[a-z0-9]+)*-lore$/.test(sel); }
+  function usageLabel(u) { return (USAGES[u] || u || "worn").toLowerCase().replace(": ", " "); }
+  function usagePlural(u) { var l = usageLabel(u); if (l === "worn") return "worn items"; if (/^(held|tattooed)/.test(l)) return "items " + l; return /s$/.test(l) ? l : l + "s"; }
+  function slotComp(it) {
+    var d = D(it.system), own = (d.slotBonuses || {})[it.usage] || {};
+    if (Object.keys(own).length || it.system === "pf2e") return { comp: own, fb: false };
+    return { comp: (d.slotFallback || {})[it.usage] || {}, fb: true };
+  }
+  function slotAllows(comp) {
+    var parts = KINDS.filter(function (k) { return comp[k]; }).map(function (k) { return KIND_PLURAL[k] + " (" + BTYPES.filter(function (t) { return comp[k][t]; }).join(", ") + ")"; });
+    if (!parts.length) return "no bonuses at all";
+    return parts.length === 1 ? parts[0] : parts.slice(0, -1).join(", ") + " and " + parts[parts.length - 1];
+  }
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -209,7 +242,7 @@
     if (kind === "weapon") { it.category = "martial"; it.group = ""; it.hands = "1"; it.range = 0; it.die = "d6"; it.dtype = "slashing"; it.reload = ""; }
     if (kind === "armor") { it.category = "light"; it.group = ""; it.ac = 1; it.dex = "4"; it.check = -1; it.speed = 0; it.strength = "0"; }
     if (kind === "shield") { it.ac = 2; it.hardness = 5; it.hp = 20; it.speed = 0; }
-    if (kind === "equipment") { it.usage = "worn"; it.effects = [{ sel: "athletics", value: 1 }]; it.resist = []; it.level = 3; }
+    if (kind === "equipment") { it.usage = "worn"; it.effects = [{ sel: "athletics", value: 1, type: "item" }]; it.resist = []; it.level = 3; }
     return it;
   }
   var state = { systems: ["pf2e"], items: [blank("weapon", "pf2e")], current: 0, party: "" };
@@ -287,7 +320,7 @@
       var best = bonuses(it);
       s.usage = { value: it.usage || "worn" };
       var rs = resists(it);
-      s.rules = Object.keys(best).sort().map(function (k) { return { key: "FlatModifier", selector: k, type: "item", value: best[k] }; })
+      s.rules = Object.keys(best).sort().map(function (k) { var p = k.split("|"); return { key: "FlatModifier", selector: p[0], type: p[1], value: best[k] }; })
         .concat(Object.keys(rs).sort().map(function (k) { return { key: "Resistance", type: k, value: rs[k] }; }));
       if (s.rules.length && s.traits.value.indexOf("invested") < 0) { s.traits.value.push("invested"); s.traits.otherTags = s.traits.otherTags.filter(function (t) { return t !== "invested"; }); }
     } else {
@@ -298,12 +331,16 @@
     return { name: it.name.trim(), type: it.kind, system: s };
   }
 
-  // the highest bonus per statistic (item bonuses don't stack), only Perception and the system's skills
+  // the highest bonus per statistic and type ("athletics|item": 1; bonuses of one type don't stack): Perception, a skill or Lore, a save, AC, attacks
   function bonuses(it) {
-    var out = {}, allowed = D(it.system).bonusSelectors || [];
-    (it.effects || []).forEach(function (e) { var v = Math.floor(+e.value || 0); if (allowed.indexOf(e.sel) >= 0 && v >= 1 && v <= BONUS_MAX) out[e.sel] = Math.max(out[e.sel] || 0, v); });
+    var out = {};
+    (it.effects || []).forEach(function (e) {
+      var v = Math.floor(+e.value || 0), sel = effSel(e), t = BTYPES.indexOf(e.type) >= 0 ? e.type : "item", k = sel + "|" + t;
+      if (selOk(it.system, sel) && v >= 1 && v <= BONUS_MAX) out[k] = Math.max(out[k] || 0, v);
+    });
     return out;
   }
+  function itemBonuses(it) { var bb = bonuses(it), out = {}; Object.keys(bb).forEach(function (k) { var p = k.split("|"); if (p[1] === "item") out[p[0]] = bb[k]; }); return out; }
   function resists(it) {
     var out = {}, types = D(it.system).damageTypes || [];
     (it.resist || []).forEach(function (e) { var v = Math.floor(+e.value || 0); if (types.indexOf(e.type) >= 0 && v >= 1 && v <= RESIST_MAX) out[e.type] = Math.max(out[e.type] || 0, v); });
@@ -385,14 +422,35 @@
         return dist(x) - dist(y) || (x[0] < y[0] ? -1 : 1);
       }).slice(0, 3).map(function (a) { return a[0] + " (AC +" + a[2] + ", Dex cap " + (a[3] == null ? "-" : a[3]) + ", check " + a[4] + ", Speed " + a[5] + ", Str " + (a[6] == null ? "-" : a[6]) + ")"; });
     } else if (it.kind === "equipment") {
-      var bb = bonuses(it), sels = Object.keys(bb).sort(), es = d.equipmentStats || { bonus: {}, skillsMax: 0 };
-      (it.effects || []).forEach(function (e) { var v = +e.value || 0; if (v < 1 || v > BONUS_MAX) add("block", "B24", "An item bonus is +1 to +" + BONUS_MAX + ".", "broken"); });
-      sels.forEach(function (sel) {
-        var row = T.bonus_min_level[sel === "perception" ? "perception" : "skill"], v = bb[sel], need = row[String(v)];
-        var what = "+" + v + " item bonus to " + statLabel(sel);
-        if (need == null) add("warn", "E1", "A " + what + ": " + g + "'s table of permanent item bonuses stops at +3 (level " + row["3"] + ").", g);
-        else if (lvl < +need) add("warn", "E1", "A " + what + " at level " + lvl + ": " + g + " puts a permanent +" + v + " to " + (sel === "perception" ? "Perception" : "a skill") + " at level " + need + " or higher.", g);
+      var typed = bonuses(it), bb = itemBonuses(it), sels = Object.keys(bb).sort(), es = d.equipmentStats || { bonus: {}, skillsMax: 0 };
+      (it.effects || []).forEach(function (e) { var v = +e.value || 0; if (v < 1 || v > BONUS_MAX) add("block", "B24", "A bonus is +1 to +" + BONUS_MAX + ".", "broken");
+        if (e.sel === "lore" && !effSel(e)) add("block", "B24", "Name the Lore (e.g. Sailing).", "broken"); });
+      var sc0 = slotComp(it), comp = sc0.comp, where = "printed " + usagePlural(it.usage) + (sc0.fb ? " (Pathfinder's: Starfinder prints none with a bonus there)" : ""), seenK = {};
+      Object.keys(typed).forEach(function (k) {
+        var p = k.split("|"), kind = bonusKind(p[0]), key2 = kind + "|" + p[1];
+        if (seenK[key2]) return; seenK[key2] = 1;
+        if (!comp[kind]) add("block", "B26", "A " + usageLabel(it.usage) + " item can't give a bonus to " + KIND_TEXT[kind] + ": no " + where + " do. They give " + slotAllows(comp) + ".", "printed comparables");
+        else if (p[1] !== "item" && !comp[kind][p[1]]) add("block", "B27", "A " + p[1] + " bonus to " + KIND_TEXT[kind] + " on a " + usageLabel(it.usage) + " item: " + where + " give that only as " + BTYPES.filter(function (t) { return comp[kind][t]; }).join(" or ") + " bonuses (an item bonus is always allowed).", "printed comparables");
       });
+      Object.keys(typed).sort().forEach(function (k) {
+        var p = k.split("|"), sel = p[0], bt = p[1], kind = bonusKind(sel), v = typed[k];
+        var row = T.bonus_min_level[kind === "save" ? "saves" : kind], need = row[String(v)], code = (kind === "perception" || kind === "skill") ? "E1" : "E2";
+        var what = "+" + v + " " + bt + " bonus to " + statLabel(sel);
+        if (need == null) add("warn", code, "A " + what + ": " + g + "'s table of permanent item bonuses stops at +3 (level " + row["3"] + "); a +4 is above anything printed (the GM may balance it with a drawback).", g);
+        else if (lvl < +need) add("warn", code, "A " + what + " at level " + lvl + ": " + g + " puts a permanent +" + v + " to " + KIND_TEXT[kind] + " at level " + need + " or higher.", g);
+        var rows = []; Object.keys(comp[kind] || {}).forEach(function (t) { rows = rows.concat(comp[kind][t]); });
+        if (!rows.length) return;
+        var upto = rows.filter(function (r) { return r[0] <= lvl; });
+        if (!upto.length) {
+          var first = rows.slice().sort(function (x, y) { return x[0] - y[0] || y[1] - x[1]; })[0];
+          add("warn", "E2", "A " + what + " at level " + lvl + ": printed " + usagePlural(it.usage) + " give " + KIND_TEXT[kind] + " a bonus from level " + first[0] + " (" + first[3] + ", +" + first[1] + ").", "[derived]");
+        } else {
+          var top = upto.slice().sort(function (x, y) { return y[1] - x[1] || x[0] - y[0]; })[0];
+          if (v > top[1]) add("warn", "E2", "A " + what + " at level " + lvl + ": printed " + usagePlural(it.usage) + " give at most +" + top[1] + " to " + KIND_TEXT[kind] + " by this level (" + top[3] + ", level " + top[0] + ").", "[derived]");
+        }
+        if (rows.every(function (r) { return r[2]; })) add("info", "E2", "Every " + usagePlural(it.usage) + " bonus to " + KIND_TEXT[kind] + " is conditional (e.g. " + rows[0][3] + "); this one always works.", "[derived]");
+      });
+      ["ac", "attack", "save"].forEach(function (kind) { if (sels.some(function (k) { return bonusKind(k) === kind; })) add("warn", "E9", STACKING[kind], "Player Core / GM Core (item bonuses don't stack)"); });
       var rr = resists(it), rtypes = Object.keys(rr).sort(), rrows = (T.resistance_benchmark || { rows: [[0, 3]] }).rows;
       (it.resist || []).forEach(function (e) { var v = +e.value || 0; if (v < 1 || v > RESIST_MAX) add("block", "B25", "A resistance is 1 to " + RESIST_MAX + ".", "broken"); });
       var most = Math.max.apply(null, rrows.filter(function (r) { return r[0] <= lvl; }).map(function (r) { return r[1]; }));
@@ -403,11 +461,11 @@
         }
       });
       if (rtypes.length > 1) add("info", "E3", "Resistance to " + rtypes.length + " damage types: most printed items resist one.", "[derived]");
-      if (sels.length || rtypes.length) add("info", "E8", "Invested: its effects work while a character has the item invested (as with printed items).", "Player Core (investing)");
-      var skills = sels.filter(function (k) { return k !== "perception"; });
+      if (Object.keys(typed).length || rtypes.length) add("info", "E8", "Invested: its effects work while a character has the item invested (as with printed items).", "Player Core (investing)");
+      var skills = sels.filter(function (k) { return bonusKind(k) === "skill"; }), sk = sels.filter(function (k) { return bonusKind(k) === "skill" || k === "perception"; });
       if (skills.length > Math.max(1, es.skillsMax)) add("info", "E1", "Item bonuses to " + skills.length + " skills: no printed item boosts more than " + es.skillsMax + ".", "[derived]");
-      if (sels.length) {
-        var topv = Math.max.apply(null, sels.map(function (k) { return bb[k]; })), stt = es.bonus[String(topv)];
+      if (sk.length) {
+        var topv = Math.max.apply(null, sk.map(function (k) { return bb[k]; })), stt = es.bonus[String(topv)];
         if (stt && lvl < stt.min) add("info", "E1", "No printed worn or held item gives a +" + topv + " item bonus below level " + stt.min + " (median level " + stt.median + ").", "[derived]");
         if (bb.perception) add("info", "E1", g + ": a Perception bonus is worth more than a skill bonus of the same size.", g);
       }
@@ -415,7 +473,7 @@
       closest = (d.equipment || []).slice().sort(function (x, y) {
         function key(r) {
           var ks = Object.keys(r[4]), shared = ks.filter(function (k) { return bb[k]; }).length + Object.keys(r[5]).filter(function (k) { return rr[k]; }).length, rtop = ks.length ? Math.max.apply(null, ks.map(function (k) { return r[4][k]; })) : 0;
-          return [usageGroup(r[2]) !== grp ? 1 : 0, Math.abs(r[1] - lvl), -shared, Math.abs(rtop - top0)];
+          return [r[2] !== it.usage ? 1 : 0, usageGroup(r[2]) !== grp ? 1 : 0, Math.abs(r[1] - lvl), -shared, Math.abs(rtop - top0)];
         }
         var a = key(x), b2 = key(y);
         for (var i = 0; i < a.length; i++) if (a[i] !== b2[i]) return a[i] - b2[i];
@@ -504,12 +562,14 @@
         + '<label>Speed (ft)<input type="number" min="-30" max="0" step="5" data-f="speed" value="' + esc(it.speed) + '"></label>'
         + '<label>Strength<input type="text" data-f="strength" value="' + esc(it.strength) + '" placeholder="-"></label></div>';
     } else if (it.kind === "equipment") {
-      var sel = d.bonusSelectors || [];
+      var sel = statOptions(it.system);
       h += '<label>Worn or held<select data-f="usage">' + opts(Object.keys(USAGES), it.usage, function (v) { return USAGES[v]; }) + "</select></label>"
-        + '<p class="tiny">Item bonuses (the bot applies them while the item is invested; only the highest bonus to one statistic counts).</p>'
+        + '<p class="tiny">Bonuses (the bot applies them while the item is invested; only the highest bonus of one type to a statistic counts). A kind of bonus is allowed only if a printed item worn or held the same way gives it: ' + esc(slotAllows(slotComp(it).comp)) + '.</p>'
         + (it.effects || []).map(function (e, i) {
-            return '<div class="grid3"><label>Statistic<select data-eff="' + i + '" data-k="sel">' + opts(sel, e.sel, statLabel) + "</select></label>"
-              + '<label>Item bonus<select data-eff="' + i + '" data-k="value">' + opts([1, 2, 3, 4], e.value, function (v) { return "+" + v; }) + "</select></label>"
+            return '<div class="grid4"><label>Statistic<select data-eff="' + i + '" data-k="sel">' + opts(sel, e.sel, function (v) { return v === "lore" ? "Lore (name it)" : statLabel(v); }) + "</select></label>"
+              + (e.sel === "lore" ? '<label>Lore<input type="text" maxlength="40" data-eff="' + i + '" data-k="lore" value="' + esc(e.lore || "") + '" placeholder="Sailing"></label>' : "")
+              + '<label>Bonus<select data-eff="' + i + '" data-k="value">' + opts([1, 2, 3, 4], e.value, function (v) { return "+" + v; }) + "</select></label>"
+              + '<label>Type<select data-eff="' + i + '" data-k="type">' + opts(BTYPES, e.type || "item", cap) + "</select></label>"
               + '<div style="align-self:end"><button class="tbtn" type="button" data-uneff="' + i + '">Remove</button></div></div>';
           }).join("")
         + '<button class="tbtn" type="button" id="addEff">+ Add a bonus</button>'
@@ -543,9 +603,13 @@
     if (it.kind === "weapon") stats = cap(it.category) + " " + (it.group || "weapon") + ", " + ({ "1": "1 hand", "1+": "1+ hands", "2": "2 hands" })[it.hands] + ", 1" + it.die + " " + it.dtype + (+it.range > 0 ? ", range " + it.range + " ft" + (it.reload ? ", reload " + it.reload : "") : ", melee");
     else if (it.kind === "armor") stats = cap(it.category) + " armor" + (it.group ? " (" + it.group + ")" : "") + ": AC +" + s.acBonus + ", Dex cap " + (s.dexCap == null ? "-" : s.dexCap) + ", check " + s.checkPenalty + ", Speed " + s.speedPenalty + " ft, Strength " + (s.strength == null ? "-" : s.strength);
     else if (it.kind === "equipment") {
-      var eb = bonuses(it), ek = Object.keys(eb).sort(function (a, b) { return (a !== "perception") - (b !== "perception") || (a < b ? -1 : 1); });
+      var eb = bonuses(it), korder = { ac: 0, save: 1, attack: 2, perception: 3, skill: 4 };
       var er = resists(it), parts2 = [];
-      if (ek.length) parts2.push("item bonus " + ek.map(function (k) { return "+" + eb[k] + " " + statLabel(k); }).join(", "));
+      BTYPES.forEach(function (bt) {
+        var ek = Object.keys(eb).filter(function (k) { return k.split("|")[1] === bt; }).map(function (k) { return k.split("|")[0]; })
+          .sort(function (a, b) { return korder[bonusKind(a)] - korder[bonusKind(b)] || (a < b ? -1 : 1); });
+        if (ek.length) parts2.push((bt === "untyped" ? "bonus " : bt + " bonus ") + ek.map(function (k) { return "+" + eb[k + "|" + bt] + " " + statLabel(k); }).join(", "));
+      });
       if (Object.keys(er).length) parts2.push("resistance " + Object.keys(er).sort().map(function (k) { return k + " " + er[k]; }).join(", "));
       stats = (USAGES[it.usage] || "Worn") + ": " + (parts2.length ? parts2.join("; ") + " (while invested)" : "no effects the bot applies");
     }
@@ -575,7 +639,7 @@
     if (it.kind === "weapon") { r = d.weapons[+idx]; it.category = r[1]; it.hands = r[2] === 2 ? "2" : "1"; it.die = r[4]; it.dtype = r[5] || it.dtype; it.group = r[6] || ""; it.range = r[7] || 0; it.traits = r[8].slice(); it.price = Math.round(r[9] / (it.system === "sf2e" ? 10 : 100)) || 0; }
     else if (it.kind === "armor") { r = d.armor[+idx]; it.category = r[1]; it.ac = r[2]; it.dex = r[3] == null ? "" : String(r[3]); it.check = r[4]; it.speed = r[5]; it.strength = r[6] == null ? "" : String(r[6]); it.bulk = r[7] === 0.1 ? "L" : String(r[7] || "-"); it.group = r[8] || ""; it.traits = r[9].slice(); }
     else if (it.kind === "equipment") { r = d.equipment[+idx]; it.level = r[1]; it.usage = USAGES[r[2]] ? r[2] : (usageGroup(r[2]) === "held" ? "held-in-one-hand" : "worn");
-      it.effects = Object.keys(r[4]).map(function (k) { return { sel: k, value: r[4][k] }; });
+      it.effects = Object.keys(r[4]).map(function (k) { return /-lore$/.test(k) ? { sel: "lore", lore: statLabel(k).replace(/ Lore$/, ""), value: r[4][k], type: "item" } : { sel: k, value: r[4][k], type: "item" }; });
       it.resist = Object.keys(r[5]).map(function (k) { return { type: k, value: r[5][k] }; });
       it.price = Math.round(r[6] / (it.system === "sf2e" ? 10 : 100)) || 0; }
     else { r = d.shields[+idx]; it.level = r[1]; it.ac = r[2]; it.hardness = r[3]; it.hp = r[4]; it.traits = r[5].filter(function (t) { return t !== "magical"; }); }
@@ -589,7 +653,7 @@
     else if (t.id === "delItem") { state.items.splice(state.current, 1); state.current = Math.max(0, state.current - 1); render(); }
     else if (d.sys) { var it = item(); ensureSystem(d.sys).then(function () { it.system = d.sys; it.coin = d.sys === "sf2e" ? "credits" : "gp"; render(); }, function () {}); }
     else if (d.untrait != null) { item().traits.splice(+d.untrait, 1); render(); }
-    else if (t.id === "addEff") { var ie = item(); ie.effects = ie.effects || []; ie.effects.push({ sel: (D(ie.system).bonusSelectors || ["perception"])[0], value: 1 }); render(); }
+    else if (t.id === "addEff") { var ie = item(); ie.effects = ie.effects || []; ie.effects.push({ sel: (D(ie.system).bonusSelectors || ["perception"])[0], value: 1, type: "item" }); render(); }
     else if (d.uneff != null) { item().effects.splice(+d.uneff, 1); render(); }
     else if (t.id === "addRes") { var ir = item(); ir.resist = ir.resist || []; ir.resist.push({ type: "fire", value: 3 }); render(); }
     else if (d.unres != null) { item().resist.splice(+d.unres, 1); render(); }
@@ -599,7 +663,7 @@
     if (t.id === "traitIn") { var sl = slugTrait(t.value); if (sl && it.traits.indexOf(sl) < 0) it.traits.push(sl); render(); var again = $("traitIn"); if (again) again.focus(); return; }
     if (t.id === "partyIn") { state.party = t.value; renderSide(); save(); return; }
     if (d.base != null) { fromBase(it, t.value); render(); return; }
-    if (d.eff != null) { it.effects[+d.eff][d.k] = d.k === "value" ? +t.value : t.value; render(); return; }
+    if (d.eff != null) { it.effects[+d.eff][d.k] = d.k === "value" ? +t.value : t.value; render(); if (d.k === "lore") { var lf = document.querySelector('[data-eff="' + d.eff + '"][data-k="lore"]'); if (lf) lf.focus(); } return; }
     if (d.res != null) { it.resist[+d.res][d.k] = d.k === "value" ? +t.value : t.value; render(); return; }
     if (d.f) { it[d.f] = t.value; render(); }
   });
@@ -645,8 +709,8 @@
           else if (kind === "armor") { it.category = s.category || "light"; it.group = s.group || ""; it.ac = s.acBonus || 0; it.dex = s.dexCap == null ? "" : String(s.dexCap);
             it.check = s.checkPenalty || 0; it.speed = s.speedPenalty || 0; it.strength = s.strength == null ? "" : String(s.strength); }
           else if (kind === "equipment") { it.usage = USAGES[(s.usage || {}).value] ? s.usage.value : "worn";
-            it.effects = (s.rules || []).filter(function (r) { return r && r.key === "FlatModifier" && r.type === "item" && typeof r.value === "number" && !r.predicate; })
-              .map(function (r) { return { sel: String(r.selector), value: r.value }; });
+            it.effects = (s.rules || []).filter(function (r) { return r && r.key === "FlatModifier" && BTYPES.indexOf(r.type || "item") >= 0 && typeof r.value === "number" && !r.predicate; })
+              .map(function (r) { var sl = String(r.selector); return /-lore$/.test(sl) ? { sel: "lore", lore: statLabel(sl).replace(/ Lore$/, ""), value: r.value, type: r.type || "item" } : { sel: sl, value: r.value, type: r.type || "item" }; });
             it.resist = (s.rules || []).filter(function (r) { return r && r.key === "Resistance" && typeof r.value === "number" && !r.predicate; })
               .map(function (r) { return { type: String(r.type), value: r.value }; });
             it.traits = it.traits.filter(function (t) { return t !== "invested"; }); }
@@ -675,8 +739,8 @@
     if (it.kind === "armor") { parts.push("stats:" + it.ac + "/" + (it.dex === "" ? "-" : it.dex) + "/" + it.check + "/" + it.speed + "/" + (it.strength === "" ? "-" : it.strength), "category:" + cap(it.category)); if (it.group) parts.push("group:" + it.group); }
     if (it.kind === "shield") parts.push("stats:" + it.ac + "/" + it.hardness + "/" + it.hp);
     if (it.kind === "equipment") {
-      var cb = bonuses(it), ck = Object.keys(cb).sort();
-      var cr = resists(it), effs = ck.map(function (k) { return k + " +" + cb[k]; }).concat(Object.keys(cr).sort().map(function (k) { return "resist " + k + " " + cr[k]; }));
+      var cb = bonuses(it), ck = Object.keys(cb).sort(), WORDS = { "saving-throw": "saves", "attack-roll": "attacks", "strike-attack-roll": "strikes", "spell-attack-roll": "spell attacks" };
+      var cr = resists(it), effs = ck.map(function (k) { var p = k.split("|"); return (WORDS[p[0]] || p[0].replace(/-/g, " ")) + " +" + cb[k] + (p[1] === "item" ? "" : " " + p[1]); }).concat(Object.keys(cr).sort().map(function (k) { return "resist " + k + " " + cr[k]; }));
       parts.push("stats:" + (effs.length ? effs.join(", ") : "-"));
       if (it.usage === "held-in-one-hand" || it.usage === "held-in-two-hands") parts.push("hands:" + (it.usage === "held-in-two-hands" ? "2" : "1"));
       else if (it.usage && it.usage !== "worn") parts.push("group:" + (it.usage.indexOf("tattooed") === 0 ? "tattoo" : it.usage.slice(4)));
