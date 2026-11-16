@@ -159,6 +159,12 @@
           <h2><span class="num">6</span>Attribute boosts</h2>
           <p class="hint" style="margin-top:0">Four free boosts, each on a different attribute.</p>
           <div class="pills" id="freePills"></div>
+          <div id="vfBox" hidden>
+            <h3>Voluntary flaws (legacy)</h3>
+            <p class="hint" style="margin-top:0">Optional, a campaign rule: take two extra attribute flaws and gain one extra free boost. The flaws go on different attributes, except one your ancestry boosts by a fixed boost, which can take both. The extra boost can't go on an attribute your ancestry boosts (unless a voluntary flaw went there).</p>
+            <div class="pills" id="vfFlaws"></div>
+            <div class="pills" id="vfBoost"></div>
+          </div>
           <div class="mods" id="mods"></div>
         </div>
 
@@ -232,13 +238,15 @@
   var SYS_NAMES = { pf2e: "Pathfinder 2e", sf2e: "Starfinder 2e" }, SYS_FILES = { sf2e: ["builder-data-sf2e.js", "builder-items-sf2e.js"] };
   var $ = function (id) { return document.getElementById(id); };
   var RULE_LABELS = { free_archetype: "Free Archetype", ancestry_paragon: "Ancestry Paragon", dual_class: "Dual Class", skill_paragon: "Skill Paragon",
-                      automatic_bonus_progression: "Automatic Bonus Progression", gradual_ability_boosts: "Gradual Ability Boosts" };
+                      automatic_bonus_progression: "Automatic Bonus Progression", gradual_ability_boosts: "Gradual Ability Boosts",
+                      voluntary_flaws: "Voluntary Flaws (legacy)" };
   var ATTR = D.attributes, NAMES = D.attributeNames;
   var byName = function (list, name) { for (var i = 0; i < list.length; i++) if (list[i].name === name) return list[i]; return null; };
 
   var S = {
     systems: ["pf2e"],
-    rules: { free_archetype: false, ancestry_paragon: false, dual_class: false, skill_paragon: false, automatic_bonus_progression: false, gradual_ability_boosts: false },
+    rules: { free_archetype: false, ancestry_paragon: false, dual_class: false, skill_paragon: false, automatic_bonus_progression: false, gradual_ability_boosts: false, voluntary_flaws: false },
+    vf: { flaws: [], boost: "" },                                             /* D1471: the legacy Voluntary Flaws rule's two flaws and extra boost */
     allowUncommon: false, allowRare: false, exceptions: {}, levelCap: null, code: "",
     name: "", ancestry: "", heritage: "", arrayKey: "", ancestryFree: [], background: "", bgBoosts: {}, cls: "", keyAttr: "", groups: {},
     free: [], skills: [], feats: {}, gear: [], spells: {}, bgAttr: "", buildLevel: 1, lvlTouched: false, levels: {}, open: {},
@@ -371,15 +379,37 @@
     (bg ? bg.groups : []).forEach(function (g) { (S.bgBoosts[g.subkey] || []).forEach(function (a) { out.push(a); }); });
     return out;
   }
+  /* D1471 -- the legacy Voluntary Flaws rule, as Foundry's attribute builder has it (voluntary_flaws.py is the bot's copy): two flaws, on different
+     attributes unless the ancestry boosts it by a fixed boost; then one extra boost, on any attribute the ancestry step doesn't net-boost. */
+  function lockedBoosts(array) { var out = []; (array ? array.boosts : []).forEach(function (s) { if (s.length === 1) out.push(s[0]); }); return out; }
+  function vfOn() { return !!(S.rules.voluntary_flaws && curAncestry()); }
+  function vfFlawsOk(flaws, array) {
+    if (flaws.length > 2) return false;
+    var locked = lockedBoosts(array);
+    return flaws.every(function (a, i) { return flaws.indexOf(a) === i || locked.indexOf(a) >= 0; });
+  }
+  function vfBoostChoices(flaws, array, ancestrySet) {
+    if (flaws.length !== 2 || !vfFlawsOk(flaws, array)) return [];
+    var flawed = (array ? array.flaws : []).concat(flaws);
+    var net = ancestrySet.filter(function (a) { return flawed.indexOf(a) < 0; });
+    return ATTR.filter(function (a) { return net.indexOf(a) < 0; });
+  }
+  function vfApplied(array, ancestrySet) {
+    if (!vfOn() || !S.vf.flaws.length || !vfFlawsOk(S.vf.flaws, array)) return { flaws: [], boost: [] };
+    var ok = S.vf.boost && vfBoostChoices(S.vf.flaws, array, ancestrySet).indexOf(S.vf.boost) >= 0;
+    return { flaws: S.vf.flaws.slice(), boost: ok ? [S.vf.boost] : [] };
+  }
   function boostSets() {
     var array = curArray(), cls = curClass();
     var sets = { ancestry: fixedAncestry(array).concat(S.ancestryFree), background: bgPicks(), cls: cls ? (cls.keys.length === 1 ? cls.keys : (S.keyAttr ? [S.keyAttr] : [])) : [], free: S.free };
-    return { sets: sets, flaws: array ? array.flaws : [] };
+    var vf = vfApplied(array, sets.ancestry);
+    sets.voluntary = vf.boost;
+    return { sets: sets, flaws: (array ? array.flaws : []).concat(vf.flaws) };
   }
   function mods() {
     var b = boostSets(), m = {};
     ATTR.forEach(function (a) { m[a] = 0; });
-    ["ancestry", "background", "cls", "free"].forEach(function (k) { b.sets[k].forEach(function (a) { m[a] += 1; }); });
+    ["ancestry", "voluntary", "background", "cls", "free"].forEach(function (k) { b.sets[k].forEach(function (a) { m[a] += 1; }); });
     b.flaws.forEach(function (a) { m[a] -= 1; });
     return m;
   }
@@ -572,7 +602,7 @@
 
   function renderAncestry() {
     renderPicker($("ancestryList"), $("ancestryFilter"), ancestryEntries(), S.ancestry, function (n) {
-      if (n !== S.ancestry) { S.ancestry = n; S.heritage = ""; S.arrayKey = ""; S.ancestryFree = []; S.feats.ancestry = ""; S.feats.ancestry2 = ""; S.levels = {}; }
+      if (n !== S.ancestry) { S.ancestry = n; S.heritage = ""; S.arrayKey = ""; S.ancestryFree = []; S.vf = { flaws: [], boost: "" }; S.feats.ancestry = ""; S.feats.ancestry2 = ""; S.levels = {}; }
       refresh();
     });
     var a = curAncestry();
@@ -589,7 +619,7 @@
     arrays.forEach(function (arr) {
       var b = document.createElement("button"); b.type = "button"; b.className = "pill"; b.textContent = arr.label;
       b.setAttribute("aria-pressed", arr === array ? "true" : "false");
-      b.addEventListener("click", function () { S.arrayKey = arr.key; S.ancestryFree = []; refresh(); });
+      b.addEventListener("click", function () { S.arrayKey = arr.key; S.ancestryFree = []; S.vf = { flaws: [], boost: "" }; refresh(); });
       box.appendChild(b);
     });
     var n = freeSlots(array), fixed = fixedAncestry(array);
@@ -647,8 +677,27 @@
     });
   }
 
+  function renderVoluntary() {
+    var box = $("vfBox"); box.hidden = !vfOn();
+    if (!vfOn()) return;
+    var array = curArray(), locked = lockedBoosts(array), opts = ATTR.slice();
+    locked.forEach(function (a) { opts.push(a + ":2"); });
+    var picked = []; S.vf.flaws.forEach(function (a) { picked.push(picked.indexOf(a) >= 0 ? a + ":2" : a); });
+    pills($("vfFlaws"), opts, picked, 2, function (o) {
+      var a = o.replace(":2", ""), i;
+      if (picked.indexOf(o) >= 0) { i = S.vf.flaws.lastIndexOf(a); S.vf.flaws.splice(i, 1); }
+      else if (o.indexOf(":2") > 0 && S.vf.flaws.indexOf(a) < 0) return;                    /* the second flaw needs the first */
+      else S.vf.flaws.push(a);
+      if (S.vf.flaws.length < 2) S.vf.boost = "";
+      refresh();
+    }, function (o) { return o.indexOf(":2") > 0 ? NAMES[o.replace(":2", "")] + " (second flaw)" : "Flaw: " + NAMES[o]; });
+    var choices = vfBoostChoices(S.vf.flaws, array, fixedAncestry(array).concat(S.ancestryFree));
+    if (S.vf.boost && choices.indexOf(S.vf.boost) < 0) S.vf.boost = "";
+    pills($("vfBoost"), choices, S.vf.boost ? [S.vf.boost] : [], 1, function (o) { S.vf.boost = S.vf.boost === o ? "" : o; refresh(); }, function (o) { return "Extra boost: " + NAMES[o]; });
+  }
   function renderFree() {
     pills($("freePills"), ATTR, S.free, D.freeBoosts, function (o) { toggle(S.free, o); refresh(); }, function (o) { return NAMES[o]; });
+    renderVoluntary();
     var m = mods(), box = $("mods"); box.textContent = "";
     ATTR.forEach(function (a) { var d = document.createElement("div"); d.innerHTML = NAMES[a].slice(0, 3) + "<b></b>"; d.querySelector("b").textContent = (m[a] >= 0 ? "+" : "") + m[a]; box.appendChild(d); });
   }
@@ -1108,7 +1157,7 @@
     ATTR.forEach(function (a) { score[a] = 10; });
     b.flaws.forEach(function (a) { score[a] -= 2; });
     function boost(a) { score[a] += score[a] >= 18 ? 1 : 2; }
-    ["ancestry", "background", "cls", "free"].forEach(function (k) { b.sets[k].forEach(boost); });
+    ["ancestry", "voluntary", "background", "cls", "free"].forEach(function (k) { b.sets[k].forEach(boost); });
     for (var L = 2; L <= T; L++) { var st = S.levels[L]; if (st) st.boosts.forEach(boost); }
     var m = {}; ATTR.forEach(function (a) { m[a] = Math.floor((score[a] - 10) / 2); });
     return m;
@@ -1334,8 +1383,12 @@
     if (S.ancestryFree.length) boosts.ancestry_free = S.ancestryFree.slice();
     Object.keys(S.bgBoosts).forEach(function (k) { if (S.bgBoosts[k].length) boosts[k] = S.bgBoosts[k].slice(); });
     var st = { ancestry: S.ancestry, heritage: S.heritage, background: S.background, "class": S.cls, boosts: boosts, skills: S.skills.slice(), variants: { free_archetype: !!S.rules.free_archetype, ancestry_paragon: !!S.rules.ancestry_paragon, dual_class: !!S.rules.dual_class, skill_paragon: !!S.rules.skill_paragon,
-      automatic_bonus_progression: !!S.rules.automatic_bonus_progression, gradual_ability_boosts: !!S.rules.gradual_ability_boosts } };
+      automatic_bonus_progression: !!S.rules.automatic_bonus_progression, gradual_ability_boosts: !!S.rules.gradual_ability_boosts, voluntary_flaws: !!S.rules.voluntary_flaws } };
     if (array && curAncestry().arrays.length > 1) st.boost_array = array.key;
+    if (vfOn()) {                                                             /* D1471: always answered when the rule is on; no flaws = not taken */
+      var vf = vfApplied(array, fixedAncestry(array).concat(S.ancestryFree));
+      st.voluntary_flaws = vf.flaws.length === 2 && vf.boost.length ? { flaws: vf.flaws, boost: vf.boost[0] } : { flaws: [], boost: "" };
+    }
     if (S.keyAttr) st.key_attribute = S.keyAttr;
     if (Object.keys(S.groups).length) st.subclass = JSON.parse(JSON.stringify(S.groups));
     if (S.feats.ancestry) st.ancestry_feat = S.feats.ancestry;
@@ -1350,7 +1403,8 @@
   function usedRules() {
     var fa = false, ap = !!(S.rules.ancestry_paragon && S.feats.ancestry2);
     if (curClass()) levelBlocks().forEach(function (b) { (b.payload.feats || []).forEach(function (f) { if (f.label.toLowerCase().indexOf("free archetype") >= 0) fa = true; if (f.label.toLowerCase().indexOf("paragon") >= 0) ap = true; }); });
-    return { free_archetype: fa, ancestry_paragon: ap, dual_class: false, skill_paragon: false };
+    var st = buildState();
+    return { free_archetype: fa, ancestry_paragon: ap, dual_class: false, skill_paragon: false, voluntary_flaws: !!(st.voluntary_flaws && st.voluntary_flaws.flaws.length) };
   }
 
 
@@ -1370,6 +1424,8 @@
     S.ancestry = st.ancestry || ""; S.heritage = st.heritage || ""; S.background = st.background || ""; S.cls = st["class"] || "";
     S.arrayKey = st.boost_array || ""; S.keyAttr = st.key_attribute || ""; S.groups = JSON.parse(JSON.stringify(st.subclass || {}));
     S.free = (boosts.free || []).slice(); S.ancestryFree = (boosts.ancestry_free || []).slice();
+    var vfs = st.voluntary_flaws || {};                                       /* D1471 */
+    S.vf = { flaws: (Array.isArray(vfs.flaws) ? vfs.flaws : []).filter(function (a) { return ATTR.indexOf(a) >= 0; }).slice(0, 2), boost: ATTR.indexOf(vfs.boost) >= 0 ? vfs.boost : "" };
     S.bgBoosts = {}; Object.keys(boosts).forEach(function (k) { if (k !== "free" && k !== "ancestry_free") S.bgBoosts[k] = boosts[k].slice(); });
     S.skills = (st.skills || []).slice(); S.spells = JSON.parse(JSON.stringify(st.spells || {}));
     S.feats = { ancestry: st.ancestry_feat || "", ancestry2: st.ancestry_feat_2 || "", "class": st.class_feat || "", skill: st.skill_feat || "" };
@@ -1408,7 +1464,7 @@
     if (file.size > 2000000) { msg.textContent = "That file is too big to be a recipe."; return; }
     file.text().then(function (text) {
       var doc = readRecipe(text), r = doc.rules || {};
-      S.rules = { free_archetype: false, ancestry_paragon: false, dual_class: false, skill_paragon: false, automatic_bonus_progression: false, gradual_ability_boosts: false };
+      S.rules = { free_archetype: false, ancestry_paragon: false, dual_class: false, skill_paragon: false, automatic_bonus_progression: false, gradual_ability_boosts: false, voluntary_flaws: false };
       Object.keys(r.variants || {}).forEach(function (k) { if (k in S.rules) S.rules[k] = !!r.variants[k]; });
       S.allowUncommon = !!r.allow_uncommon; S.allowRare = !!r.allow_rare; S.levelCap = r.level_cap || null; S.code = r.campaign_code || ""; S.exceptions = {};
       (r.exceptions || []).forEach(function (n) { S.exceptions[n] = true; });
