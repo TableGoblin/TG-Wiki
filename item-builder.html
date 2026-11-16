@@ -61,6 +61,8 @@
   .tiny { font-size: 12px; color: var(--text-3); }
   .cmd { font: 500 12.5px "IBM Plex Mono", monospace; background: var(--surface-2); border-radius: 6px; padding: 6px 8px; margin: 6px 0 0; overflow-wrap: anywhere; }
   .coming { opacity: .55; }
+  #editor, .layout > .side { min-width: 0; }
+  #editor select, #editor input { max-width: 100%; }
 </style>
 </head>
 <body>
@@ -120,14 +122,14 @@
         <div class="eyebrow">GM tool</div>
         <h1>Item builder</h1>
         <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="map-prep.html">Map prep</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="item-builder.html" aria-current="page">Item builder</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="encounter-builder.html">Encounter builder</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a><a href="gm-screen.html">GM Screen</a></nav>
-        <p class="lede">Make homebrew weapons, armor and shields for your campaign, and see at once how each one compares with the printed items: die sizes, traits, Armor Class, Hardness and price for its level. The checks are advice, not rules. GM Core's tables are labeled as such (Starfinder 2e has no item-building chapter of its own, so its items use "GM Core (applies to SF2e)"), and every comparison worked out from the printed items is marked [derived]. Nothing here is uploaded; your work is kept in this browser until you download the file. <strong>Premium coming:</strong> when subscriptions start, <code>/tgm homebrew add</code>, <code>edit</code> and <code>import</code> will need a campaign subscription (free while we test).</p>
+        <p class="lede">Make homebrew weapons, armor, shields and equipment for your campaign, and see at once how each one compares with the printed items: die sizes, traits, Armor Class, Hardness, item bonuses and price for its level. The checks are advice, not rules. GM Core's tables are labeled as such (Starfinder 2e has no item-building chapter of its own, so its items use "GM Core (applies to SF2e)"), and every comparison worked out from the printed items is marked [derived]. Nothing here is uploaded; your work is kept in this browser until you download the file. <strong>Premium coming:</strong> when subscriptions start, <code>/tgm homebrew add</code>, <code>edit</code> and <code>import</code> will need a campaign subscription (free while we test).</p>
         <ol class="steps">
           <li><strong>Add an item</strong> and pick its system and type. Start from a printed item, or from scratch.</li>
-          <li><strong>Set its stats.</strong> Damage, traits, AC or Hardness, level and price.</li>
+          <li><strong>Set its stats.</strong> Damage, traits, AC or Hardness, an equipment item's bonuses, level and price.</li>
           <li><strong>Read the checks</strong> on the right, along with the three closest printed items. Only a broken item or a printed item's name is refused; everything else is your call.</li>
           <li><strong>Download the file</strong> and run <code>/tgm homebrew import</code> in your campaign with it attached.</li>
         </ol>
-        <p class="hint">A quick one? <code>/tgm homebrew add</code> makes a simple item in Discord, and this page can copy that command for you. Equipment (worn and held items) is coming next.</p>
+        <p class="hint">A quick one? <code>/tgm homebrew add</code> makes a simple item in Discord, and this page can copy that command for you. Equipment (worn and held items) can give an item bonus to Perception or a skill and resistance to a damage type, which work while a character has it invested; spell activations are coming.</p>
       </header>
 
       <div class="tool-body">
@@ -184,6 +186,14 @@
   var HANDS = { "1": "held-in-one-hand", "1+": "held-in-one-plus-hands", "2": "held-in-two-hands" };
   var RARITIES = ["common", "uncommon", "rare", "unique"];
   var NAME_MAX = 60, LEVEL_MAX = 25;
+  var USAGES = { "worn": "Worn", "wornamulet": "Worn: amulet", "wornanklets": "Worn: anklets", "wornarmbands": "Worn: armbands", "wornbelt": "Worn: belt",
+                 "wornbracers": "Worn: bracers", "worncirclet": "Worn: circlet", "worncloak": "Worn: cloak", "wornclothing": "Worn: clothing",
+                 "worncollar": "Worn: collar", "worneyepiece": "Worn: eyepiece", "worngarment": "Worn: garment", "worngloves": "Worn: gloves",
+                 "wornheadwear": "Worn: headwear", "wornmask": "Worn: mask", "wornnecklace": "Worn: necklace", "wornring": "Worn: ring",
+                 "wornshoes": "Worn: shoes", "tattooed-on-the-body": "Tattooed on the body", "held-in-one-hand": "Held in one hand",
+                 "held-in-two-hands": "Held in two hands" };
+  var BONUS_MAX = 4, RESIST_MAX = 30;
+  function statLabel(sel) { return sel === "perception" ? "Perception" : cap(sel); }
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -199,6 +209,7 @@
     if (kind === "weapon") { it.category = "martial"; it.group = ""; it.hands = "1"; it.range = 0; it.die = "d6"; it.dtype = "slashing"; it.reload = ""; }
     if (kind === "armor") { it.category = "light"; it.group = ""; it.ac = 1; it.dex = "4"; it.check = -1; it.speed = 0; it.strength = "0"; }
     if (kind === "shield") { it.ac = 2; it.hardness = 5; it.hp = 20; it.speed = 0; }
+    if (kind === "equipment") { it.usage = "worn"; it.effects = [{ sel: "athletics", value: 1 }]; it.resist = []; it.level = 3; }
     return it;
   }
   var state = { systems: ["pf2e"], items: [blank("weapon", "pf2e")], current: 0, party: "" };
@@ -272,6 +283,13 @@
       s.category = it.category; s.group = it.group || null; s.acBonus = +it.ac || 0; s.dexCap = it.dex === "" || it.dex === "-" ? null : +it.dex;
       s.checkPenalty = +it.check || 0; s.speedPenalty = +it.speed || 0; s.strength = it.strength === "" || it.strength === "-" ? null : +it.strength;
       s.usage = { value: "wornarmor" };
+    } else if (it.kind === "equipment") {
+      var best = bonuses(it);
+      s.usage = { value: it.usage || "worn" };
+      var rs = resists(it);
+      s.rules = Object.keys(best).sort().map(function (k) { return { key: "FlatModifier", selector: k, type: "item", value: best[k] }; })
+        .concat(Object.keys(rs).sort().map(function (k) { return { key: "Resistance", type: k, value: rs[k] }; }));
+      if (s.rules.length && s.traits.value.indexOf("invested") < 0) { s.traits.value.push("invested"); s.traits.otherTags = s.traits.otherTags.filter(function (t) { return t !== "invested"; }); }
     } else {
       var hp = Math.max(0, +it.hp || 0);
       s.acBonus = +it.ac || 0; s.hardness = +it.hardness || 0; s.hp = { max: hp, value: hp, brokenThreshold: Math.floor(hp / 2) }; s.speedPenalty = +it.speed || 0;
@@ -279,6 +297,19 @@
     }
     return { name: it.name.trim(), type: it.kind, system: s };
   }
+
+  // the highest bonus per statistic (item bonuses don't stack), only Perception and the system's skills
+  function bonuses(it) {
+    var out = {}, allowed = D(it.system).bonusSelectors || [];
+    (it.effects || []).forEach(function (e) { var v = Math.floor(+e.value || 0); if (allowed.indexOf(e.sel) >= 0 && v >= 1 && v <= BONUS_MAX) out[e.sel] = Math.max(out[e.sel] || 0, v); });
+    return out;
+  }
+  function resists(it) {
+    var out = {}, types = D(it.system).damageTypes || [];
+    (it.resist || []).forEach(function (e) { var v = Math.floor(+e.value || 0); if (types.indexOf(e.type) >= 0 && v >= 1 && v <= RESIST_MAX) out[e.type] = Math.max(out[e.type] || 0, v); });
+    return out;
+  }
+  function usageGroup(u) { return String(u || "").indexOf("held") === 0 ? "held" : "worn"; }
 
   // ---------- the checks (the bot's item_balance.py, run here as advice; the bot's copy decides) ----------
   function guide(sys) { return D(sys).label || "GM Core"; }
@@ -353,6 +384,46 @@
         function dist(a) { return Math.abs(a[2] - ac) + Math.abs((a[3] == null ? 5 : a[3]) - (dex == null ? 5 : dex)); }
         return dist(x) - dist(y) || (x[0] < y[0] ? -1 : 1);
       }).slice(0, 3).map(function (a) { return a[0] + " (AC +" + a[2] + ", Dex cap " + (a[3] == null ? "-" : a[3]) + ", check " + a[4] + ", Speed " + a[5] + ", Str " + (a[6] == null ? "-" : a[6]) + ")"; });
+    } else if (it.kind === "equipment") {
+      var bb = bonuses(it), sels = Object.keys(bb).sort(), es = d.equipmentStats || { bonus: {}, skillsMax: 0 };
+      (it.effects || []).forEach(function (e) { var v = +e.value || 0; if (v < 1 || v > BONUS_MAX) add("block", "B24", "An item bonus is +1 to +" + BONUS_MAX + ".", "broken"); });
+      sels.forEach(function (sel) {
+        var row = T.bonus_min_level[sel === "perception" ? "perception" : "skill"], v = bb[sel], need = row[String(v)];
+        var what = "+" + v + " item bonus to " + statLabel(sel);
+        if (need == null) add("warn", "E1", "A " + what + ": " + g + "'s table of permanent item bonuses stops at +3 (level " + row["3"] + ").", g);
+        else if (lvl < +need) add("warn", "E1", "A " + what + " at level " + lvl + ": " + g + " puts a permanent +" + v + " to " + (sel === "perception" ? "Perception" : "a skill") + " at level " + need + " or higher.", g);
+      });
+      var rr = resists(it), rtypes = Object.keys(rr).sort(), rrows = (T.resistance_benchmark || { rows: [[0, 3]] }).rows;
+      (it.resist || []).forEach(function (e) { var v = +e.value || 0; if (v < 1 || v > RESIST_MAX) add("block", "B25", "A resistance is 1 to " + RESIST_MAX + ".", "broken"); });
+      var most = Math.max.apply(null, rrows.filter(function (r) { return r[0] <= lvl; }).map(function (r) { return r[1]; }));
+      rtypes.forEach(function (k) {
+        if (rr[k] > most) {
+          var nxt = rrows.filter(function (r) { return r[1] >= rr[k]; })[0];
+          add("warn", "E3", "Resistance " + rr[k] + " to " + k + " at level " + lvl + ": printed permanent items give at most " + most + " at this level" + (nxt ? " (the energy-resistant runes: 5 at level 8, 10 at 12; " + rr[k] + " from about level " + nxt[0] + ")" : " (15 from level 17 is the most)") + ".", "[derived]");
+        }
+      });
+      if (rtypes.length > 1) add("info", "E3", "Resistance to " + rtypes.length + " damage types: most printed items resist one.", "[derived]");
+      if (sels.length || rtypes.length) add("info", "E8", "Invested: its effects work while a character has the item invested (as with printed items).", "Player Core (investing)");
+      var skills = sels.filter(function (k) { return k !== "perception"; });
+      if (skills.length > Math.max(1, es.skillsMax)) add("info", "E1", "Item bonuses to " + skills.length + " skills: no printed item boosts more than " + es.skillsMax + ".", "[derived]");
+      if (sels.length) {
+        var topv = Math.max.apply(null, sels.map(function (k) { return bb[k]; })), stt = es.bonus[String(topv)];
+        if (stt && lvl < stt.min) add("info", "E1", "No printed worn or held item gives a +" + topv + " item bonus below level " + stt.min + " (median level " + stt.median + ").", "[derived]");
+        if (bb.perception) add("info", "E1", g + ": a Perception bonus is worth more than a skill bonus of the same size.", g);
+      }
+      var grp = usageGroup(it.usage), top0 = sels.length ? Math.max.apply(null, sels.map(function (k) { return bb[k]; })) : 0;
+      closest = (d.equipment || []).slice().sort(function (x, y) {
+        function key(r) {
+          var ks = Object.keys(r[4]), shared = ks.filter(function (k) { return bb[k]; }).length + Object.keys(r[5]).filter(function (k) { return rr[k]; }).length, rtop = ks.length ? Math.max.apply(null, ks.map(function (k) { return r[4][k]; })) : 0;
+          return [usageGroup(r[2]) !== grp ? 1 : 0, Math.abs(r[1] - lvl), -shared, Math.abs(rtop - top0)];
+        }
+        var a = key(x), b2 = key(y);
+        for (var i = 0; i < a.length; i++) if (a[i] !== b2[i]) return a[i] - b2[i];
+        return x[0] < y[0] ? -1 : 1;
+      }).slice(0, 3).map(function (r) {
+        var bits = Object.keys(r[4]).sort().map(function (k) { return "+" + r[4][k] + " " + statLabel(k); }).concat(Object.keys(r[5]).sort().map(function (k) { return "resist " + k + " " + r[5][k]; }));
+        return r[0] + " (level " + r[1] + ", " + (USAGES[r[2]] || r[2] || "other").toLowerCase() + "; " + bits.join(", ") + ")";
+      });
     } else {
       var sac = +it.ac || 0, hard = +it.hardness || 0, hp = +it.hp || 0;
       if (hard < 1) add("block", "B17", "A shield's Hardness is at least 1.", "broken");
@@ -391,12 +462,12 @@
       return '<button class="pill" type="button" data-tab="' + i + '" aria-pressed="' + (i === state.current) + '">' + esc(it.name || "(unnamed)") + '<span class="sys ' + it.system + '">' + (it.system === "sf2e" ? "SF2e" : "PF2e") + "</span></button>";
     }).join("");
     html += '<button class="tbtn" type="button" data-addkind="weapon">+ Weapon</button><button class="tbtn" type="button" data-addkind="armor">+ Armor</button>'
-          + '<button class="tbtn" type="button" data-addkind="shield">+ Shield</button><button class="tbtn coming" type="button" disabled title="Phase 2">+ Equipment (coming)</button>';
+          + '<button class="tbtn" type="button" data-addkind="shield">+ Shield</button><button class="tbtn" type="button" data-addkind="equipment">+ Equipment</button>';
     if (state.items.length > 1) html += '<button class="tbtn" type="button" id="delItem">Remove this item</button>';
     $("tabs").innerHTML = html;
   }
   function baseOptions(it) {
-    var d = D(it.system), list = it.kind === "weapon" ? d.weapons : it.kind === "armor" ? d.armor : d.shields;
+    var d = D(it.system), list = it.kind === "weapon" ? d.weapons : it.kind === "armor" ? d.armor : it.kind === "equipment" ? (d.equipment || []) : d.shields;
     return '<option value="">Start from scratch</option>' + list.map(function (r, i) { return '<option value="' + i + '">' + esc(r[0]) + "</option>"; }).join("");
   }
   function renderEditor() {
@@ -432,6 +503,23 @@
         + '<label>Check<input type="number" min="-10" max="0" data-f="check" value="' + esc(it.check) + '"></label>'
         + '<label>Speed (ft)<input type="number" min="-30" max="0" step="5" data-f="speed" value="' + esc(it.speed) + '"></label>'
         + '<label>Strength<input type="text" data-f="strength" value="' + esc(it.strength) + '" placeholder="-"></label></div>';
+    } else if (it.kind === "equipment") {
+      var sel = d.bonusSelectors || [];
+      h += '<label>Worn or held<select data-f="usage">' + opts(Object.keys(USAGES), it.usage, function (v) { return USAGES[v]; }) + "</select></label>"
+        + '<p class="tiny">Item bonuses (the bot applies them while the item is invested; only the highest bonus to one statistic counts).</p>'
+        + (it.effects || []).map(function (e, i) {
+            return '<div class="grid3"><label>Statistic<select data-eff="' + i + '" data-k="sel">' + opts(sel, e.sel, statLabel) + "</select></label>"
+              + '<label>Item bonus<select data-eff="' + i + '" data-k="value">' + opts([1, 2, 3, 4], e.value, function (v) { return "+" + v; }) + "</select></label>"
+              + '<div style="align-self:end"><button class="tbtn" type="button" data-uneff="' + i + '">Remove</button></div></div>';
+          }).join("")
+        + '<button class="tbtn" type="button" id="addEff">+ Add a bonus</button>'
+        + '<p class="tiny">Resistances (also while invested).</p>'
+        + (it.resist || []).map(function (e, i) {
+            return '<div class="grid3"><label>Damage type<select data-res="' + i + '" data-k="type">' + opts(d.damageTypes, e.type, cap) + "</select></label>"
+              + '<label>Resistance<input type="number" min="1" max="' + RESIST_MAX + '" data-res="' + i + '" data-k="value" value="' + esc(e.value) + '"></label>'
+              + '<div style="align-self:end"><button class="tbtn" type="button" data-unres="' + i + '">Remove</button></div></div>';
+          }).join("")
+        + ' <button class="tbtn" type="button" id="addRes">+ Add a resistance</button>';
     } else {
       h += '<div class="grid2"><label>AC bonus<input type="number" min="0" max="5" data-f="ac" value="' + esc(it.ac) + '"></label>'
         + '<label>Speed penalty (ft)<input type="number" min="-30" max="0" step="5" data-f="speed" value="' + esc(it.speed) + '"></label></div>'
@@ -454,6 +542,13 @@
     var stats;
     if (it.kind === "weapon") stats = cap(it.category) + " " + (it.group || "weapon") + ", " + ({ "1": "1 hand", "1+": "1+ hands", "2": "2 hands" })[it.hands] + ", 1" + it.die + " " + it.dtype + (+it.range > 0 ? ", range " + it.range + " ft" + (it.reload ? ", reload " + it.reload : "") : ", melee");
     else if (it.kind === "armor") stats = cap(it.category) + " armor" + (it.group ? " (" + it.group + ")" : "") + ": AC +" + s.acBonus + ", Dex cap " + (s.dexCap == null ? "-" : s.dexCap) + ", check " + s.checkPenalty + ", Speed " + s.speedPenalty + " ft, Strength " + (s.strength == null ? "-" : s.strength);
+    else if (it.kind === "equipment") {
+      var eb = bonuses(it), ek = Object.keys(eb).sort(function (a, b) { return (a !== "perception") - (b !== "perception") || (a < b ? -1 : 1); });
+      var er = resists(it), parts2 = [];
+      if (ek.length) parts2.push("item bonus " + ek.map(function (k) { return "+" + eb[k] + " " + statLabel(k); }).join(", "));
+      if (Object.keys(er).length) parts2.push("resistance " + Object.keys(er).sort().map(function (k) { return k + " " + er[k]; }).join(", "));
+      stats = (USAGES[it.usage] || "Worn") + ": " + (parts2.length ? parts2.join("; ") + " (while invested)" : "no effects the bot applies");
+    }
     else stats = "Shield: AC +" + s.acBonus + ", Hardness " + s.hardness + ", HP " + s.hp.max + " (BT " + s.hp.brokenThreshold + ")" + (s.speedPenalty ? ", Speed " + s.speedPenalty + " ft" : "");
     var price = it.coin === "credits" ? (Math.floor(+it.price || 0)).toLocaleString() + " credits" : ((+it.price || 0) ? (+it.price) + " " + it.coin : "free");
     $("preview").innerHTML = "<h3>" + esc(it.name || "(unnamed)") + '<span class="sys ' + it.system + '">' + SYSLABEL[it.system] + "</span></h3>"
@@ -479,6 +574,10 @@
     if (idx === "") return;
     if (it.kind === "weapon") { r = d.weapons[+idx]; it.category = r[1]; it.hands = r[2] === 2 ? "2" : "1"; it.die = r[4]; it.dtype = r[5] || it.dtype; it.group = r[6] || ""; it.range = r[7] || 0; it.traits = r[8].slice(); it.price = Math.round(r[9] / (it.system === "sf2e" ? 10 : 100)) || 0; }
     else if (it.kind === "armor") { r = d.armor[+idx]; it.category = r[1]; it.ac = r[2]; it.dex = r[3] == null ? "" : String(r[3]); it.check = r[4]; it.speed = r[5]; it.strength = r[6] == null ? "" : String(r[6]); it.bulk = r[7] === 0.1 ? "L" : String(r[7] || "-"); it.group = r[8] || ""; it.traits = r[9].slice(); }
+    else if (it.kind === "equipment") { r = d.equipment[+idx]; it.level = r[1]; it.usage = USAGES[r[2]] ? r[2] : (usageGroup(r[2]) === "held" ? "held-in-one-hand" : "worn");
+      it.effects = Object.keys(r[4]).map(function (k) { return { sel: k, value: r[4][k] }; });
+      it.resist = Object.keys(r[5]).map(function (k) { return { type: k, value: r[5][k] }; });
+      it.price = Math.round(r[6] / (it.system === "sf2e" ? 10 : 100)) || 0; }
     else { r = d.shields[+idx]; it.level = r[1]; it.ac = r[2]; it.hardness = r[3]; it.hp = r[4]; it.traits = r[5].filter(function (t) { return t !== "magical"; }); }
     if (!it.name) it.name = "Homebrew " + r[0];
   }
@@ -490,12 +589,18 @@
     else if (t.id === "delItem") { state.items.splice(state.current, 1); state.current = Math.max(0, state.current - 1); render(); }
     else if (d.sys) { var it = item(); ensureSystem(d.sys).then(function () { it.system = d.sys; it.coin = d.sys === "sf2e" ? "credits" : "gp"; render(); }, function () {}); }
     else if (d.untrait != null) { item().traits.splice(+d.untrait, 1); render(); }
+    else if (t.id === "addEff") { var ie = item(); ie.effects = ie.effects || []; ie.effects.push({ sel: (D(ie.system).bonusSelectors || ["perception"])[0], value: 1 }); render(); }
+    else if (d.uneff != null) { item().effects.splice(+d.uneff, 1); render(); }
+    else if (t.id === "addRes") { var ir = item(); ir.resist = ir.resist || []; ir.resist.push({ type: "fire", value: 3 }); render(); }
+    else if (d.unres != null) { item().resist.splice(+d.unres, 1); render(); }
   });
   document.addEventListener("change", function (e) {
     var t = e.target, d = t.dataset, it = item();
     if (t.id === "traitIn") { var sl = slugTrait(t.value); if (sl && it.traits.indexOf(sl) < 0) it.traits.push(sl); render(); var again = $("traitIn"); if (again) again.focus(); return; }
     if (t.id === "partyIn") { state.party = t.value; renderSide(); save(); return; }
     if (d.base != null) { fromBase(it, t.value); render(); return; }
+    if (d.eff != null) { it.effects[+d.eff][d.k] = d.k === "value" ? +t.value : t.value; render(); return; }
+    if (d.res != null) { it.resist[+d.res][d.k] = d.k === "value" ? +t.value : t.value; render(); return; }
     if (d.f) { it[d.f] = t.value; render(); }
   });
   document.addEventListener("input", function (e) {
@@ -539,10 +644,16 @@
             it.hands = ({ "held-in-two-hands": "2", "held-in-one-plus-hands": "1+" })[(s.usage || {}).value] || "1"; it.range = s.range || 0; it.reload = (s.reload || {}).value || ""; }
           else if (kind === "armor") { it.category = s.category || "light"; it.group = s.group || ""; it.ac = s.acBonus || 0; it.dex = s.dexCap == null ? "" : String(s.dexCap);
             it.check = s.checkPenalty || 0; it.speed = s.speedPenalty || 0; it.strength = s.strength == null ? "" : String(s.strength); }
+          else if (kind === "equipment") { it.usage = USAGES[(s.usage || {}).value] ? s.usage.value : "worn";
+            it.effects = (s.rules || []).filter(function (r) { return r && r.key === "FlatModifier" && r.type === "item" && typeof r.value === "number" && !r.predicate; })
+              .map(function (r) { return { sel: String(r.selector), value: r.value }; });
+            it.resist = (s.rules || []).filter(function (r) { return r && r.key === "Resistance" && typeof r.value === "number" && !r.predicate; })
+              .map(function (r) { return { type: String(r.type), value: r.value }; });
+            it.traits = it.traits.filter(function (t) { return t !== "invested"; }); }
           else { it.ac = s.acBonus || 0; it.hardness = s.hardness || 0; it.hp = (s.hp || {}).max || 0; it.speed = s.speedPenalty || 0; }
           return it;
-        }).filter(function (it) { return ["weapon", "armor", "shield"].indexOf(it.kind) >= 0; });
-        if (!items.length) throw new Error("no weapons, armor or shields in it");
+        }).filter(function (it) { return ["weapon", "armor", "shield", "equipment"].indexOf(it.kind) >= 0; });
+        if (!items.length) throw new Error("no weapons, armor, shields or equipment in it");
         var needSf = items.some(function (it) { return it.system === "sf2e"; });
         (needSf ? ensureSystem("sf2e") : Promise.resolve()).then(function () {
           if (needSf && state.systems.indexOf("sf2e") < 0) state.systems.push("sf2e");
@@ -563,6 +674,13 @@
     }
     if (it.kind === "armor") { parts.push("stats:" + it.ac + "/" + (it.dex === "" ? "-" : it.dex) + "/" + it.check + "/" + it.speed + "/" + (it.strength === "" ? "-" : it.strength), "category:" + cap(it.category)); if (it.group) parts.push("group:" + it.group); }
     if (it.kind === "shield") parts.push("stats:" + it.ac + "/" + it.hardness + "/" + it.hp);
+    if (it.kind === "equipment") {
+      var cb = bonuses(it), ck = Object.keys(cb).sort();
+      var cr = resists(it), effs = ck.map(function (k) { return k + " +" + cb[k]; }).concat(Object.keys(cr).sort().map(function (k) { return "resist " + k + " " + cr[k]; }));
+      parts.push("stats:" + (effs.length ? effs.join(", ") : "-"));
+      if (it.usage === "held-in-one-hand" || it.usage === "held-in-two-hands") parts.push("hands:" + (it.usage === "held-in-two-hands" ? "2" : "1"));
+      else if (it.usage && it.usage !== "worn") parts.push("group:" + (it.usage.indexOf("tattooed") === 0 ? "tattoo" : it.usage.slice(4)));
+    }
     if (it.traits.length) parts.push("traits:" + it.traits.join(", "));
     parts.push("bulk:" + it.bulk);
     if (it.rarity !== "common") parts.push("rarity:" + cap(it.rarity));
