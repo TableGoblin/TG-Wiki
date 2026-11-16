@@ -686,7 +686,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           <p><strong>Your trigger message is tidied away</strong> once the character's post goes up, so the channel reads as fiction rather than as commands. A rejected attempt is left alone so you can see and fix it.</p>
         </div>
         <div class="note">
-          <p><strong>Typo in what you said?</strong> Right-click your post, choose <em>Apps &rarr; Edit post</em>, fix the text and save &mdash; any time, and only the person who typed it can. Your speech and narration lines are editable; roll results never are, so a strike's outcome and damage stay exactly as rolled. Discord marks the post &ldquo;(edited)&rdquo;.</p>
+          <p><strong>Typo in what you said?</strong> Right-click your post, choose <em>Apps &rarr; Edit post</em>, fix the text and save &mdash; any time in the 90 days after posting, and only the person who typed it can. Your speech and narration lines are editable; roll results never are, so a strike's outcome and damage stay exactly as rolled. Discord marks the post &ldquo;(edited)&rdquo;.</p>
         </div>
         <div class="warn">
           <p><strong>Nothing happened?</strong> Chat triggers only work in a campaign's own channels, and stay <em>completely silent</em> anywhere else — even for a perfectly formed <code>pc::{strike}</code>. Because any <code>word::</code> counts as a candidate, the bot has to stay out of ordinary server conversation entirely. Also: <code>{strike}</code> and <code>{cast}</code> need a live encounter in that channel, since the target list comes from the roster.</p>
@@ -1014,7 +1014,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
             <code>name</code>. Do it any time before the session.</li>
           <li><strong>Start the fight</strong>: <code>/tge start map_slot:</code><em>that slot</em> <code>encounter_file:</code><em>the encounter
             file</em> (add <code>add_party:true</code> to bring the party in). The map goes up, every creature is made and joins as an enemy, and
-            each one stands on the square you gave it. You alone are told the aliases the creatures got, and any square that couldn't take one.</li>
+            each one stands on the square you gave it. You alone are told the aliases the creatures got, how many were custom creatures from the file (they are now your campaign's NPCs), and any square that couldn't take one.</li>
         </ol>
         <div class="t-wrap">
           <table>
@@ -1056,7 +1056,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           <div class="cmd-row"><div class="cmd">/tge resist <b>alias</b> <b>damage_type</b> <b>kind</b> <b>duration</b> <span class="opt">[amount] [minutes] [owner_alias] [sustain_of]</span></div><span class="badge b-gm">gm only</span>
             <div class="desc">A fight-only resistance, weakness or immunity on top of the sheet's own &mdash; a spell's <i>resist energy</i>, a hazard's weakness. <code>duration</code> picks how long it lasts (end of turn, end of next turn, minutes, while a spell is sustained, until dismissed); choose <b>Remove it</b> with the same type and kind to take one off again.</div></div>
           <div class="cmd-row"><div class="cmd">/tge remove <b>alias</b></div><span class="badge b-gm">gm only</span>
-            <div class="desc">Takes a combatant out of the running encounter. Removing a defeated foe (an enemy creature at 0 HP) puts what it still carried, gear and unused potions, bombs or scrolls, into this fight's loot; <code>/tge end</code> offers it.</div></div>
+            <div class="desc">Takes a combatant out of the running encounter. Removing a defeated foe (an enemy creature at 0 HP) puts what it still carried, gear and unused potions, bombs or scrolls, into this fight's loot; <code>/tge end</code> offers it. An enemy removed still standing (it fled or surrendered) keeps its things, and you are asked privately whether to drop them as loot. A dead ally creature is looted the same way; player characters and companions never are.</div></div>
           <div class="cmd-row"><div class="cmd">/tge cast_sustained <b>alias</b> <b>spell_name</b> <span class="opt">[target] [minutes]</span> · sustain · dismiss <b>alias</b> <b>spell_name</b></div><span class="badge b-self">self / gm</span>
             <div class="desc">Tracks a spell you have to Sustain (with a maximum in <code>minutes</code> if it has one), Sustains it on your turn, or Dismisses it.</div></div>
           <div class="cmd-row"><div class="cmd">/tge reload <b>alias</b></div><span class="badge b-self">self / gm</span>
