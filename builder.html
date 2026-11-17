@@ -418,7 +418,7 @@
     b.flaws.forEach(function (a) { m[a] -= 1; });
     return m;
   }
-  function l1FeatNames() { return ["ancestry", "ancestry2", "class", "skill"].map(function (k) { return S.feats[k]; }).filter(Boolean); }
+  function l1FeatNames() { return ["ancestry", "ancestry2", "class", "skill", "calling"].map(function (k) { return S.feats[k]; }).filter(Boolean); }
   function grantList() {                                                      /* every skill something trains outright at 1st level, repeats included: class, background, and 1st-level feats (Dwarven Lore trains Crafting and Religion) */
     var out = [], cls = curClass(), bg = curBackground();
     if (cls) cls.skills.forEach(function (s) { out.push(s); });
@@ -720,6 +720,7 @@
     if (curAncestry()) { slots.push({ key: "ancestry", label: "Ancestry feat", cat: "ancestry" }); if (S.rules.ancestry_paragon) slots.push({ key: "ancestry2", label: "Second ancestry feat (Ancestry Paragon)", cat: "ancestry" }); }
     if (c && c.classFeat) slots.push({ key: "class", label: "Class feat", cat: "class" });
     if (c && c.skillFeat) slots.push({ key: "skill", label: "Skill feat", cat: "skill" });
+    if (c && S.rules.mythic) slots.push({ key: "calling", label: "Mythic calling", cat: "calling" });          /* D1628: the Mythic rule's calling */
     return slots;
   }
   function dropStaleAncestryFeats() {                                        /* changing the heritage takes its feats with it */
@@ -739,7 +740,7 @@
   var ALL_NAMES = null;
   function nameKey(n) { return String(n).toLowerCase().replace(/[’']/g, "'"); }
   function featNamePrereqMet(prereq, held) {                                /* "Brine May, Snow May, Veil May, or Virga May": met by holding one of them; anything that isn't a list of feat names is the bot's to check */
-    if (!ALL_NAMES) { ALL_NAMES = {}; ["ancestry", "class", "skill"].forEach(function (c) { D.feats[c].forEach(function (f) { ALL_NAMES[nameKey(f.name)] = true; }); }); if (FEATS) FEATS.forEach(function (f) { ALL_NAMES[nameKey(f.name)] = true; }); }
+    if (!ALL_NAMES) { ALL_NAMES = {}; ["ancestry", "class", "skill", "calling"].forEach(function (c) { (D.feats[c] || []).forEach(function (f) { ALL_NAMES[nameKey(f.name)] = true; }); }); if (FEATS) FEATS.forEach(function (f) { ALL_NAMES[nameKey(f.name)] = true; }); }
     var have = {}; Object.keys(held).forEach(function (n) { have[nameKey(n)] = true; });
     return String(prereq || "").split("; ").every(function (part) {
       var alts = part.trim().split(/,\s*(?:or\s+)?|\s+or\s+/).map(function (x) { return x.trim(); }).filter(Boolean);
@@ -749,7 +750,7 @@
   }
   function heldAtFirst(slot) {                                              /* what the character has at 1st level, for a feat that needs another feat first */
     var t = {}; grantedFeats().forEach(function (n) { t[n] = true; });
-    ["ancestry", "ancestry2", "class", "skill"].forEach(function (k) { if (S.feats[k] && k !== slot.key) t[S.feats[k]] = true; });
+    ["ancestry", "ancestry2", "class", "skill", "calling"].forEach(function (k) { if (S.feats[k] && k !== slot.key) t[S.feats[k]] = true; });
     return t;
   }
   function featEntries(slot) {
@@ -757,8 +758,9 @@
     var otherInfo = null;
     fixedSkills().concat(S.skills).forEach(function (s) { ranks[s] = 1; });
     var other = slot.key === "ancestry" ? S.feats.ancestry2 : slot.key === "ancestry2" ? S.feats.ancestry : "";
-    return D.feats[slot.cat].filter(function (f) {
-      if (f.level > 1 || !allowed(f.rarity, slot.cat === "ancestry" && a ? a.name : "", f.b) || !mythicOk(f.traits)) return false;
+    return (D.feats[slot.cat] || []).filter(function (f) {
+      var rar = slot.cat === "calling" && f.rarity === "uncommon" ? "common" : f.rarity;    /* D1628: the Mythic rule is the access to an uncommon calling */
+      if (f.level > 1 || !allowed(rar, slot.cat === "ancestry" && a ? a.name : "", f.b) || !mythicOk(f.traits)) return false;
       if (!skillPrereqMet(f.prereq, ranks) || !featureGateMet(f.prereq) || !featNamePrereqMet(f.prereq, held) || granted.indexOf(f.name) >= 0) return false;
       if (slot.cat === "ancestry") {
         var hit = f.traits.some(function (t) { return traits.indexOf(t) >= 0; }); if (!hit) return false;
@@ -938,7 +940,7 @@
     return out;
   }
   function takenNames(L) {
-    var t = {}; ["ancestry", "ancestry2", "class", "skill"].forEach(function (k) { if (S.feats[k]) t[S.feats[k]] = true; });
+    var t = {}; ["ancestry", "ancestry2", "class", "skill", "calling"].forEach(function (k) { if (S.feats[k]) t[S.feats[k]] = true; });
     grantedFeats().forEach(function (n) { t[n] = true; });
     pickedAt(L).forEach(function (n) { t[n] = true; });
     return t;
@@ -958,11 +960,12 @@
     FEATS.forEach(function (f) {
       if (f.level > L || (q && f.display.toLowerCase().indexOf(q) < 0 && f.name.toLowerCase().indexOf(q) < 0)) return;
       if (!skillPrereqMet(f.prereq, ranks) || !featureGateMet(f.prereq) || !featNamePrereqMet(f.prereq, taken)) return;
-      if (!allowed(f.rarity, f.cat === "ancestry" && a ? a.name : "", f.b)) return;
+      var k = slot.kind, mythicSlot = k === "mythic" || k === "destiny";
+      if (!allowed(mythicSlot && f.rarity === "uncommon" ? "common" : f.rarity, f.cat === "ancestry" && a ? a.name : "", f.b)) return;   /* D1628: the rule is the access to uncommon mythic feats */
       if (!mythicOk(f.traits)) return;                                     /* D1622: the Mythic rule */
       if (taken[f.name] && !f.rep) return;
-      var k = slot.kind;
-      if (k === "ancestry") { if (f.cat !== "ancestry" || !a || f.first || !f.traits.some(function (t) { return ancTraits().indexOf(t) >= 0; })) return; }
+      if (mythicSlot) { if (f.cat !== "class" || f.traits.indexOf("mythic") < 0 || (f.traits.indexOf("destiny") >= 0) !== (k === "destiny")) return; }   /* D1628: a mythic feat; the 12th-level slot a destiny dedication */
+      else if (k === "ancestry") { if (f.cat !== "ancestry" || !a || f.first || !f.traits.some(function (t) { return ancTraits().indexOf(t) >= 0; })) return; }
       else if (k === "skill") { if (f.cat !== "skill") return; }
       else if (k === "general") { if (f.cat !== "general") return; }
       else {                                                                /* a class slot, or the free archetype slot */
@@ -1281,7 +1284,7 @@
     var auto = grantedFeats(); if (auto.length) l1.appendChild(line("Granted", auto.join(", ")));
     var trained = fixedSkills().concat(S.skills);
     if (trained.length) { var sc = trained.map(function (s) { return skillLine(s, 1); }); var wrapSk = el("span", "chips"); sc.forEach(function (n) { wrapSk.appendChild(n); }); l1.appendChild(line("Trained", [wrapSk])); }
-    [["ancestry", "Ancestry feat"], ["ancestry2", "Ancestry feat (paragon)"], ["class", "Class feat"], ["skill", "Skill feat"]].forEach(function (p) { if (S.feats[p[0]]) l1.appendChild(line(p[1], S.feats[p[0]])); });
+    [["ancestry", "Ancestry feat"], ["ancestry2", "Ancestry feat (paragon)"], ["class", "Class feat"], ["skill", "Skill feat"], ["calling", "Mythic calling"]].forEach(function (p) { if (S.feats[p[0]]) l1.appendChild(line(p[1], S.feats[p[0]])); });
     var plan = spellPlan();
     if (plan && !plan.waiting) spellRanks(plan).forEach(function (r) { if ((S.spells[r] || []).length) l1.appendChild(line(r === "0" ? "Cantrips" : "Rank " + r + " spells", S.spells[r].join(", "))); });
     if (S.gear.length) l1.appendChild(line("Gear", S.gear.map(function (g) { return (g.qty > 1 ? g.qty + "× " : "") + g.name; }).join(", ")));
@@ -1402,6 +1405,7 @@
     if (S.feats.ancestry2 && S.rules.ancestry_paragon) st.ancestry_feat_2 = S.feats.ancestry2;
     if (S.feats["class"]) st.class_feat = S.feats["class"];
     if (S.feats.skill) st.skill_feat = S.feats.skill;
+    if (S.feats.calling && S.rules.mythic) st.mythic_calling = S.feats.calling;        /* D1628 */
     var plan = spellPlan();
     if (plan && !plan.waiting) { var sp = {}; spellRanks(plan).forEach(function (r) { if ((S.spells[r] || []).length) sp[r] = S.spells[r].slice(); }); if (Object.keys(sp).length) st.spells = sp; }
     return st;
@@ -1410,8 +1414,9 @@
   function usedRules() {
     var fa = false, ap = !!(S.rules.ancestry_paragon && S.feats.ancestry2), my = false;
     if (curClass()) levelBlocks().forEach(function (b) { (b.payload.feats || []).forEach(function (f) { if (f.label.toLowerCase().indexOf("free archetype") >= 0) fa = true; if (f.label.toLowerCase().indexOf("paragon") >= 0) ap = true;
-      var row = FEAT_BY[f.name]; if (row && (row.traits || []).indexOf("mythic") >= 0) my = true; }); });          /* D1622 */
+      var row = FEAT_BY[f.name]; if (row && (row.traits || []).indexOf("mythic") >= 0) my = true; if (f.kind === "mythic" || f.kind === "destiny") my = true; }); });          /* D1622, D1628 */
     var st = buildState();
+    if (st.mythic_calling) my = true;
     return { free_archetype: fa, ancestry_paragon: ap, dual_class: false, skill_paragon: false, voluntary_flaws: !!(st.voluntary_flaws && st.voluntary_flaws.flaws.length), mythic: my };
   }
 
@@ -1436,7 +1441,7 @@
     S.vf = { flaws: (Array.isArray(vfs.flaws) ? vfs.flaws : []).filter(function (a) { return ATTR.indexOf(a) >= 0; }).slice(0, 2), boost: ATTR.indexOf(vfs.boost) >= 0 ? vfs.boost : "" };
     S.bgBoosts = {}; Object.keys(boosts).forEach(function (k) { if (k !== "free" && k !== "ancestry_free") S.bgBoosts[k] = boosts[k].slice(); });
     S.skills = (st.skills || []).slice(); S.spells = JSON.parse(JSON.stringify(st.spells || {}));
-    S.feats = { ancestry: st.ancestry_feat || "", ancestry2: st.ancestry_feat_2 || "", "class": st.class_feat || "", skill: st.skill_feat || "" };
+    S.feats = { ancestry: st.ancestry_feat || "", ancestry2: st.ancestry_feat_2 || "", "class": st.class_feat || "", skill: st.skill_feat || "", calling: st.mythic_calling || "" };
     S.levels = {}; S.gear = [];
     doc.blocks.slice(1).forEach(function (b) {
       if (b.kind !== "level" || !b.payload) return;
