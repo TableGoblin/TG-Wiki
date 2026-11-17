@@ -243,13 +243,13 @@
   var $ = function (id) { return document.getElementById(id); };
   var RULE_LABELS = { free_archetype: "Free Archetype", ancestry_paragon: "Ancestry Paragon", dual_class: "Dual Class", skill_paragon: "Skill Paragon",
                       automatic_bonus_progression: "Automatic Bonus Progression", gradual_ability_boosts: "Gradual Ability Boosts",
-                      voluntary_flaws: "Voluntary Flaws (legacy)" };
+                      voluntary_flaws: "Voluntary Flaws (legacy)", mythic: "Mythic" };
   var ATTR = D.attributes, NAMES = D.attributeNames;
   var byName = function (list, name) { for (var i = 0; i < list.length; i++) if (list[i].name === name) return list[i]; return null; };
 
   var S = {
     systems: ["pf2e"],
-    rules: { free_archetype: false, ancestry_paragon: false, dual_class: false, skill_paragon: false, automatic_bonus_progression: false, gradual_ability_boosts: false, voluntary_flaws: false },
+    rules: { free_archetype: false, ancestry_paragon: false, dual_class: false, skill_paragon: false, automatic_bonus_progression: false, gradual_ability_boosts: false, voluntary_flaws: false, mythic: false },
     vf: { flaws: [], boost: "" },                                             /* D1471: the legacy Voluntary Flaws rule's two flaws and extra boost */
     allowUncommon: false, allowRare: false, exceptions: {}, levelCap: null, code: "",
     name: "", ancestry: "", heritage: "", arrayKey: "", ancestryFree: [], background: "", bgBoosts: {}, cls: "", keyAttr: "", groups: {},
@@ -282,6 +282,7 @@
     if (ancestryName && S.exceptions[ancestryName]) return true;
     return rarity === "uncommon" ? S.allowUncommon : rarity === "rare" ? S.allowRare : false;
   }
+  function mythicOk(traits) { return !!S.rules.mythic || (traits || []).indexOf("mythic") < 0; }       /* D1622: the Mythic rule (off = no mythic feats, spells or gear) */
 
 
   /* ---------------------------------------------------------------- the full text of a selected choice */
@@ -757,7 +758,7 @@
     fixedSkills().concat(S.skills).forEach(function (s) { ranks[s] = 1; });
     var other = slot.key === "ancestry" ? S.feats.ancestry2 : slot.key === "ancestry2" ? S.feats.ancestry : "";
     return D.feats[slot.cat].filter(function (f) {
-      if (f.level > 1 || !allowed(f.rarity, slot.cat === "ancestry" && a ? a.name : "", f.b)) return false;
+      if (f.level > 1 || !allowed(f.rarity, slot.cat === "ancestry" && a ? a.name : "", f.b) || !mythicOk(f.traits)) return false;
       if (!skillPrereqMet(f.prereq, ranks) || !featureGateMet(f.prereq) || !featNamePrereqMet(f.prereq, held) || granted.indexOf(f.name) >= 0) return false;
       if (slot.cat === "ancestry") {
         var hit = f.traits.some(function (t) { return traits.indexOf(t) >= 0; }); if (!hit) return false;
@@ -801,7 +802,7 @@
     var list = $("itemList"); list.textContent = ""; var shown = 0;
     for (var i = 0; i < ITEMS.length && shown < 60; i++) {
       var it = ITEMS[i];
-      if (it[1] > maxLevel || (kind && it[4] !== kind) || !allowed(it[5], "", it[7])) continue;
+      if (it[1] > maxLevel || (kind && it[4] !== kind) || !allowed(it[5], "", it[7]) || !mythicOk(it[6])) continue;
       if (S.rules.automatic_bonus_progression && D.abp.runes.indexOf(it[0].toLowerCase()) >= 0) continue;                        /* potency, striking and resilient come with your level */
       if (q && it[0].toLowerCase().indexOf(q) < 0) continue;
       shown++;
@@ -865,7 +866,7 @@
     note.textContent = (plan.type === "prepared" ? "A prepared caster picks the spells it knows now; which ones are prepared each day is chosen in play. " : "A spontaneous caster's repertoire. ") + "Spells for later levels are chosen in Discord after each level-up.";
     box.appendChild(note);
     spellRanks(plan).forEach(function (rank) {
-      var need = plan.need[rank], pool = ((D.spells[plan.trad] || {})[rank] || []).filter(function (p) { return bookOk(p[2]); }), picked = S.spells[rank] = (S.spells[rank] || []).filter(function (n) { return pool.some(function (p) { return p[0] === n; }); });
+      var need = plan.need[rank], pool = ((D.spells[plan.trad] || {})[rank] || []).filter(function (p) { return bookOk(p[2]) && (S.rules.mythic || !/mythic/.test(p[1] || "")); }), picked = S.spells[rank] = (S.spells[rank] || []).filter(function (n) { return pool.some(function (p) { return p[0] === n; }); });
       var h = document.createElement("h3"); h.textContent = (rank === "0" ? "Cantrips" : "Rank " + rank + " spells") + " (" + picked.length + "/" + need + ")"; box.appendChild(h);
       var wrap = document.createElement("div"), input = document.createElement("input"), list = document.createElement("div");
       wrap.className = "picker"; input.type = "text"; input.placeholder = "Search…"; list.className = "plist"; wrap.appendChild(input); wrap.appendChild(list); box.appendChild(wrap);
@@ -958,6 +959,7 @@
       if (f.level > L || (q && f.display.toLowerCase().indexOf(q) < 0 && f.name.toLowerCase().indexOf(q) < 0)) return;
       if (!skillPrereqMet(f.prereq, ranks) || !featureGateMet(f.prereq) || !featNamePrereqMet(f.prereq, taken)) return;
       if (!allowed(f.rarity, f.cat === "ancestry" && a ? a.name : "", f.b)) return;
+      if (!mythicOk(f.traits)) return;                                     /* D1622: the Mythic rule */
       if (taken[f.name] && !f.rep) return;
       var k = slot.kind;
       if (k === "ancestry") { if (f.cat !== "ancestry" || !a || f.first || !f.traits.some(function (t) { return ancTraits().indexOf(t) >= 0; })) return; }
@@ -1387,7 +1389,8 @@
     if (S.ancestryFree.length) boosts.ancestry_free = S.ancestryFree.slice();
     Object.keys(S.bgBoosts).forEach(function (k) { if (S.bgBoosts[k].length) boosts[k] = S.bgBoosts[k].slice(); });
     var st = { ancestry: S.ancestry, heritage: S.heritage, background: S.background, "class": S.cls, boosts: boosts, skills: S.skills.slice(), variants: { free_archetype: !!S.rules.free_archetype, ancestry_paragon: !!S.rules.ancestry_paragon, dual_class: !!S.rules.dual_class, skill_paragon: !!S.rules.skill_paragon,
-      automatic_bonus_progression: !!S.rules.automatic_bonus_progression, gradual_ability_boosts: !!S.rules.gradual_ability_boosts, voluntary_flaws: !!S.rules.voluntary_flaws } };
+      automatic_bonus_progression: !!S.rules.automatic_bonus_progression, gradual_ability_boosts: !!S.rules.gradual_ability_boosts, voluntary_flaws: !!S.rules.voluntary_flaws,
+      mythic: !!S.rules.mythic } };
     if (array && curAncestry().arrays.length > 1) st.boost_array = array.key;
     if (vfOn()) {                                                             /* D1471: always answered when the rule is on; no flaws = not taken */
       var vf = vfApplied(array, fixedAncestry(array).concat(S.ancestryFree));
@@ -1405,10 +1408,11 @@
   }
   function coins() { var left = Math.max(0, 1500 - gearCost()); return { cp: left % 10, sp: Math.floor((left % 100) / 10), gp: Math.floor(left / 100), pp: 0 }; }
   function usedRules() {
-    var fa = false, ap = !!(S.rules.ancestry_paragon && S.feats.ancestry2);
-    if (curClass()) levelBlocks().forEach(function (b) { (b.payload.feats || []).forEach(function (f) { if (f.label.toLowerCase().indexOf("free archetype") >= 0) fa = true; if (f.label.toLowerCase().indexOf("paragon") >= 0) ap = true; }); });
+    var fa = false, ap = !!(S.rules.ancestry_paragon && S.feats.ancestry2), my = false;
+    if (curClass()) levelBlocks().forEach(function (b) { (b.payload.feats || []).forEach(function (f) { if (f.label.toLowerCase().indexOf("free archetype") >= 0) fa = true; if (f.label.toLowerCase().indexOf("paragon") >= 0) ap = true;
+      var row = FEAT_BY[f.name]; if (row && (row.traits || []).indexOf("mythic") >= 0) my = true; }); });          /* D1622 */
     var st = buildState();
-    return { free_archetype: fa, ancestry_paragon: ap, dual_class: false, skill_paragon: false, voluntary_flaws: !!(st.voluntary_flaws && st.voluntary_flaws.flaws.length) };
+    return { free_archetype: fa, ancestry_paragon: ap, dual_class: false, skill_paragon: false, voluntary_flaws: !!(st.voluntary_flaws && st.voluntary_flaws.flaws.length), mythic: my };
   }
 
 
@@ -1468,7 +1472,7 @@
     if (file.size > 2000000) { msg.textContent = "That file is too big to be a recipe."; return; }
     file.text().then(function (text) {
       var doc = readRecipe(text), r = doc.rules || {};
-      S.rules = { free_archetype: false, ancestry_paragon: false, dual_class: false, skill_paragon: false, automatic_bonus_progression: false, gradual_ability_boosts: false, voluntary_flaws: false };
+      S.rules = { free_archetype: false, ancestry_paragon: false, dual_class: false, skill_paragon: false, automatic_bonus_progression: false, gradual_ability_boosts: false, voluntary_flaws: false, mythic: false };
       Object.keys(r.variants || {}).forEach(function (k) { if (k in S.rules) S.rules[k] = !!r.variants[k]; });
       S.allowUncommon = !!r.allow_uncommon; S.allowRare = !!r.allow_rare; S.levelCap = r.level_cap || null; S.code = r.campaign_code || ""; S.exceptions = {};
       (r.exceptions || []).forEach(function (n) { S.exceptions[n] = true; });
