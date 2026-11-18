@@ -192,7 +192,8 @@
     }).join("") || '<tr><td colspan="3" class="hint">No creature matches.</td></tr>';
     $("resultsMore").textContent = hits.length > SHOW ? "Showing " + SHOW + " of " + hits.length + ": narrow the search." : hits.length + " creature(s).";
   }
-  function partList(c, words) { return words.map(function (w) { return esc(c[1] + " " + D.words[w]); }).join(", "); }
+  function partName(c, w) { return c[1].indexOf("{}") >= 0 ? c[1].replace("{}", D.words[w]) : c[1] + " " + D.words[w]; }
+  function partList(c, words) { return words.map(function (w) { return esc(partName(c, w)); }).join(", "); }
   function renderCard() {
     var c = state.pick != null ? D.creatures[state.pick] : null;
     if (!c) { $("card").innerHTML = '<h2><span class="num">2</span> Its parts</h2><p class="hint">Pick a creature on the left.</p>'; return; }
@@ -206,7 +207,7 @@
       '<p class="src">Level ' + c[2] + " &middot; " + esc(c[4]) + " &middot; " + esc(shown.join(", ")) + " &middot; " + esc(D.packs[c[5]]) + "</p>" +
       '<div class="table-scroll"><table class="stock"><thead><tr><th>Skill</th><th>DC</th><th>Parts</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
       '<p class="hint"><b>A fitting Lore</b> instead of any skill above: DC ' + c[8] + " (a hunting or butchering Lore), DC " + c[9] +
-      " (a Lore about the " + esc(c[1]) + " or its kind). Trained or better. " + esc(D.time.charAt(0).toUpperCase() + D.time.slice(1)) + ".</p>";
+      " (a Lore about the " + esc(c[1].replace("{} of the ", "")) + " or its kind). Trained or better. " + esc(D.time.charAt(0).toUpperCase() + D.time.slice(1)) + ".</p>";
   }
   function render() {
     ["q", "lmin", "lmax", "rarity", "trait", "size", "source"].forEach(function (k) { if ($(k).value !== String(state[k])) $(k).value = state[k]; });
