@@ -208,7 +208,7 @@
           <tbody>
             <tr><td><code>creature</code></td><td>An exact bestiary name. Filled stat columns replace its own; Strikes, spells, gear and abilities are added to it. Leave empty for a custom NPC.</td></tr>
             <tr><td><code>name</code>, <code>alias</code>, <code>count</code></td><td>A custom NPC needs only a <code>name</code>. The alias comes from the name if empty; <code>count</code> 3 makes shark1, shark2, shark3.</td></tr>
-            <tr><td><code>adjustment</code>, <code>level</code>, <code>size</code>, <code>rarity</code>, <code>traits</code>, <code>significant</code></td><td><code>elite</code> or <code>weak</code> (bestiary rows); level &minus;1 to 24; Tiny to Gargantuan; traits separated by <code>;</code>; <code>yes</code> for PC-style dying.</td></tr>
+            <tr><td><code>adjustment</code>, <code>level</code>, <code>size</code>, <code>rarity</code>, <code>traits</code>, <code>significant</code></td><td><code>elite</code> or <code>weak</code> (bestiary rows); level &minus;1 to 24; Tiny to Gargantuan; traits separated by <code>;</code> (at least one: its creature type); <code>yes</code> for PC-style dying.</td></tr>
             <tr><td><code>ac</code>, <code>hp</code>, <code>temp_hp</code>, <code>hardness</code></td><td>Numbers or tier words (HP takes the middle of the table's range; it has no Extreme, so it uses High).</td></tr>
             <tr><td><code>fortitude</code>, <code>reflex</code>, <code>will</code>, <code>perception</code>, <code>senses</code></td><td>Modifiers or tier words; senses separated by <code>;</code> (<code>darkvision; scent (imprecise) 30 feet</code>).</td></tr>
             <tr><td><code>speed</code>, <code>fly_speed</code>, <code>swim_speed</code>, <code>climb_speed</code>, <code>burrow_speed</code></td><td>Feet.</td></tr>
@@ -573,6 +573,7 @@
   function checks(n) {
     var L = n.level, out = [], extremes = [];
     if (!n.name.trim()) out.push(["bad", "Give it a name."]);
+    if (!String(n.traits || "").split(",").some(function (t) { return t.trim(); })) out.push(["bad", "Give it at least one trait (its creature type: humanoid, animal, undead ...)."]);
     ABIL.forEach(function (a) {
       var v = statValue(n.abilities[a], "attribute", L), r = row("attribute", L);
       var top = r.extreme == null ? r.high : r.extreme;
