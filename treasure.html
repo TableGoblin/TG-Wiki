@@ -134,7 +134,7 @@
 <script>
 (function () {
   "use strict";
-  // D1048 -- the treasure planner: GM Core's Party Treasure by Level rolled on Foundry's treasure tables (as /tgm treasure does), split across encounters.
+  // D1048 -- the treasure planner: GM Core's Party Treasure by Level rolled on the treasure tables (as /tgm treasure does), split across encounters.
   var D = window.TG_TOWN, ITEMS = D.items, TR = D.treasure, STORE = "tg-treasure-v1", TRIES = 20, SF_ONLY = false;
 
   function $(id) { return document.getElementById(id); }
@@ -148,7 +148,7 @@
   if (!state.systems || !state.systems.length) state.systems = ["pf2e"];
 
   // ---------- game systems (D1053) ----------
-  // Foundry has no Starfinder treasure tables, so a Starfinder slot is a random Starfinder item of the slot's level and kind (permanent:
+  // There are no Starfinder treasure tables, so a Starfinder slot is a random Starfinder item of the slot's level and kind (permanent:
   // weapons, armor and gear; consumable: consumables, ammunition and anything with the consumable trait, like a grenade), stepping down a level when none is allowed. With both systems ticked,
   // each slot is one system or the other at random.
   function sfReady() { return !!window.TG_TOWN_SF2E; }

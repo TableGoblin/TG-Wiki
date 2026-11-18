@@ -144,7 +144,7 @@
   function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
   function randint(lo, hi) { return lo + Math.floor(Math.random() * (hi - lo + 1)); }
   function cap1(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
-  // D1050/D1052: ammunition is sold in stacks of 10, or as single rounds when Foundry prices it each (it[5] is 1); Foundry's price is
+  // D1050/D1052: ammunition is sold in stacks of 10, or as single rounds when the source prices it each (it[5] is 1); the source price is
   // for it[5] rounds, so a unit costs price x size / it[5].
   function isAmmo(it) { return it[3] === "ammo"; }
   function unitSize(it) { return (it[5] || 1) > 1 ? 10 : 1; }

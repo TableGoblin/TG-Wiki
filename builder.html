@@ -385,7 +385,7 @@
     (bg ? bg.groups : []).forEach(function (g) { (S.bgBoosts[g.subkey] || []).forEach(function (a) { out.push(a); }); });
     return out;
   }
-  /* D1471 -- the legacy Voluntary Flaws rule, as Foundry's attribute builder has it (voluntary_flaws.py is the bot's copy): two flaws, on different
+  /* D1471 -- the legacy Voluntary Flaws rule, as the official attribute rules have it (voluntary_flaws.py is the bot's copy): two flaws, on different
      attributes unless the ancestry boosts it by a fixed boost; then one extra boost, on any attribute the ancestry step doesn't net-boost. */
   function lockedBoosts(array) { var out = []; (array ? array.boosts : []).forEach(function (s) { if (s.length === 1) out.push(s[0]); }); return out; }
   function vfOn() { return !!(S.rules.voluntary_flaws && curAncestry()); }
@@ -437,7 +437,7 @@
     return out;
   }
   /* D986 (J8 item 7): the Lores a level's feat answers name -- [{lore, feat, level}] -- and how each Lore's rank grows on its own (the bot's lore_ranks):
-     an ancestry / dedication Lore with a Foundry level rule and Additional Lore by D.loreFormula, Dongun Education by its own schedule; any other Lore is
+     an ancestry / dedication Lore with a level rule and Additional Lore by D.loreFormula, Dongun Education by its own schedule; any other Lore is
      trained and only a skill increase raises it. */
   function loreAnswers(T) {
     var out = [];
