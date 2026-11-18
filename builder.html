@@ -1514,7 +1514,7 @@
     });
     chain.then(function (hash) {
       var doc = {
-        format: "tablegoblin-recipe", format_version: 1, system: recipeSystem(), data_release: D.release, exported_at: new Date().toISOString().replace(/\.\d+Z$/, "+00:00"),
+        format: "tablegoblin-recipe", format_version: 1, system: recipeSystem(), exported_at: new Date().toISOString().replace(/\.\d+Z$/, "+00:00"),
         name: payload.name, level: blocks[blocks.length - 1].level, source: "wiki-builder",
         rules: { campaign_code: S.code || null, systems: S.systems.slice(), variants: S.rules, allow_uncommon: S.allowUncommon, allow_rare: S.allowRare, exceptions: Object.keys(S.exceptions), level_cap: S.levelCap, used: usedRules(), owned_books: S.books.slice() },
         blocks: blocks, head: hash,
