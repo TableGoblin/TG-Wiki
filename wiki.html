@@ -1240,17 +1240,26 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         </p>
         <p>
           Some are offered to the GM privately when their trigger happens, while the creature's reaction is unspent: Ferocity or Shield Block
-          when it would drop to 0 HP, Shield Block after a physical hit, Buck when someone Mounts it or Commands it while riding. When a player
+          when it would drop to 0 HP, Shield Block after a physical hit, Buck when someone Mounts it or Commands it while riding. These buttons
+          keep working after the bot restarts; a held drop still settles itself after 3 minutes with no answer. A reaction that gives resistance
+          against the triggering damage is offered when the damage lands, to the creature hit (Gnomish Shift, Wished Away on a critical hit) or
+          to an ally when an enemy damages a creature on its side (Archon's Protection, Retributive Strike). A reaction that Strikes the
+          triggering creature is offered when a creature on the other side moves, leaves a square, makes a ranged attack, or uses a manipulate,
+          concentrate or auditory action within its reach (Lash Out, Twisting Tail, Claws That Catch), or when the creature itself is damaged
+          (a troll's Furious Flailing). Goblin Scuttle is offered when an ally ends its move next to the goblin (Use opens the Step
+          planner), Counterspell when someone casts a spell the creature has prepared (the same spell is expended and the counteract check
+          rolled), Resilient Form and Unbidden Thoughts on a critical hit (Unbidden Thoughts lets the attacker's player choose at the table),
+          and Divert Essence when a spell is cast at it. When a player
           Strikes a creature that has a dodge-type reaction (Nimble Dodge, Wing Deflection, Scintillating Defense, Distracting Whisper,
           Challenge Fate ...), the Strike waits up to 30 seconds for the GM's <b>Use</b> or <b>Let it hit</b> before it rolls; the player sees
-          that it is waiting. Strikes against creatures without one never wait. Movement reactions (Goblin Scuttle's Step) and a few others
-          still just post their text.
+          that it is waiting. Strikes against creatures without one never wait. The rest (teleports, rerolls after the fact, an ally's
+          degree changed) still just post their text.
         </p>
 
         <h3>Counteracting an effect</h3>
         <p>
           The bot remembers the counteract rank and DC of what it puts on a creature: a spell's effect, and the conditions a creature's ability,
-          a hazard or an item gives with its save (half the creature's, hazard's or item's level, rounded up). Cast <b>Dispel Magic</b>,
+          a hazard, an item or a feat gives with its save (half the creature's, hazard's, item's or feat user's level, rounded up). Cast <b>Dispel Magic</b>,
           <b>Cleanse Affliction</b>, <b>Clear Mind</b> or <b>Sound Body</b> at a creature and the check is resolved against the effect it picks
           (a list when there are several). When Clear Mind or Sound Body only <b>suppresses</b> an effect during a fight, the effect really is off
           until the start of the caster's next turn (or the end of the fight) and its duration doesn't run meanwhile; then it comes back.
