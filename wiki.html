@@ -537,7 +537,7 @@
           Social checks (Make an Impression, Request, Coerce) now need a shared language with the creature (its stat block's languages): <b>Digital Ambassador</b> rolls its flat check for you with a comm unit or datapad, and a beast with no language needs a speech ability such as Speak with Animals. <b>Bugfix</b> counteracts glitching and leaves the target immune to it for a minute. <b>Warp Terrain</b> makes your quantum field difficult
           terrain for your enemies only (you and your allies cross it normally), suppresses its difficult terrain for everyone, or (3rd rank) fills it with a concealing fog. <b>Adaptive Camouflage</b> asks whether you're still in the blast:
           a Hide with +2 from every enemy in the fight, or +2 to your Reflex save.
-          <b>Share Life</b> splits the target's damage with you (half each, yours without resistances); <b>Slough Skin</b> makes persistent
+          <b>Share Life</b> (ending when the target is more than 30 feet away on the map) splits the target's damage with you (half each, yours without resistances); <b>Slough Skin</b> makes persistent
           acid's flat check DC 5 and gives +2 to the first save against a contact poison; <b>Mist Sight</b> sees through map mist and smoke within
           10 feet; <b>Helpful Reload</b> reloads the ally you name; <b>Sift the Sphere</b> sends its secret roll to your GM; <b>Deadly Vitality</b>
           turns the target's healing into void damage.
@@ -546,7 +546,7 @@
           Hide and Sneak behind the sheet's <b>Observers use smell</b> toggle.
           <b>Chilled Fire Noodles</b> ignore fatigued's penalty for an hour; a <b>Twig of Knowledge and Memory</b> is +1 to your next Recall
           Knowledge, three uses; <b>Merciful Balm</b> and a <b>Transmuting Ingot</b> change the weapon you pick (nonlethal / counts as the metal);
-          a <b>One-Hour Flower</b> lights its holder on the map.
+          a <b>One-Hour Flower</b> lights its holder on the map (30, 20, then 10 feet).
           <b>Silver Salve</b>, <b>Hand of Mercy</b> and <b>Oil of Potency</b> change the weapon you pick; a <b>Cat's Eye Elixir</b> eases the flat
           checks against concealed and hidden targets.
           An <b>Impact Foam Chassis</b> softens a fall on the map; <b>Surging Serum</b> and <b>Bottled Catharsis</b> counteract what is
@@ -560,7 +560,7 @@
           Inventor armor: <b>Speed Boosters</b>, <b>Muscular Exoskeleton</b> and <b>Subtle Dampeners</b> apply their Speed and Overdrive bonuses.
           A cleric's <b>Deific Weapon</b> steps up the favored simple weapon's damage die.
           A thaumaturge's <b>Tome</b> adds +1 to Recall Knowledge.
-          <b>Twisting Tree</b> makes a one-handed staff agile with a d6 die, and a two-handed one parry, reach and trip.
+          <b>Twisting Tree</b> makes a one-handed staff agile with a d6 die, and a two-handed one parry, reach and trip (record your grip with Change Grip).
           <b>Slinger's Precision</b> adds precision damage to a gunslinger's crossbow (+2) and firearm (+1d4) Strikes.
           An operative <b>Skirmisher</b>'s one-handed ranged Strikes set off no ranged-attack reactions; a <b>Ghost</b> can Aim as a free
           action at a creature it is Undetected by (Combat menu).
@@ -583,7 +583,7 @@
           <b>Junk Armor</b> puts the armor you pick on you for 10 minutes (yours comes back after). <b>Sure Tracking</b> makes a ranged tech
           weapon ignore cover and its second range increment. <b>Hunter's Luck</b> rolls your next Recall Knowledge twice. <b>Timely Tutor</b>
           trains your eidolon in a Lore while you sustain it.
-          <b>Corrupt Machine</b> adds fire to a tech weapon's hits (Frightened on a critical hit). <b>Thunder Echo</b> is +2 to Seek near you;
+          <b>Corrupt Machine</b> adds fire to a tech weapon's hits (Frightened on a critical hit). <b>Thunder Echo</b> gives anyone +2 to Seek what is inside its 120 feet;
           <b>Fungal Hyphae</b> gives you tremorsense until you move.
         </p>
 
@@ -1259,7 +1259,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
             <div class="desc">Gets them off, whichever of the three roles they held.</div></div>
           <div class="cmd-row"><div class="cmd">/tgvehicle status <b>vehicle_name</b></div><span class="badge b-player">player</span>
             <div class="desc">Its real stats, current HP, and who's currently pilot, crew, and passengers.</div>
-            <div class="desc" style="margin-top:6px"><b>Driving recklessly.</b> A 2- or 3-action Drive first rolls a piloting check to keep control (3 actions: -5); fail it and the vehicle is uncontrolled. In a Starfinder game the Combat tab's <b>Stunt</b> drives with a stunt &mdash; Back Off, Evade, Flip and Burn (-1), Barrel Roll, Flyby, Drift, Turn in Place (-2) &mdash; its penalty on every check, and a keep-control check first (twice with a reckless Drive) unless <b>Stunt Maneuver</b> removes it. Evade and Barrel Roll add +1 / +2 status to the vehicle's AC until your next turn. <b>Drift Racer</b>: on land, a failed control check drifts where you choose.</div></div>
+            <div class="desc" style="margin-top:6px"><b>Driving recklessly.</b> A 2- or 3-action Drive first rolls a piloting check to keep control (3 actions: -5); fail it and the vehicle is uncontrolled. In a Starfinder game the Combat tab's <b>Stunt</b> drives with a stunt &mdash; Back Off, Evade, Flip and Burn (-1), Barrel Roll, Flyby, Drift, Turn in Place (-2) &mdash; its penalty on every check, and a keep-control check first (twice with a reckless Drive) unless <b>Stunt Maneuver</b> removes it. Evade and Barrel Roll add +1 / +2 status to the vehicle's AC until your next turn. <b>Drift Racer</b>: on land, a failed control check drifts where you choose, and Drive / Stunt let you choose to fail it.</div></div>
           <div class="cmd-row"><div class="cmd">/tgvehicle destroy <b>vehicle_name</b></div><span class="badge b-gm">gm only</span>
             <div class="desc">Removes it for good.</div></div>
         </div>
