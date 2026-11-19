@@ -104,6 +104,60 @@
 
             <section id="m-november-2026" style="padding-top:34px">
         <h2 class="new-head">November 2026</h2>
+        <h3 class="new-date">Nov 19, 2026</h3>
+        <ul class="new-list">
+          <li><strong>💬 Say &amp; act: talk in character and act in one go.</strong>
+            <p>Every turn post has a new <strong>💬 Say &amp; act</strong> button at the start of the second row. Press it and a short form asks for a <strong>Message</strong> and what to do <strong>Then</strong>: Strike, Cast a spell, use an Action, or just say it. Submit, and the line is posted as your character, with their name and avatar, followed by the usual Strike, spell or action picker. The table sees exactly what they'd see if you had typed <code>pc::"text"{strike}</code>, without you having to remember the syntax.</p>
+            <p><strong>Post as</strong> lets the line come from any companion your character owns (eidolon, familiar, animal companion), and that companion then takes the action. Leave the message empty to just act. The GM's creature turn posts have the button too, speaking with the creature's token, so a villain can taunt the party right before it breathes fire.</p>
+            <div class="dmock" role="img" aria-label="Mockup of the turn post with Say and act">
+              <div class="dmock-head"><img class="dmock-av" src="table-goblin.png" alt="" aria-hidden="true"><span class="dmock-name">Table Goblin</span><span class="dmock-tag">APP</span></div>
+              <div class="dmock-text"><span class="dmock-mention">@KyraPlayer</span> It is <b>Kyra</b>'s turn.</div>
+              <div class="dmock-embed"><div class="dmock-title">▶️ Kyra's turn -- Round 2</div><div class="dmock-fn">This turn</div>No actions yet.</div>
+              <div class="dmock-rows">
+                <div class="dmock-row"><span class="dmock-b p">🏃 Stride</span><span class="dmock-b p">👣 Step</span><span class="dmock-b p">⚔️ Strike</span><span class="dmock-b p">✨ Cast</span><span class="dmock-b p">🎯 Action</span></div>
+                <div class="dmock-row"><span class="dmock-b p">💬 Say &amp; act</span><span class="dmock-b">⏳ Ready</span><span class="dmock-b">🧠 Recall Knowledge</span><span class="dmock-b">✨ Hero Point</span><span class="dmock-b">↩️ Undo</span></div>
+                <div class="dmock-row"><span class="dmock-b s">⏭️ End turn</span></div>
+              </div>
+            </div>
+            <div class="dmock" role="img" aria-label="Mockup of what the table sees after Say and act">
+              <div class="dmock-head"><span class="dmock-av" style="background:linear-gradient(135deg,#b07cc6,#5b8bd6)"></span><span class="dmock-name">Kyra</span><span class="dmock-tag">APP</span></div>
+              <div class="dmock-text">Sarenrae's light take you, fiend!</div>
+              <div class="dmock-embed" style="--dm-bar:#f0b232"><div class="dmock-title">✨ Kyra casts Divine Lance → Imp</div>Spell attack: 🎲 14 + 9 = <b>23</b> vs AC 17 — <b>Hit</b><br>Damage: 🎲 2d4 = <b>6</b> spirit</div>
+            </div>
+            <p class="dmock-cap">Mockups, sample characters: the new turn post layout, and what the table sees after Kyra uses Say &amp; act.</p>
+          </li>
+          <li><strong>⏭️ No more accidental End turn.</strong>
+            <p><strong>End turn</strong> now sits alone on the bottom row of the turn post, away from the buttons you press all the time, so a stray click won't skip your turn. If you press it while you still have actions left, the bot asks first, privately: "End turn with 2 actions left?" with <strong>Yes, end turn</strong> and <strong>Keep going</strong>. Once you've used all three actions, it ends in one click as before.</p>
+          </li>
+          <li><strong>🗡️ Damage the way the rules mean it.</strong>
+            <p>Modular weapons, which switch between bludgeoning, piercing and slashing, now declare their damage type. At the start of each fight (<code>/tge begin</code>), every player with one picks the type, and a <strong>Change Damage Type</strong> entry on the Combat tab switches it mid-fight for an Interact action. Resistances and weaknesses then see the right type: switch to bludgeoning against the skeletons.</p>
+            <p>For GMs, the dashboard's <strong>💥 Damage</strong> form now has a <strong>More options</strong> step for material (cold iron, silver), who the attacker was, and whether it was magical. Everything <code>/tge damage</code> can do is now a button away.</p>
+          </li>
+          <li><strong>🧪 Alchemy and healing feats come alive.</strong>
+            <p>An investigator with <strong>Personalized Poisoning</strong> can tailor poisons made during daily preparations to a creature type. They show up in the inventory as <strong>🎯 Construct · Giant Centipede Venom</strong>, and the tailored type takes −2 on its saves against them. Prepare a batch for the dragon hunt and everyone knows which vials to coat their blades with.</p>
+            <p>Healers get more too:</p>
+            <ul>
+              <li><strong>Prepare Elemental Medicine</strong>, <strong>Energy Fortification</strong> and <strong>Pei Zing Adept</strong> treat patients at daily preparations.</li>
+              <li><strong>Performer's Treatment</strong> rescues a critically failed First Aid or Treat Wounds with a Performance check.</li>
+              <li><strong>Sanctify Water</strong> hands out holy or unholy water for a round.</li>
+            </ul>
+          </li>
+          <li><strong>🧠 Knowledge and planning feats.</strong>
+            <p><strong>Automatic Knowledge</strong> gives a free Recall Knowledge once a round in the skill you pick. <strong>Battle Planner</strong> lets you roll Warfare Lore before a fight and save the result. When initiative is rolled, a <strong>Battle plan</strong> option uses it instead of a fresh roll, perfect for the tactician who scouted the bandit camp the night before.</p>
+          </li>
+          <li><strong>✨ Spells and class features, finished.</strong>
+            <p>Several spells now do everything their text says:</p>
+            <ul>
+              <li><strong>Delay Consequence</strong> can take back a hit that already landed, holds the attack's conditions, and remembers the hit even if the bot restarts.</li>
+              <li><strong>String of Fate</strong> asks both linked players whether to share the failure.</li>
+              <li><strong>Distortion Lens</strong> moves when you Sustain it.</li>
+              <li><strong>Directed Audience</strong> turns a composition into a larger cone.</li>
+              <li><strong>Double Take</strong> shrugs off a failed sight-based save until your next turn.</li>
+              <li><strong>Dimensional Assault</strong>'s Cancel refunds everything when you change your mind.</li>
+              <li>A champion's <strong>Lay on Hands</strong> on an oath target offers clear <strong>Heal</strong> or <strong>Damage</strong> buttons.</li>
+            </ul>
+          </li>
+        </ul>
         <h3 class="new-date">Nov 18, 2026 · 8:46 PM ET</h3>
         <ul class="new-list">
           <li><strong>⏳ Delay: pick your moment, and it happens on its own.</strong>
