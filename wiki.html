@@ -498,21 +498,23 @@
           Casting <b>Connective Current</b> adds a <b>Connective Current</b> reaction (the move planner after the enemy moves); <b>Share Lore</b>
           asks which of your trained Lores to share when you have several. On a battle map, <b>Dimensional Assault</b> first opens a
           teleport planner (half your Speed, your Speed from rank 5; no difficult terrain, no creature in the way, no reactions) and
-          <b>Sky Laughs at Waves</b> a flight planner (your Speed); the Strike comes when you press Commit (or Cancel, from where you stand),
-          and after Sky Laughs you fall unless you can fly. <b>Swear Oath</b> readies your sworn action: its +1 (more when heightened)
-          counts only on the reaction, from the end of your turn to the start of your next. <b>Echoing Weapon</b> deals its sonic damage
+          <b>Sky Laughs at Waves</b> a flight planner (your Speed); the Strike comes when you press Commit (Sky Laughs' Cancel: from where you stand),
+          and after Sky Laughs you fall unless you can fly. Dimensional Assault's Commit needs a square within your weapon's reach of the foe, and
+          its Cancel cancels the spell: no Strike, and the Focus Point comes back. <b>Swear Oath</b> readies your sworn action (you pick the trigger and name the action, and the table is alerted as for Ready): its +1 (more when heightened)
+          counts only on the reaction, from the end of your turn to the start of your next. In a fight, <b>Sustain</b> it on your next turn to get the Focus Point back when the trigger never came. <b>Echoing Weapon</b> deals its sonic damage
           at the end of the wielder's turn for each hit with the weapon that turn, and <b>Object Memory</b> makes you trained with the
-          weapon you touch. An Investigator's <b>Person of Interest</b> (Combat menu) makes Devise a Stratagem against that creature a
-          free action for a minute. <b>Arms of Nature</b>, <b>Elemental Weapon</b> and <b>Junk Weapon</b> ask which weapon (a list you can
-          page and search) and put a temporary Strike on your sheet with the spell's item bonus and damage dice. <b>Darkened Forest Form</b>
-          asks for a shape and asks again each time you Sustain it. <b>Delay Consequence</b> holds the creature's next damage until the
+          weapon you touch, or makes your next check with a tool you carry at least trained (a healer's toolkit for Medicine, thieves' toolkit for Thievery, disguise kit for Deception, and so on). An Investigator's <b>Person of Interest</b> (Combat menu) makes Devise a Stratagem against that creature a
+          free action for a minute (for that investigator only). <b>Arms of Nature</b>, <b>Elemental Weapon</b> and <b>Junk Weapon</b> ask which weapon (a list you can
+          page and search) and put a temporary Strike on your sheet with the spell's item bonus and damage dice (Arms of Nature: a wooden
+          weapon -- staff, club, bow and the like -- that appears in your hand as a real weapon for the minute). <b>Darkened Forest Form</b>
+          asks for a shape and asks again each time you Sustain it; in a fight the form ends when you stop Sustaining it. <b>Delay Consequence</b> holds the creature's next damage until the
           start of your next turn. <b>Distortion Lens</b> is placed on the map: ranged attacks through it reach 10 feet farther for your
           side and 10 feet less for everyone else. With <b>String of Fate</b>, when one spell makes you both save and one succeeds while
           the other critically fails, both fail. <b>Telekinetic Maneuver</b> and <b>Vanish Weapon</b> roll their maneuver with your spell
-          attack. <b>Cellular Stimulant</b> quickens, then fatigues at the start of your next turn; <b>Reorient</b> ends off-guard and
+          attack (that is Telekinetic Maneuver's only roll -- no attack against AC). <b>Cellular Stimulant</b> quickens, then fatigues at the start of your next turn; <b>Reorient</b> ends off-guard and
           prevents it (flanking too) until your next turn. On the Combat menu: a champion's <b>Invoke Oath</b> (Oath of the Avenger; Lay
           on Hands then harms that creature with spirit damage, and harms undead with vitality damage and a basic Fortitude save), a
-          sorcerer's <b>Anoint Ally</b> (your Blood Magic can go to that ally) and an investigator's <b>Solid Lead</b>.
+          sorcerer's <b>Anoint Ally</b> (your Blood Magic can go to that ally) and an investigator's <b>Solid Lead</b> (closing a case asks whether to keep it as your solid lead, once a day).
         </p>
 
         <p class="dm-caption">Four tabs of the real sheet.</p>
@@ -796,7 +798,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
         <h4 id="rk"><code>&#123;rk&#125;</code> &mdash; Recall Knowledge</h4>
         <p>
           Type <code>pc::&#123;rk&#125;</code> (<code>&#123;recallknowledge&#125;</code> still works). You pick the creature and then the skill &mdash; only your trained skills that have the action (Arcana, Crafting, Nature, Occultism, Religion, Society and each Lore),
-          narrowed to the ones that suit that creature &mdash; and what you want to learn. You never see the roll, because knowing the number would tell you whether the answer was true. As the rules say, a failure tells you nothing; only a critical failure gives you a false answer.
+          narrowed to the ones that suit that creature (a Lore counts for related creatures too: Goblin Lore for bugbears and hobgoblins, Fiend Lore for any fiend) &mdash; and what you want to learn. You never see the roll, because knowing the number would tell you whether the answer was true. As the rules say, a failure tells you nothing; only a critical failure gives you a false answer.
           By default the result goes to the GM's channel with a <strong>Send to player</strong> button; the GM shares it when ready. Two <a href="#gm">campaign rules</a> change that:
           <strong>Recall Knowledge to the GM</strong> (on by default) turns that hand-off on or off, and <strong>Recall Knowledge from the GM persona</strong> makes the shared answer come from the campaign's GM persona
           (the name and picture set with <code>/tgm persona</code>) instead of from Table Goblin. If the campaign has no GM persona yet, the answer still comes from the bot.
@@ -1273,7 +1275,7 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           Cutting Rebuke; a Strike back that changes the attacker's roll, like Tail Lash, waits before the roll). Goblin Scuttle is offered when an ally ends its move next to the goblin (Use opens the Step
           planner), Counterspell when someone casts a spell the creature has prepared (the cast waits up to 30 seconds for the GM first; Use expends
           the same spell and rolls the counteract check, and a counteracted spell has no effect at all; a player character with Counterspell
-          (Prepared) or (Spontaneous) and the spell ready is asked the same way, at the table), Resilient Form and Unbidden Thoughts on a critical hit (Unbidden Thoughts lets the attacker's player choose at the table),
+          (Prepared) or (Spontaneous) and the spell ready is asked the same way, at the table; a creature's stat-block action that casts a spell, like a vampire's Dominate, waits the same way), Resilient Form and Unbidden Thoughts on a critical hit (Unbidden Thoughts lets the attacker's player choose at the table),
           and Divert Essence when a spell is cast at it. Also: Accord Essence when a wisp's ally is attacked (a player's Strike waits for it
           first; every ally of the wisp gets the temporary Hit Points), Reawaken! when a creature dies,
           Shoo! and Retributive Rune when an attacker damages the dragon, Soul Anchor when a creature drops to 0 HP, and Word of Wisdom when a
