@@ -131,6 +131,64 @@
 
       <section id="recent" style="padding-top:34px">
         <h2 class="new-head">Recently added</h2>
+        <h3 class="new-date">Nov 18, 2026 · 8:46 PM ET</h3>
+        <ul class="new-list">
+          <li><strong>⏳ Delay: pick your moment, and it happens on its own.</strong>
+            <p>Delay has been simplified. When you Delay, the bot shows everyone who still acts this round and asks <em>whose turn you want to come back after</em>. Pick one and you're done: when that turn ends, you're slotted straight back into the order and your turn starts. There are no more "Return now?" questions to answer. If the creature you picked leaves the fight, you keep your place.</p>
+            <p>The same list has a <strong>Forfeit this turn</strong> option for when you'd rather sit the round out. Your end-of-turn effects (persistent damage, conditions ticking down) still run at the end of the round, so forfeiting never dodges them. Use it to hold the healer until the fighter has gone, or to let the scout wait behind the door until the brute kicks it in.</p>
+            <div class="dmock" role="img" aria-label="Mockup of the Delay picker">
+              <div class="dmock-head"><img class="dmock-av" src="table-goblin.png" alt="" aria-hidden="true"><span class="dmock-name">Table Goblin</span><span class="dmock-tag">APP</span></div>
+              <div class="dmock-text">⏳ <b>Kyra</b> delays. Return after whose turn?</div>
+              <div class="dmock-rows"><div class="dmock-row"><span class="dmock-b" style="min-width:260px;text-align:left">Return after whose turn? ▾</span></div></div>
+              <div class="dmock-embed" style="--dm-bar:#4e5058"><div class="dmock-f">🚫 Forfeit this turn <span style="opacity:.7">— its end-of-turn effects at the round's end</span><br>Goblin Warrior (15)<br>Merisiel (12)<br>Goblin Commando (9)</div></div>
+            </div>
+            <p class="dmock-cap">Mockup, sample characters: the list a delaying player sees.</p>
+          </li>
+          <li><strong>💥 GM dashboard: deal damage and fix creatures with a button.</strong>
+            <p>The pinned GM dashboard gains two buttons. <strong>💥 Damage</strong> (shown while a fight is running) lets the GM apply damage without typing a command. Pick who takes it from a list, then fill in a short form: the amount, the damage type, what dealt it, the caster and tradition for a spell, and whether it was a critical hit or nonlethal. It runs exactly like <code>/tge damage</code>, so resistances, weaknesses and immunities all apply.</p>
+            <p><strong>🏷️ Traits</strong> lists the campaign's creatures, those missing traits first, and lets the GM set them. Traits matter more and more: they decide which skills Recall Knowledge offers, what parts a creature gives and which effects hit it. A hand-built creature now gets traits guessed from its name ("Goblin Bandit" becomes goblin, humanoid). When a creature has none, the GM is told, both on creation and in the dashboard's Fight field.</p>
+            <div class="dmock" role="img" aria-label="Mockup of the GM dashboard's new buttons">
+              <div class="dmock-head"><img class="dmock-av" src="table-goblin.png" alt="" aria-hidden="true"><span class="dmock-name">Table Goblin</span><span class="dmock-tag">APP</span></div>
+              <div class="dmock-embed" style="--dm-bar:#c08a2e"><div class="dmock-title">📊 Emerald Spire — GM dashboard</div>
+                <div class="dmock-fields"><div class="dmock-f"><div class="dmock-fn">Fight</div>⚔️ <b>Bandit Camp</b>, round 1<br>⚠️ No traits: Bandit Captain</div></div></div>
+              <div class="dmock-rows"><div class="dmock-row"><span class="dmock-b">💥 Damage</span><span class="dmock-b">🏷️ Traits</span></div></div>
+            </div>
+            <p class="dmock-cap">Mockup showing the new fifth row; the rest of the dashboard is unchanged.</p>
+          </li>
+          <li><strong>✨ Counterspell for players, and smarter reactions all round.</strong>
+            <p>A wizard or sorcerer with <strong>Counterspell</strong> now gets the chance to use it. When a creature casts a spell that the character has prepared (or knows, with a slot left), the cast pauses and the player gets a button to counter it, just as monsters already could against players. It works on spells cast from a creature's stat-block actions too, like a vampire's Dominate.</p>
+            <p>Reactions also fire more often and more correctly:</p>
+            <ul>
+              <li>Trip, Shove and Grapple count as attacks, so "when attacked" reactions and a dragon's Tail Lash answer them.</li>
+              <li>Word of Wisdom works against any failed save, including breath weapons and hazards.</li>
+              <li>A wisp's Accord Essence shields its allies.</li>
+              <li>Connective Current is offered when a marked enemy moves.</li>
+            </ul>
+          </li>
+          <li><strong>🦴 Monster Parts that make sense.</strong>
+            <p>Salvaging now fits the creature. A wooden construct gives a Timber Limb, a Carved Joint or Heartwood (Nature). A flesh golem gives Stitched Hide, Bone or a Preserved Organ (Survival and Medicine). Every creature type offers two or three skills, and only a character trained in one can salvage.</p>
+            <p>Crafting requirements are checked too. A recipe that needs "the heart of an adult or older dragon" takes a part from an adult or ancient dragon, not a young one. Anything else needs the GM's <strong>Wave it through</strong>. Salvaging during a <code>/tgm break</code> breather only uses up the break once the check is actually rolled.</p>
+          </li>
+          <li><strong>🌲 New magic at the table.</strong>
+            <p>A batch of spells and impulses that used to just print their text now do the work.</p>
+            <ul>
+              <li><strong>Arms of Nature</strong> puts a real wooden weapon in your hand for the minute. Elemental Weapon and Junk Weapon conjure their own.</li>
+              <li><strong>Stepping Stones</strong> lays a path on the map that lets everyone ignore difficult terrain.</li>
+              <li><strong>Protector Tree</strong> grows a tree that takes Strikes meant for the allies beside it.</li>
+              <li><strong>Dimensional Assault</strong> opens a teleport planner before the Strike.</li>
+              <li><strong>Darkened Forest Form</strong>, <strong>Distortion Lens</strong>, <strong>String of Fate</strong>, <strong>Swear Oath</strong>, <strong>Delay Consequence</strong> and <strong>Object Memory</strong> all apply their effects.</li>
+            </ul>
+          </li>
+          <li><strong>🧠 Smarter Recall Knowledge and cover for spells.</strong>
+            <p>Recall Knowledge now offers only the skills that fit the creature's traits, plus any Lore that covers it. Goblin Lore works on bugbears and hobgoblins, and Fiend Lore covers demons and devils. Bone Speaker and Tactical Acumen add their own options. Spell attack rolls now count a target's cover on the map, just like weapon Strikes.</p>
+            <p>A few class features also became real:</p>
+            <ul>
+              <li><strong>Oath of the Avenger:</strong> Lay on Hands now harms undead.</li>
+              <li><strong>Person of Interest:</strong> a free Devise a Stratagem against the marked creature.</li>
+              <li><strong>Solid Lead</strong> and <strong>Anoint Ally</strong> now apply their effects.</li>
+            </ul>
+          </li>
+        </ul>
         <h3 class="new-date">Nov 18, 2026</h3>
         <ul class="new-list">
           <li><strong>⚔️ Party turn blocks: the party acts together.</strong>
