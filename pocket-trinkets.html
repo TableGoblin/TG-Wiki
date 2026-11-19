@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Table Goblin — Pocket Trinkets</title>
+<link rel="icon" href="table-goblin.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="tools.css">
+<script data-goatcounter="https://tablegoblin.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+<script src="events.js"></script>
+<style>
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+  @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+  .tiny-label { display: block; font-size: 13px; color: var(--text-2); }
+  .card-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+  .card-head b { font: 600 16px Fraunces, Georgia, serif; }
+  .controls .checks { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 4px 0 10px; }
+  .controls .checks label { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 13.5px; color: var(--text); }
+  .result { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--ground); min-height: 1.5em; }
+  .result .roll { font: 600 12px "IBM Plex Mono", monospace; color: var(--text-3); text-transform: uppercase; letter-spacing: .04em; }
+  .result .item { font-size: 16px; margin-top: 4px; }
+  .result .from { font-size: 13px; color: var(--text-2); }
+  details.list { border-top: 1px solid var(--line); padding: 6px 0; }
+  details.list summary { cursor: pointer; font: 600 15px Fraunces, Georgia, serif; }
+  details.list summary .n { font: 500 12px "IBM Plex Mono", monospace; color: var(--text-3); margin-left: 6px; }
+  details.list ol { margin: 6px 0 4px; padding-left: 26px; font-size: 14px; }
+  details.list li { padding: 2px 0; }
+  .tablebtns { display: flex; gap: 8px; margin: 4px 0 8px; flex-wrap: wrap; }
+  @media print { .rail, .topnav, .controls, .tbtn, .steps, .site-footer { display: none !important; } details.list { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+        <img class="rail-logo" src="table-goblin.png" alt="Table Goblin logo">
+        <b>Table Goblin</b>
+        <span>Pathfinder 2e for Discord</span>
+        <a class="btn" href="https://www.reddit.com/r/TableGoblin/" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C5.373 0 0 5.373 0 12c0 3.314 1.343 6.314 3.515 8.485l-2.286 2.286C.775 23.225 1.097 24 1.738 24H12c6.627 0 12-5.373 12-12S18.627 0 12 0Zm4.388 3.199c1.104 0 1.999.895 1.999 1.999 0 1.105-.895 2-1.999 2-.946 0-1.739-.657-1.947-1.539v.002c-1.147.162-2.032 1.15-2.032 2.341v.007c1.776.067 3.4.567 4.686 1.363.473-.363 1.064-.58 1.707-.58 1.547 0 2.802 1.254 2.802 2.802 0 1.117-.655 2.081-1.601 2.531-.088 3.256-3.637 5.876-7.997 5.876-4.361 0-7.905-2.617-7.998-5.87-.954-.447-1.614-1.415-1.614-2.538 0-1.548 1.255-2.802 2.803-2.802.645 0 1.239.218 1.712.585 1.275-.79 2.881-1.291 4.64-1.365v-.01c0-1.663 1.263-3.034 2.88-3.207.188-.911.993-1.595 1.959-1.595Zm-8.085 8.376c-.784 0-1.459.78-1.506 1.797-.047 1.016.64 1.429 1.426 1.429.786 0 1.371-.369 1.418-1.385.047-1.017-.553-1.841-1.338-1.841Zm7.406 0c-.786 0-1.385.824-1.338 1.841.047 1.017.634 1.385 1.418 1.385.785 0 1.473-.413 1.426-1.429-.046-1.017-.721-1.797-1.506-1.797Zm-3.703 4.013c-.974 0-1.907.048-2.77.135-.147.015-.241.168-.183.305.483 1.154 1.622 1.964 2.953 1.964 1.33 0 2.47-.81 2.953-1.964.057-.137-.037-.29-.184-.305-.863-.087-1.795-.135-2.769-.135Z"/></svg>
+          Join r/TableGoblin
+        </a>
+        <a class="btn" href="https://discord.gg/cHMex5xFsV" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.211.375-.457.879-.626 1.278a18.27 18.27 0 0 0-5.518 0A12.76 12.76 0 0 0 9.115 3 19.736 19.736 0 0 0 4.68 4.372C1.727 8.75.929 13.028 1.328 17.244a19.9 19.9 0 0 0 5.993 3.03c.483-.66.914-1.36 1.285-2.098a12.87 12.87 0 0 1-2.024-.973c.17-.124.336-.253.497-.386 3.902 1.803 8.13 1.803 11.987 0 .162.133.329.262.497.386-.645.386-1.323.71-2.026.974.371.738.802 1.438 1.285 2.098a19.876 19.876 0 0 0 5.995-3.03c.468-4.891-.795-9.13-3.5-13.876ZM8.68 14.813c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Zm7.324 0c-1.171 0-2.13-1.075-2.13-2.395 0-1.32.939-2.396 2.13-2.396 1.201 0 2.16 1.086 2.13 2.396 0 1.32-.929 2.395-2.13 2.395Z"/></svg>
+          Join the Discord
+        </a>
+        <div class="discord-widget" id="discordWidget" hidden aria-live="polite">
+          <span class="dw-dot"></span>
+          <span class="dw-avatars" id="dwAvatars"></span>
+          <span id="dwText"></span>
+        </div>
+    </div>
+    <nav>
+      <a class="btn" href="https://discord.com/oauth2/authorize?client_id=1550867869066076263" target="_blank" rel="noopener">Install Table Goblin</a>
+      <a class="top" href="index.html"><span>Home</span></a>
+      <a class="top" href="changelog.html"><span>Change Log</span></a>
+      <a class="top" href="wiki.html"><span>Wiki</span></a>
+      <div class="rail-sub">
+        <a href="wiki.html#start"><span>Getting Started</span></a>
+        <a href="wiki.html#gm"><span>GM Tools</span></a>
+        <a href="wiki.html#chars"><span>Characters</span></a>
+        <a href="wiki.html#chat"><span>Playing in Character</span></a>
+        <a href="wiki.html#npcs"><span>Creatures &amp; NPCs</span></a>
+        <a href="wiki.html#dice"><span>Dice Roller</span></a>
+        <a href="wiki.html#combat"><span>Encounters</span></a>
+        <a href="wiki.html#maps"><span>Battle Maps</span></a>
+        <a href="wiki.html#loot"><span>Loot &amp; the Purse</span></a>
+        <a href="wiki.html#towns"><span>Towns &amp; Shops</span></a>
+        <a href="wiki.html#lookup"><span>Reference Lookup</span></a>
+        <a href="wiki.html#coming"><span>Coming Features</span></a>
+      </div>
+      <a class="top" href="class-commands.html"><span>Class Commands</span></a>
+      <div class="rail-head">Tools</div>
+      <div class="rail-sub">
+        <a href="gm-screen.html"><span>GM Screen</span></a>
+        <a href="town-builder.html"><span>Town builder</span></a>
+        <a href="treasure.html"><span>Treasure planner</span></a>
+        <a href="pocket-trinkets.html" aria-current="page"><span>Pocket trinkets</span></a>
+        <a href="builder.html"><span>Character builder</span></a>
+        <a href="npc-builder.html"><span>NPC builder</span></a>
+        <a href="item-builder.html"><span>Item builder</span></a>
+        <a href="encounter-builder.html"><span>Encounter builder</span></a>
+        <a href="map-prep.html"><span>Map prep</span></a>
+        <a href="monster-parts.html"><span>Monster Parts</span></a>
+      </div>
+    </nav>
+  </aside>
+  <main class="tool-page">
+    <div class="wrap">
+      <header class="hero tool-hero">
+        <div class="eyebrow">GM tool</div>
+        <h1>Pocket trinkets</h1>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a><a href="gm-screen.html">GM Screen</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="pocket-trinkets.html" aria-current="page">Pocket trinkets</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="item-builder.html">Item builder</a><a href="encounter-builder.html">Encounter builder</a><a href="map-prep.html">Map prep</a><a href="monster-parts.html">Monster Parts</a></nav>
+        <p class="lede">Worthless little things a defeated foe might carry: a lucky pebble, a half-written letter, a child's carving. They make the people your party fights feel like people. None of them has a Price, Bulk or any game effect. Roll one here at the table, or turn on the <strong>Pocket trinkets</strong> campaign rule and Table Goblin adds them to the loot of defeated creatures for you.</p>
+        <ol class="steps"><li><strong>Choose the lists</strong>: untick <em>Silly</em> to leave out the crude or goofy trinkets, or <em>Story hooks</em> to leave out the ones that hint at a story you may not want to follow up.</li><li><strong>Pick the creature's ancestry</strong>, or General for any humanoid.</li><li><strong>Press Roll a trinket</strong> to roll a d4 first: only on a 4 does it carry one. <strong>Draw one</strong> skips the d4. A creature with its own list draws from it half the time and from the general list otherwise.</li></ol>
+      </header>
+
+      <div class="tool-body">
+        <div class="panel controls">
+          <div class="grid2">
+            <div><span class="tiny-label">Include</span><div class="checks" role="group" aria-label="Filters">
+              <label><input type="checkbox" id="silly" checked> Silly</label><label><input type="checkbox" id="hooks" checked> Story hooks</label></div></div>
+            <label>Ancestry<select id="ancestry"></select></label>
+          </div>
+          <div class="btns"><button type="button" class="tbtn primary" id="rollOne">Roll a trinket</button>
+            <button type="button" class="tbtn" id="drawOne">Draw one</button></div>
+          <div class="result" id="result" role="status" aria-live="polite"><span class="from">Nothing rolled yet.</span></div>
+        </div>
+        <div class="panel">
+          <div class="card-head"><b>The lists</b></div>
+          <div class="tablebtns"><button type="button" class="tbtn" id="openAll">Open all</button><button type="button" class="tbtn" id="closeAll">Close all</button></div>
+          <div id="lists"></div>
+        </div>
+        <p class="hint">In Discord: <code>/tgm campaign_rules</code> (or the GM dashboard's Rules button) has the <strong>Pocket trinkets</strong> rule, off until you turn it on, with the same two filters. A creature qualifies by its ancestry trait (skeletons, automatons, poppets, leshies, sprites, awakened animals and conrasu have lists too) or, with no ancestry, the humanoid trait. Mindless creatures and animals carry nothing. In the loot a trinket shows as <strong>🧸 Trinket</strong>, so nobody mistakes it for treasure: it can't be sold and weighs nothing. Ancestry names are Paizo's, used under the ORC License.</p>
+      </div>
+
+      <footer class="site-footer">
+        A reference, not a rules substitute &mdash; when in doubt, check Archives of Nethys.
+        Table Goblin is an unofficial tool and is not affiliated with Paizo Inc.
+        <a href="terms.html">Terms of Service</a> &middot; <a href="privacy.html">Privacy Policy</a>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<script src="pocket-trinkets-data.js"></script>
+<script>
+(function () {
+  "use strict";
+  // D2016 -- Pocket trinkets: the bot's own list, filters and draw (pocket_trinkets.py): d4, on a 4 it carries one; half from its own list.
+  var D = window.TG_TRINKETS, STORE = "tg-trinkets-v1";
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]; }); }
+  function load() { try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch (e) { return {}; } }
+  function save() { try { localStorage.setItem(STORE, JSON.stringify({silly: $("silly").checked, hooks: $("hooks").checked, ancestry: $("ancestry").value})); } catch (e) {} }
+  function keep(row) { return ($("silly").checked || !row[1]) && ($("hooks").checked || !row[2]); }
+  function known(name) { for (var i = 0; i < D.ancestries.length; i++) if (D.ancestries[i][0] === name) return D.ancestries[i][1]; return null; }
+  function rows(name) { return (name === "" ? D.general : (known(name) || [])).filter(keep); }
+  function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
+  function draw() {
+    var name = $("ancestry").value, own = name ? rows(name) : [], general = rows("");
+    var useOwn = own.length > 0 && Math.random() < 0.5, source = useOwn ? own : general;
+    if (!source.length) { source = own; useOwn = own.length > 0; }
+    if (!source.length) return null;
+    return {text: pick(source)[0], list: useOwn ? name : "General"};
+  }
+  function show(d4, found) {
+    var html = d4 ? '<div class="roll">d' + D.die + ": " + d4 + (d4 === D.on ? " — it carries one" : " — it carries nothing") + "</div>" : "";
+    if (found) html += '<div class="item">' + esc(D.prefix + found.text) + '</div><div class="from">From the ' + esc(found.list) + " list.</div>";
+    else if (!d4 || d4 === D.on) html += '<div class="from">Every trinket on these lists is filtered out.</div>';
+    $("result").innerHTML = html;
+  }
+  function renderLists() {
+    var open = {};
+    Array.prototype.forEach.call(document.querySelectorAll("details.list"), function (d) { open[d.dataset.name] = d.open; });
+    var parts = [["", "General"]].concat(D.ancestries.map(function (a) { return [a[0], a[0]]; })).map(function (p) {
+      var list = rows(p[0]);
+      return '<details class="list" data-name="' + esc(p[0]) + '"' + (open[p[0]] ? " open" : "") + "><summary>" + esc(p[1]) +
+        '<span class="n">' + list.length + "</span></summary><ol>" + list.map(function (r) { return "<li>" + esc(r[0]) + "</li>"; }).join("") + "</ol></details>";
+    });
+    $("lists").innerHTML = parts.join("");
+  }
+  var sel = $("ancestry");
+  sel.innerHTML = '<option value="">General (any humanoid)</option>' + D.ancestries.map(function (a) { return '<option value="' + esc(a[0]) + '">' + esc(a[0]) + "</option>"; }).join("");
+  var st = load();
+  if (typeof st.silly === "boolean") $("silly").checked = st.silly;
+  if (typeof st.hooks === "boolean") $("hooks").checked = st.hooks;
+  if (st.ancestry && known(st.ancestry)) sel.value = st.ancestry;
+  ["silly", "hooks"].forEach(function (id) { $(id).addEventListener("change", function () { save(); renderLists(); }); });
+  sel.addEventListener("change", save);
+  $("rollOne").addEventListener("click", function () { var d4 = 1 + Math.floor(Math.random() * D.die); show(d4, d4 === D.on ? draw() : null); });
+  $("drawOne").addEventListener("click", function () { show(0, draw()); });
+  $("openAll").addEventListener("click", function () { Array.prototype.forEach.call(document.querySelectorAll("details.list"), function (d) { d.open = true; }); });
+  $("closeAll").addEventListener("click", function () { Array.prototype.forEach.call(document.querySelectorAll("details.list"), function (d) { d.open = false; }); });
+  renderLists();
+})();
+</script>
+</body>
+</html>

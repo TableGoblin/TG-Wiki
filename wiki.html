@@ -59,6 +59,7 @@
         <a href="gm-screen.html"><span>GM Screen</span></a>
         <a href="town-builder.html"><span>Town builder</span></a>
         <a href="treasure.html"><span>Treasure planner</span></a>
+        <a href="pocket-trinkets.html"><span>Pocket trinkets</span></a>
         <a href="builder.html"><span>Character builder</span></a>
         <a href="npc-builder.html"><span>NPC builder</span></a>
         <a href="item-builder.html"><span>Item builder</span></a>
@@ -73,7 +74,7 @@
     <div class="wrap">
       <header class="hero">
         <h1>Your table has a goblin in it now.</h1>
-        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html" aria-current="page">Wiki</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a><a href="gm-screen.html">GM Screen</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="item-builder.html">Item builder</a><a href="encounter-builder.html">Encounter builder</a><a href="map-prep.html">Map prep</a><a href="monster-parts.html">Monster Parts</a></nav>
+        <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html" aria-current="page">Wiki</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a><a href="gm-screen.html">GM Screen</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="pocket-trinkets.html">Pocket trinkets</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="item-builder.html">Item builder</a><a href="encounter-builder.html">Encounter builder</a><a href="map-prep.html">Map prep</a><a href="monster-parts.html">Monster Parts</a></nav>
         <p class="lede">Every command, what it does, and how the pieces fit together.</p>
       </header>
 
@@ -309,6 +310,7 @@
               <tr><td><b>Merge creature initiative</b></td><td>Your enemy creatures (the GM's, on the enemy side) roll one initiative: a d20 plus their average Perception modifier, rounded down. Each creature still takes its own turn, one after another on that number, with its own turn post and its own start- and end-of-turn effects. A creature that joins the enemy side later takes the same number instead of rolling. Allies, companions, player characters and hazards roll their own. Turning it on or off applies from the next encounter. Not in the campaign code (the builder doesn't need it).</td></tr>
               <tr><td><b>Party turn blocks</b></td><td>Off by default; Society campaigns may use it too. When the turn reaches two or more party members in a row in initiative, they take their turns in any order: the bot posts one <em>Party turn</em> message (who is waiting, who is done, who comes after the party) with a <b>take my turn</b> button for each member and a GM-only <b>Skip the rest</b>. Each player presses their own button when ready; their normal turn post follows, and ending it goes back to the party message. The last one left starts on their own, then initiative moves on. Party members are everyone on the party side, a GM-run ally included; companions, eidolons, familiars and other minions act on their master's turn and never split a block. The order taken inside a block never changes initiative. Applies from the next encounter. Not in the campaign code (the builder doesn't need it).</td></tr>
               <tr><td><b>Salvage creature parts</b></td><td>Off by default, free, and not available in Society campaigns. A Table Goblin optional rule, not a Paizo one: after a fight the party may take named parts (no Price, can&rsquo;t be sold) from a dead enemy or neutral creature with one skill check per creature &mdash; see <a href="#salvage">Salvage creature parts</a> under Loot. Not in the campaign code.</td></tr>
+              <tr><td><b>Pocket trinkets</b></td><td>Off by default, free, and not available in Society campaigns. A Table Goblin optional rule: a defeated creature with an ancestry (or a humanoid) may carry a worthless flavor trinket into the loot (a d4: on a 4). Two more ticks, <b>Trinkets: silly entries</b> and <b>Trinkets: story hooks</b>, both on, leave out the goofy ones or the ones that hint at a story &mdash; see <a href="#trinkets">Pocket trinkets</a> under Loot. Not in the campaign code.</td></tr>
               <tr><td><b>Boosted Reroll</b></td><td>A Hero Point reroll whose natural d20 comes up 10 or under gets +10 added to it: a 1 counts as 11, a 2 as 12, and so on up to a 10 counting as a natural 20 (which can be a critical success). A natural 11 or higher is used as rolled.</td></tr>
               <tr><td><b>Recall Knowledge to the GM</b></td><td>On by default. A Recall Knowledge result (<code>&#123;rk&#125;</code>) goes to the GM channel with the roll and which answer is true, and a <b>Send to player</b> button shares it when the GM is ready. Off: the player gets the answer privately and straight away, with no roll shown.</td></tr>
               <tr><td><b>Recall Knowledge from the GM persona</b></td><td>Off by default. When the GM presses <b>Send to player</b>, the answer is posted by the campaign's GM persona (the name and picture set with <code>/tgm persona</code>) instead of by Table Goblin. Without a GM persona it still comes from the bot.</td></tr>
@@ -1633,6 +1635,20 @@ npc::<span class="c">&lt;Display Name&gt;</span>::<span class="c">["message"]</s
           <div class="cmd-row"><div class="cmd">/tgloot add · reveal · identify_free · remove</div><span class="badge b-gm">gm only</span>
             <div class="desc">Drop something in by hand, see what the unidentified items really are, reveal one without a roll, or take it out entirely.</div></div>
         </div>
+
+        <h3 id="trinkets">Pocket trinkets</h3>
+        <p>
+          A campaign rule, <strong>off by default</strong> (<code>/tgm campaign_rules</code>, or the GM dashboard&rsquo;s Rules button), free,
+          never in Society play. With it on, every dead creature that has an <b>ancestry trait</b> (goblins and elves, but also skeletons,
+          automatons, poppets, leshies, sprites, awakened animals and conrasu), or no ancestry but the <b>humanoid</b> trait, rolls a d4 when it
+          is looted (<code>/tge end</code>, or <code>/tge remove</code> of a dead foe): on a <b>4</b> it carries one trinket. A creature whose
+          ancestry has its own list draws from it half the time and from the general list otherwise. Mindless creatures and animals carry
+          nothing. The trinket joins the fight&rsquo;s loot as <b>🧸 Trinket &middot; &lt;what it is&gt;</b>, and anyone in the party can take it
+          like any loot. It is never treasure: no Price (it can&rsquo;t be sold), negligible Bulk, no light, no effect. Two filters in the same
+          dropdown, both on by default: <b>Trinkets: silly entries</b> (crude or goofy ones) and <b>Trinkets: story hooks</b> (ones that hint at
+          a story you may not want to follow up). Every list, with the same filters and a <b>Roll a trinket</b> button for tables that don&rsquo;t
+          use the rule, is on the <a href="pocket-trinkets.html">Pocket trinkets</a> page.
+        </p>
 
         <h3 id="salvage">Salvage creature parts</h3>
         <p>
