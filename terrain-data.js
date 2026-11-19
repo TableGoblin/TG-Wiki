@@ -5245,6 +5245,46 @@ window.TG_TERRAIN = {
    "shapes": null,
    "tint": null,
    "waves": null
+  },
+  {
+   "badge": [
+    190,
+    120,
+    150,
+    "Cr"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83d\udc65",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-crowd",
+   "label": "Crowd",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    150,
+    60,
+    110,
+    "PC"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83e\udec2",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-crowd-packed",
+   "label": "Packed crowd",
+   "shapes": null,
+   "tint": null,
+   "waves": null
   }
  ],
  "version": 1
