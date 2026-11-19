@@ -11,6 +11,32 @@
 <script data-goatcounter="https://tablegoblin.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 <script src="events.js"></script>
+<style>
+  /* Discord-style mockups on the Change Log (Nov 16, 2026). Always dark, like Discord's default theme. */
+  .dmock { margin: 14px 0 6px; max-width: 560px; background: #313338; color: #dbdee1; border-radius: 8px; padding: 12px 14px;
+           font: 14px/1.4 "IBM Plex Sans", system-ui, sans-serif; overflow: hidden; }
+  .dmock-cap { font-size: 12px; opacity: .75; margin: 2px 0 14px; }
+  .dmock-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .dmock-av { width: 32px; height: 32px; border-radius: 50%; background: #5865f2; color: #fff; object-fit: cover; flex: none; }
+  .dmock-name { color: #f2f3f5; font-weight: 600; }
+  .dmock-tag { background: #5865f2; color: #fff; font-size: 10px; font-weight: 600; border-radius: 3px; padding: 1px 4px; }
+  .dmock-text { margin: 0 0 6px 40px; }
+  .dmock-embed { margin-left: 40px; background: #2b2d31; border-left: 4px solid var(--dm-bar, #3182ce); border-radius: 4px;
+                 padding: 8px 12px 10px; }
+  .dmock-title { color: #f2f3f5; font-weight: 600; margin-bottom: 6px; }
+  .dmock-fields { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  .dmock-f { flex: 1 1 100%; min-width: 0; }
+  .dmock-f.in { flex: 0 1 auto; }
+  .dmock-fn { color: #f2f3f5; font-weight: 600; font-size: 13px; }
+  .dmock-foot { font-size: 11px; opacity: .7; margin-top: 8px; }
+  .dmock-rows { margin: 6px 0 0 40px; display: grid; gap: 6px; }
+  .dmock-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .dmock-b { border-radius: 4px; padding: 3px 10px; font-size: 13px; font-weight: 500; color: #fff; background: #4e5058; white-space: nowrap; }
+  .dmock-b.p { background: #5865f2; }
+  .dmock-b.s { background: #248046; }
+  .dmock-mention { background: rgba(88,101,242,.3); color: #c9cdfb; border-radius: 3px; padding: 0 2px; }
+  @media (max-width: 480px) { .dmock-text, .dmock-embed, .dmock-rows { margin-left: 0; } }
+</style>
 </head>
 <body>
 <div class="shell">
@@ -107,20 +133,65 @@
         <h2 class="new-head">Recently added</h2>
         <h3 class="new-date">Nov 18, 2026</h3>
         <ul class="new-list">
-          <li><strong>Delay, reworked:</strong> Delaying asks whose turn you'll come back after (a paged list of who still acts this round) and you're asked "Return after this turn?" with buttons when that turn starts. Your end-of-turn effects wait until the turn you return to ends; if you never return, the turn is lost at the round's end and those effects happen then. <code>/tge prev</code> no longer gives a second recovery check.</li>
-          <li><strong>Monsters react, part two:</strong> every Strike now offers the target's and its allies' "when attacked" reactions (Bite Back, Retaliate, Bodyguard's Reprisal); Tail Lash pauses the Strike; Counterspell pauses a spell for the GM before it takes effect; Goblin Scuttle works for any ally; and Reawaken!, Shoo!, Retributive Rune, Soul Anchor, Accord Essence and Word of Wisdom are new.</li>
-          <li><strong>Monster Parts:</strong> every creature type offers two or three skills, and only a character trained in one can salvage. Constructs give pieces like "Chest Plate of the Frost Clockwork Soldier". A <strong>✏️ Rename part</strong> button on the GM dashboard's Loot panel renames a part. A crafting requirement needs a part from the creature it names (or the GM waves it through). Salvage is offered during a <code>/tgm break</code> breather. Creatures saved from the NPC builder now need at least one trait.</li>
-          <li><strong>Pathbuilder import checks weapons:</strong> each weapon's damage die and striking dice are checked against the base item and its runes; anything corrected is listed in the import reply (Deadly Simplicity only for a simple favored weapon).</li>
-          <li><strong>More rules automated:</strong> Eternal Torch as a held torch, on a weapon or on an object (Constitution limit counted); reloading needs a free hand (a two-handed grip regrips inside the reload; Dual-Weapon Reload and Ammunition Thaumaturgy work); Hand of the Apprentice rolls a real Strike; Share Burden and Protector's Sacrifice are offered at the right moment; Command blocks reactions and offers an Approach move; Jealous Hex repeats its save; Sanctuary covers spell attacks and maneuvers; Light Blindness on moving into light; Slow creatures can't react; Gravity Weapon, Cackle, Lingering Composition, Arrange Scales, Reactive Resistance, Demolish Defenses, Amplify Vulnerability, Vibrant Thorns, Shooting Star, Weapon Trance, Nudge Fate, Dimensional Drop and Four Winds.</li>
-          <li><strong>Falls:</strong> a fall the timer landed can still be answered with Air Cushion or Gentle Landing until the round ends -- a late answer undoes the damage and Prone.</li>
-          <li><strong>Loot:</strong> magic items a creature wears keep working after a player claims and invests them. <code>/tge damage</code> takes an optional <code>caster</code> and <code>tradition</code>, and long creature lists page past 25.</li>
-          <li><strong>Party turn blocks (campaign rule):</strong> a new <strong>Party turn blocks</strong> tick in <code>/tgm campaign_rules</code> (off by default). Party members next to each other in initiative share one "⚔️ Party turn" post with a <strong>Take my turn</strong> button each: take your turns in any order, the post updates and pings who's left, and the last one starts on their own. Enemies keep their normal order. Every character's start- and end-of-turn effects still happen on their own turn. The GM can <strong>Skip the rest</strong> (those players Delay and can come back with a button) and <code>/tge prev</code> undoes the last turn, block and all.</li>
-          <li><strong>Salvage creature parts (campaign rule):</strong> a new <strong>Salvage creature parts</strong> tick (off by default, not in Society play). After a fight, a <strong>🦴 Salvage</strong> button on the loot lets a player pick a dead creature and a skill: Crafting for fangs, claws, horns and spikes; Medicine for blood, venom and glands; Survival for hide, scales, bone and meat; Nature for an animal's parts. A trained check against the creature's level DC gives one part (two on a critical success), named after the creature ("Manticore Tail Spike"): unsellable plot loot for crafting. <code>/tgcraft</code> projects can be <strong>made from</strong> a part. The new <a href="monster-parts.html">Monster Parts</a> page shows any creature's skills, DCs and parts for tables outside Discord.</li>
-          <li><strong>Mythic is a campaign rule:</strong> a new <strong>Mythic</strong> tick (off by default, locked off in Society play) gates all mythic content -- callings, mythic feats at even levels, the 12th-level destiny, Mythic Points, mythic spells and items. The GM dashboard can make a character mythic now or remove it, and a <strong>🌅 New session</strong> button refills Mythic Points and sets everyone's Hero Points to 1.</li>
-          <li><strong>Monsters react:</strong> creature reactions now have buttons on the GM's Combat menu and are offered at their trigger -- Ferocity and Shield Block before a creature drops, Nimble Dodge and similar before your Strike resolves (the GM has a few seconds to answer), Buck when a creature is mounted, Goblin Scuttle, Counterspell, resistance reactions when damage lands, and Strike reactions when you move, cast or shoot nearby. Creatures with a shield can Raise a Shield. About half the bestiary's reactions are now automated.</li>
-          <li><strong>More rules automated:</strong> incapacitation works on every save, not just spells; one flourish per turn is enforced; massive damage (one hit of twice your maximum HP) kills; Dispel Magic, Cleanse Affliction, Clear Mind and Sound Body counteract the effects the bot tracks; resistances, weaknesses and immunities that only apply sometimes are checked when damage lands; many effects' conditional bonuses now apply on their own or get a sheet toggle; Raging Resistance applies itself; creatures' worn magic items work and drop as loot.</li>
-          <li><strong>GM dashboard:</strong> a <strong>⚠️ Condition</strong> button applies a condition during a fight, and <strong>🎚️ Creature toggles</strong> sets a creature's situational toggles. <code>/tge damage</code> and <code>/tge condition</code> take an optional <code>source</code>.</li>
-          <li><strong>Fixes:</strong> the turn post lists one action per line (a spell's real cost counts: Bless is 2 actions), knocked-out characters move to just before whoever dropped them, and the bot checks its rules data at startup and repairs itself if a lookup fails.</li>
+          <li><strong>⚔️ Party turn blocks: the party acts together.</strong>
+            <p>Party turn blocks are a new campaign rule (turn it on in <code>/tgm campaign_rules</code>) that changes how initiative runs for the players. Whenever two or more party members come up back to back in the initiative order, with no enemy between them, the bot groups them into a single <strong>block</strong>. Instead of calling them one at a time in strict initiative order, it posts one "Party turn" message for the whole block, with a <strong>Take my turn</strong> button for each character in it.</p>
+            <p>Any player in the block can press their button and take their turn at any point while the block is open. The order inside the block is whatever the table needs: the wizard can drop a spell first, the rogue can then slip into a flank, and the fighter swings last. Nobody has to wait for a specific person to show up before they can act. That makes play by post and busy game nights much more asynchronous. Whoever is online acts now, and the post updates and pings the players still waiting. When only one is left, their turn starts automatically. Once the whole block has gone, initiative moves on to the next enemy as usual.</p>
+            <p>Enemies keep their normal order, and every character's start- and end-of-turn effects (persistent damage, Frightened ticking down, sustained spells) still happen on that character's own turn. If a player is away, the GM can press <strong>Skip the rest</strong>: those players Delay, and they can rejoin later with a button.</p>
+            <div class="dmock" role="img" aria-label="Mockup of a party turn block post">
+              <div class="dmock-head"><img class="dmock-av" src="table-goblin.png" alt="" aria-hidden="true"><span class="dmock-name">Table Goblin</span><span class="dmock-tag">APP</span></div>
+              <div class="dmock-text"><span class="dmock-mention">@ValerosPlayer</span> <span class="dmock-mention">@MerisielPlayer</span> -- Kyra is done. Who's next?</div>
+              <div class="dmock-embed" style="--dm-bar:#3ba55c">
+                <div class="dmock-title">⚔️ Party turn -- Round 2</div>
+                <div class="dmock-fields">
+                  <div class="dmock-f"><div class="dmock-fn">Waiting</div>🛡️ Valeros (22) · 🗡️ Merisiel (17)</div>
+                  <div class="dmock-f"><div class="dmock-fn">Done</div><s>✨ Kyra</s></div>
+                  <div class="dmock-f"><div class="dmock-fn">Next after the party</div>Goblin Warrior (15)</div>
+                </div>
+              </div>
+              <div class="dmock-rows"><div class="dmock-row"><span class="dmock-b s">▶️ Valeros: take my turn</span><span class="dmock-b">✅ Kyra: done</span><span class="dmock-b s">▶️ Merisiel: take my turn</span><span class="dmock-b">⏭️ Skip the rest (GM)</span></div></div>
+            </div>
+            <p class="dmock-cap">Mockup, sample characters. The same message updates as each player finishes.</p>
+          </li>
+          <li><strong>🐉 Monsters fight back with their reactions.</strong>
+            <p>Most creatures have a reaction or two printed in their stat block: a goblin's Nimble Dodge, an orc's Ferocity, a guard's Shield Block, a wizard's Counterspell. Until now those were easy to forget in the middle of a fight, because nothing reminded the GM they existed. The bot now knows which reactions each creature has and when they trigger. When the moment comes, it asks the GM, so monsters fight as smart as their stat blocks say they should.</p>
+            <p>Reactions that change the result of an attack come <em>before</em> the roll. When a player swings at a goblin with Nimble Dodge, the Strike pauses and the GM gets a prompt with the reaction as a button. Pressing it adds the bonus to the goblin's AC for that roll. Ferocity and Shield Block are offered just before a creature would drop. Buck comes up when someone tries to ride a creature. Counterspell, Goblin Scuttle and Strike-back reactions trigger when players move, cast or shoot nearby, and "when attacked" reactions like Retaliate are offered after every Strike. Each prompt waits 30 seconds. If the GM doesn't answer, the attack goes ahead without the reaction, so the game never stalls.</p>
+            <div class="dmock" role="img" aria-label="Mockup of a creature reaction prompt">
+              <div class="dmock-head"><img class="dmock-av" src="table-goblin.png" alt="" aria-hidden="true"><span class="dmock-name">Table Goblin</span><span class="dmock-tag">APP</span></div>
+              <div class="dmock-text">⏸️ <b>Merisiel</b> attacks <b>Goblin Warrior</b> with <b>Rapier</b>. Use its reaction before the roll? (it rolls without it in 20 s)</div>
+              <div class="dmock-rows"><div class="dmock-row"><span class="dmock-b p">⤾ Nimble Dodge</span><span class="dmock-b">Let it hit</span></div></div>
+            </div>
+            <p class="dmock-cap">Mockup. Only the GM can press these.</p>
+          </li>
+          <li><strong>🦴 Monster Parts: loot the creatures themselves.</strong>
+            <p>Turn on <strong>Salvage creature parts</strong> in the campaign rules and defeated creatures become a source of crafting materials. After a fight, a <strong>🦴 Salvage</strong> button appears with the loot. A player picks a fallen creature and a skill they're trained in. Each skill takes different parts: Crafting for fangs, claws, horns and spikes; Medicine for blood, venom and glands; Survival for hide, scales, bone and meat; Nature for an animal's parts. The check is against the creature's level DC. A success gives one part named after the creature, like a <em>Manticore Tail Spike</em>, and a critical success gives two.</p>
+            <p>Parts can't be sold for coin. They're plot loot for crafting: a <code>/tgcraft</code> project can be <strong>made from</strong> a part. That turns monsters into adventure hooks. The alchemist wants a wyvern's venom gland for a new poison, so now the party has a reason to go hunting. Tables that play outside Discord can look up any creature's skills, DCs and parts on the new <a href="monster-parts.html">Monster Parts</a> page on this site.</p></li>
+          <li><strong>⏳ Delay that tells you when you're back.</strong>
+            <p>Delay lets you step out of the initiative order and act later in the round. It used to be up to you to remember to jump back in. Now, when you Delay (from your turn post's Combat menu or <code>/tge delay</code>), the bot shows who still acts this round and asks whose turn you want to come back after. When that turn starts, you get <strong>↩️ Return after this turn</strong> and <strong>⏳ Keep delaying</strong> buttons, so you never miss your moment.</p>
+            <p>Your end-of-turn effects wait until you actually act, so delaying doesn't make persistent damage hit early. If the round ends before you come back, your turn is lost for that round and those effects happen then. It's perfect for the cleric who wants to see how the fight goes before deciding who needs healing, or the archer waiting for the fighter to clear a line of fire.</p></li>
+          <li><strong>🌟 Mythic play and a fresh start every session.</strong>
+            <p>Mythic content (callings, mythic feats, the 12th-level destiny, Mythic Points, mythic spells and items) is now a campaign rule. It's off by default, so it only shows up at tables that are running a mythic game. The GM turns it on in the campaign rules, then uses the GM dashboard to make a character mythic when the story calls for it, or to take it away again.</p>
+            <p>The dashboard also gets three new buttons. <strong>🌅 New session</strong> resets everyone's Hero Points to 1 and refills Mythic Points with one press at the start of game night. <strong>⚠️ Condition</strong> puts a condition on anyone in the fight (a trap that makes someone Sickened, a spell the GM resolved by hand) without typing a command. <strong>🎚️ Creature toggles</strong> flips the situational switches from a creature's stat block (bonuses that only apply in certain conditions).</p>
+            <div class="dmock" role="img" aria-label="Mockup of the new GM dashboard buttons">
+              <div class="dmock-head"><img class="dmock-av" src="table-goblin.png" alt="" aria-hidden="true"><span class="dmock-name">Table Goblin</span><span class="dmock-tag">APP</span></div>
+              <div class="dmock-embed" style="--dm-bar:#c08a2e"><div class="dmock-title">📊 Emerald Spire — GM dashboard</div><div class="dmock-foot">…party, fight and treasure as before…</div></div>
+              <div class="dmock-rows"><div class="dmock-row"><span class="dmock-b">🌅 New session</span><span class="dmock-b">⚠️ Condition</span><span class="dmock-b">🎚️ Creature toggles</span></div></div>
+            </div>
+            <p class="dmock-cap">Mockup showing only the new buttons; the rest of the dashboard is unchanged.</p>
+          </li>
+          <li><strong>🎯 The rules take care of themselves.</strong>
+            <p>Plenty of smaller rules used to depend on someone at the table remembering them. They now happen automatically, which means fewer pauses to look things up and fewer "wait, that should have…" moments:</p>
+            <ul>
+              <li>Incapacitation works on every save, and one flourish per turn is enforced.</li>
+              <li>A single hit of twice your maximum HP kills outright.</li>
+              <li>Dispel Magic and Cleanse Affliction counteract the effects the bot tracks.</li>
+              <li>Reloading needs a free hand.</li>
+              <li>Eternal Torch, Share Burden, Protector's Sacrifice, Command and Sanctuary now work at the table, not just on paper.</li>
+              <li>Air Cushion and Gentle Landing still save a falling ally after the fact.</li>
+              <li>A creature's worn magic items work, and keep working when a player loots and invests them.</li>
+              <li>Pathbuilder imports check every weapon's dice and runes and tell you what they fixed.</li>
+              <li>The turn post lists one action per line with real costs (Bless counts as 2), and the bot checks its own rules data every time it starts.</li>
+            </ul>
+          </li>
         </ul>
         <h3 class="new-date">Nov 17, 2026</h3>
         <ul class="new-list">
