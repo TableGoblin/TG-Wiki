@@ -5285,6 +5285,46 @@ window.TG_TERRAIN = {
    "shapes": null,
    "tint": null,
    "waves": null
+  },
+  {
+   "badge": [
+    110,
+    80,
+    45,
+    "Md"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83d\udfeb",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-mud",
+   "label": "Mud",
+   "shapes": null,
+   "tint": null,
+   "waves": null
+  },
+  {
+   "badge": [
+    165,
+    140,
+    105,
+    "Sl"
+   ],
+   "blocksMove": false,
+   "blocksSight": false,
+   "costExtra": 0,
+   "crosses": null,
+   "emoji": "\ud83d\udcd0",
+   "forcesSwim": false,
+   "hidden": false,
+   "key": "env-slope",
+   "label": "Slope",
+   "shapes": null,
+   "tint": null,
+   "waves": null
   }
  ],
  "version": 1
