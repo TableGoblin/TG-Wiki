@@ -14,22 +14,45 @@
         async src="//gc.zgo.at/count.js"></script>
 <script src="events.js"></script>
 <style>
-  .tc-layout { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 18px; align-items: start; }
+  .tc-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
   .tc-layout > * { min-width: 0; }
-  @media (min-width: 901px) { .tc-left { position: sticky; top: 12px; } }
-  @media (max-width: 900px) { .tc-layout { grid-template-columns: minmax(0, 1fr); } }
-  .tc-stage { position: relative; width: 100%; max-width: 560px; margin: 0 auto; aspect-ratio: 1 / 1; border: 1px solid var(--line); border-radius: 10px;
+  @media (min-width: 901px) { .tc-left { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: thin; } }
+  .tc-stage { position: relative; width: 100%; max-width: min(560px, 62vh); margin: 0 auto; aspect-ratio: 1 / 1; border: 1px solid var(--line); border-radius: 10px;
     background-color: var(--surface-2); background-image: conic-gradient(var(--ground) 0 25%, transparent 0 50%, var(--ground) 0 75%, transparent 0);
     background-size: 24px 24px; overflow: hidden; }
-  .tc-stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
-  .tc-stage canvas.brush { cursor: crosshair; }
+  .tc-stage > canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  .tc-stage > canvas.brush, .tc-stage > canvas.pick { cursor: crosshair; }
+  .tc-stage > canvas.panning { cursor: move; }
+  .tc-stage > canvas.objtool { cursor: default; }
+  .tc-stage > canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
   .tc-stage.dragover { outline: 2px dashed var(--accent); outline-offset: -6px; }
+  .tc-chip { position: absolute; left: 8px; top: 8px; font: 500 11.5px "IBM Plex Mono", monospace; background: var(--surface); border: 1px solid var(--line-strong);
+    border-radius: 999px; padding: 3px 10px; color: var(--text-2); cursor: pointer; }
+  .tc-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .tc-inset { position: absolute; right: 8px; bottom: 8px; width: 24%; aspect-ratio: 1 / 1; padding: 0; border: 1px solid var(--line-strong); border-radius: 6px;
+    background: var(--surface); opacity: .94; cursor: pointer; }
+  .tc-inset canvas { display: block; width: 100%; height: 100%; }
+  .tc-inset:focus-visible, .tc-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .tc-tools { justify-content: center; }
+  .tc-modes { margin-bottom: 4px; }
+  .tc-modes .pill { border-radius: 6px; }
+  .tc-modes .pill[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   .tc-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
   .tc-row > span:first-child { flex: none; width: 78px; font-size: 13px; color: var(--text-2); }
   .tc-row output { flex: none; min-width: 3.2em; text-align: right; font: 500 12px "IBM Plex Mono", monospace; color: var(--text-3); }
-  .panel input[type=range] { flex: 1; width: 100%; accent-color: var(--accent); margin: 0; }
+  .tc-row.tc-view { gap: 6px; }
+  .tc-row.tc-view > span:first-child { width: auto; margin-right: 4px; }
+  .tc-row .tbtn.tc-sq { flex: none; width: 34px; padding: 5px 0; text-align: center; }
+  .tc-row .tbtn { flex: none; }
+  .tc-row .pills { margin: 0; }
+  .panel input[type=range] { flex: 1; width: 100%; min-width: 50px; accent-color: var(--accent); margin: 0; }
   .panel input[type=color] { width: 46px; height: 32px; padding: 2px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--ground); cursor: pointer; flex: none; }
+  .panel input[type=text], .panel input[type=number], .panel select { padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--ground); color: var(--text); font: inherit; font-size: 14px; min-width: 0; }
+  .panel input[type=text] { width: 100%; }
+  .tc-row select { flex: 1 1 auto; min-width: 0; }
+  #batchN { flex: none; width: 64px; }
+  .panel input:disabled, .panel input:disabled + * { cursor: default; }
+  .panel input[type=range]:disabled, .panel input[type=color]:disabled, .panel select:disabled { opacity: .45; }
   .tc-left .btns { justify-content: center; margin-top: 6px; }
   .tc-left .status { justify-content: center; text-align: center; min-height: 2.6em; }
   .tc-rings { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 6px; margin: 4px 0 10px; }
@@ -37,9 +60,19 @@
     padding: 5px 3px 4px; cursor: pointer; color: var(--text-2); font: inherit; font-size: 11.5px; line-height: 1.2; }
   .tc-ring canvas { width: 46px; height: 46px; display: block; }
   .tc-ring:hover { border-color: var(--accent); }
-  .tc-ring[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-wash); color: var(--text); font-weight: 600; }
+  .tc-ring:disabled { cursor: default; opacity: .55; }
+  .tc-ring:disabled:hover { border-color: var(--line); }
+  .tc-ring[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-wash); color: var(--text); font-weight: 600; opacity: 1; }
+  .tc-ring .tc-anim { font-size: 10px; color: var(--accent); }
   .tc-colors { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 6px 0; }
   .tc-colors label { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 13px; color: var(--text-2); }
+  .tc-pickc { display: inline-flex; align-items: center; gap: 4px; }
+  .tc-drop { flex: none; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: 1px solid var(--line-strong);
+    border-radius: 6px; background: var(--ground); color: var(--text-2); cursor: pointer; }
+  .tc-drop svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .tc-drop:hover { border-color: var(--accent); color: var(--accent); }
+  .tc-drop[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .tc-drop:disabled { opacity: .45; cursor: default; }
   .panel .tc-check { display: flex; align-items: center; gap: 7px; margin: 6px 0; font-size: 13.5px; color: var(--text); }
   .tc-dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   .tc-dl .tbtn { text-align: center; padding-left: 4px; padding-right: 4px; }
@@ -49,6 +82,52 @@
   label.tbtn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
   input.tc-file:focus-visible + .tbtn { outline: 2px solid var(--accent); outline-offset: 2px; }
   input.tc-file { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .panel h2 .tc-lock { margin-left: auto; margin-right: 34px; flex: none; border: 1px solid var(--line-strong); background: var(--ground); color: var(--text-2); border-radius: 6px;
+    font: inherit; font-size: 12px; font-weight: 500; padding: 2px 8px; cursor: pointer; line-height: 1.5; }
+  .panel h2 .tc-lock:hover { border-color: var(--accent); }
+  .panel h2 .tc-lock[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .panel h2:has(.tc-lock) { display: flex; align-items: center; gap: 8px; }
+  .tc-sides .pill i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; border: 1px solid rgba(0,0,0,.35); }
+  .tc-games { margin-bottom: 2px; }
+  .tc-keys, .tc-layers, .tc-more { margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--ground); font-size: 13px; }
+  .tc-keys summary, .tc-layers summary, .tc-more summary { cursor: pointer; padding: 6px 10px; font-weight: 600; color: var(--text-2); }
+  .tc-keys dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 3px 12px; margin: 0; padding: 4px 10px 10px; }
+  .tc-keys dt { margin: 0; } .tc-keys dd { margin: 0; color: var(--text-2); }
+  .tc-keys kbd { font: 500 11.5px "IBM Plex Mono", monospace; border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: var(--surface); }
+  .tc-more > div { padding: 2px 10px 10px; }
+  .tc-layer { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-top: 1px solid var(--line); }
+  .tc-layer > span { flex: 1; min-width: 0; }
+  .tc-layer small { display: block; color: var(--text-3); font-size: 11.5px; }
+  .tc-ic { flex: none; min-width: 36px; height: 30px; padding: 0 6px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--text-2); border-radius: 6px; cursor: pointer; font: inherit; font-size: 14px; line-height: 1; }
+  .tc-ic[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .tc-ic.tc-off { opacity: .5; }
+  .tc-ic.tc-ghost { visibility: hidden; }
+  .tc-ic:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .tc-layer-split { padding: 4px 10px 8px; border-top: 1px solid var(--line); }
+  .tc-tex { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 6px; margin: 4px 0 8px; }
+  .tc-tex .tc-ring canvas { border-radius: 6px; }
+  .tc-prog { height: 8px; border-radius: 4px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; margin: 6px 0; }
+  .tc-prog > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+  .tc-grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 10px; }
+  .tc-grid2 label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--text-2); margin: 0; }
+  .tc-fontsel option { font-size: 15px; }
+  .tc-objlist { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+  .tc-neon .pill i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; box-shadow: 0 0 6px currentColor; }
+  .tc-tpl { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; margin: 6px 0; }
+  .tc-tpl .tc-ring { font-size: 12px; }
+  .tc-note { font-size: 12.5px; color: var(--text-2); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; margin: 8px 0 0; }
+  @media (max-width: 900px) {
+    /* Phones: the mode and tool pills and the token stay in view while the sections below scroll. The layout becomes plain blocks so the
+       sticky block's container is the whole tool, not one grid cell. */
+    .tc-layout { display: block; }
+    .tc-left, .tc-left > .panel { display: contents; }
+    .tc-stick { position: sticky; top: 0; z-index: 5; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px 10px;
+      box-shadow: var(--shadow); max-height: 62vh; }
+    .tc-stick .pills { margin: 2px 0 6px; }
+    .tc-stick .pill { padding: 4px 9px; }
+    .tc-stick .tc-stage { max-width: min(100%, 38vh); }
+    .tc-ctl { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px 12px; margin: 10px 0 14px; }
+  }
   @media print { .rail, .topnav, .steps, .site-footer { display: none !important; } }
 </style>
 </head>
@@ -115,39 +194,90 @@
         <div class="eyebrow">Player and GM tool</div>
         <h1>Token creator</h1>
         <nav class="topnav" aria-label="Site"><a href="index.html">Home</a><a href="wiki.html">Wiki</a><a href="changelog.html">Change Log</a><a href="class-commands.html">Class Commands</a><a href="gm-screen.html">GM Screen</a><a href="town-builder.html">Town builder</a><a href="treasure.html">Treasure planner</a><a href="pocket-trinkets.html">Pocket trinkets</a><a href="builder.html">Character builder</a><a href="npc-builder.html">NPC builder</a><a href="item-builder.html">Item builder</a><a href="encounter-builder.html">Encounter builder</a><a href="map-prep.html">Map prep</a><a href="token-creator.html" aria-current="page">Token creator</a><a href="monster-parts.html">Monster Parts</a></nav>
-        <p class="lede">Turn any picture into a round map token with a ring around it. Everything happens in your browser: your picture is never uploaded or stored anywhere, and the finished token is a PNG you download.</p>
-        <ol class="steps"><li><strong>Choose a picture</strong>, then drag it into place and zoom until the face or figure sits nicely in the circle.</li><li><strong>Pick a ring</strong>: painted, metal, carved runes, wood, stone and more, with its thickness and color.</li><li><strong>Remove the background</strong> if you like, and fill behind the figure with a color or gradient.</li><li><strong>Break the ring</strong> so a hat, a horn or a sword tip sits in front of it, then download the size you need.</li></ol>
+        <p class="lede">Turn any picture into a map token with a ring around it: round, square, hex, octagon or triangle. Everything happens in your browser: your picture is never uploaded or stored anywhere, and the finished token is a PNG you download or copy. The only things that ever download are the optional extras you press for (fonts, the animated export's encoder and the AI remove model), and none of them sends your picture anywhere.</p>
+        <ol class="steps"><li><strong>Choose a picture</strong>, then drag it into place and set its <em>Picture size</em> until the face or figure sits nicely in the token. Zoom the <em>View</em> for close work; that never changes the token itself.</li><li><strong>Pick a ring and a shape</strong>: painted, metal, carved runes, wood, stone, sci-fi tech or glowing energy, with its thickness and color, or start from a template. A side preset colors it for Player, Ally, Enemy or Neutral, and the locks keep finished parts safe while you work.</li><li><strong>Deal with the background</strong>: remove it (by color, with <em>Smart select</em> strokes, or with the optional <em>AI remove</em>), or keep the picture whole and <em>Paint backdrop</em> over the parts you don't want. The backdrop can be a color, a gradient or a texture such as parchment, a stone floor or a starfield.</li><li><strong>Break the ring</strong> so a hat, a horn or a sword tip sits in front of it, and erase pieces of the ring itself if you like.</li><li><strong>Add lettering and marks</strong>: a name along the ring, a number badge, Elite or Weak, a status pip, or a banner, scroll, plaque, nameplate or neon sign you can drag, turn and resize.</li><li><strong>Download</strong> the size you need, a numbered batch as one ZIP, an animated loop, or a project file to finish later.</li></ol>
       </header>
 
       <div class="tool-body">
         <div class="tc-layout">
           <div class="tc-left">
             <div class="panel">
-              <div class="pills tc-tools" id="tools" role="group" aria-label="What dragging on the token does">
-                <button type="button" class="pill" data-tool="move" aria-pressed="true">Move</button>
-                <button type="button" class="pill" data-tool="wand" aria-pressed="false">Magic wand</button>
-                <button type="button" class="pill" data-tool="erase" aria-pressed="false">Erase</button>
-                <button type="button" class="pill" data-tool="restore" aria-pressed="false">Restore</button>
-                <button type="button" class="pill" data-tool="pop" aria-pressed="false">Pop out</button>
-                <button type="button" class="pill" data-tool="unpop" aria-pressed="false">Push back</button>
+              <div class="tc-stick">
+                <div class="pills tc-tools tc-modes" id="modes" role="group" aria-label="What you are working on">
+                  <button type="button" class="pill" data-mode="move" aria-pressed="true">Move</button>
+                  <button type="button" class="pill" data-mode="cut" aria-pressed="false">Cut out</button>
+                  <button type="button" class="pill" data-mode="backdrop" aria-pressed="false">Backdrop</button>
+                  <button type="button" class="pill" data-mode="pop" aria-pressed="false">Pop out</button>
+                  <button type="button" class="pill" data-mode="ring" aria-pressed="false">Ring</button>
+                  <button type="button" class="pill" data-mode="objects" aria-pressed="false">Objects</button>
+                </div>
+                <div class="pills tc-tools" id="tools" role="group" aria-label="What dragging on the token does">
+                  <button type="button" class="pill" data-tool="move" data-mode="move" aria-pressed="true" title="Move the picture (V)">Picture</button>
+                  <button type="button" class="pill" data-tool="pan" data-mode="move" aria-pressed="false" title="Pan the zoomed view (H, or hold Space)">Pan view</button>
+                  <button type="button" class="pill" data-tool="wand" data-mode="cut" aria-pressed="false" title="Magic wand (W)">Magic wand</button>
+                  <button type="button" class="pill" data-tool="keep" data-mode="cut" aria-pressed="false" title="Smart select: Keep (K)">Keep</button>
+                  <button type="button" class="pill" data-tool="rmv" data-mode="cut" aria-pressed="false" title="Smart select: Remove (X)">Remove</button>
+                  <button type="button" class="pill" data-tool="erase" data-mode="cut" aria-pressed="false" title="Erase (E)">Erase</button>
+                  <button type="button" class="pill" data-tool="restore" data-mode="cut" aria-pressed="false" title="Restore (R)">Restore</button>
+                  <button type="button" class="pill" data-tool="paint" data-mode="backdrop" aria-pressed="false" title="Paint backdrop (G)">Paint backdrop</button>
+                  <button type="button" class="pill" data-tool="unpaint" data-mode="backdrop" aria-pressed="false" title="Unpaint backdrop (U)">Unpaint</button>
+                  <button type="button" class="pill" data-tool="pop" data-mode="pop" aria-pressed="false" title="Pop out (P)">Pop out</button>
+                  <button type="button" class="pill" data-tool="unpop" data-mode="pop" aria-pressed="false" title="Push back (B)">Push back</button>
+                  <button type="button" class="pill" data-tool="rerase" data-mode="ring" aria-pressed="false" title="Erase ring (Shift+E)">Erase ring</button>
+                  <button type="button" class="pill" data-tool="rrestore" data-mode="ring" aria-pressed="false" title="Restore ring (Shift+R)">Restore ring</button>
+                  <button type="button" class="pill" data-tool="select" data-mode="objects" aria-pressed="false" title="Select, move, turn and resize objects (O)">Select</button>
+                </div>
+                <div class="tc-stage" id="stage">
+                  <canvas id="pv" width="512" height="512" tabindex="0" role="img" aria-label="Token preview. Drag to move the picture, scroll or pinch to resize it. Arrow keys nudge the picture or the selected object; plus and minus zoom the view."></canvas>
+                  <button type="button" class="tc-chip tc-hidden" id="viewChip" title="Show the whole token">View 100% &middot; Fit</button>
+                  <button type="button" class="tc-inset tc-hidden" id="inset" aria-label="Whole token. Tap a spot to move the view there."><canvas id="insetCv" width="120" height="120"></canvas></button>
+                </div>
               </div>
-              <div class="tc-stage" id="stage">
-                <canvas id="pv" width="512" height="512" role="img" aria-label="Token preview. Drag to move the picture, scroll or pinch to zoom."></canvas>
-              </div>
-              <div class="status" id="status" role="status" aria-live="polite">Choose a picture to start, or try the sample.</div>
-              <div class="tc-row"><span>Zoom</span><input type="range" id="zoom" min="0.2" max="4" step="0.01" value="1" aria-label="Zoom"><output id="zoomOut">100%</output></div>
-              <div class="tc-row" id="brushRow"><span>Brush</span><input type="range" id="brush" min="6" max="160" step="1" value="44" aria-label="Brush size"><output id="brushOut">44</output></div>
-              <div class="btns">
-                <button type="button" class="tbtn" id="undo" disabled>Undo</button>
-                <button type="button" class="tbtn" id="flip">Flip</button>
-                <button type="button" class="tbtn" id="center">Center</button>
+              <div class="tc-ctl">
+                <div class="status" id="status" role="status" aria-live="polite">Choose a picture to start, or try the sample.</div>
+                <div class="tc-prog tc-hidden" id="prog" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div>
+                <div class="tc-row tc-view"><span>View</span><button type="button" class="tbtn tc-sq" id="viewMinus" aria-label="Zoom the view out">&minus;</button><input type="range" id="viewZoom" min="1" max="8" step="0.05" value="1" aria-label="View zoom (doesn't change the token)"><button type="button" class="tbtn tc-sq" id="viewPlus" aria-label="Zoom the view in">+</button><output id="viewZoomOut">100%</output><button type="button" class="tbtn" id="viewFit">Fit</button></div>
+                <div id="brushRows">
+                  <div class="tc-row" id="brushRow"><span>Brush</span><input type="range" id="brush" min="2" max="160" step="1" value="44" aria-label="Brush size"><output id="brushOut">9%</output></div>
+                  <div class="tc-row tc-hidden" id="affectsRow"><span>Affects</span><div class="pills" id="affects" role="group" aria-label="What Erase and Restore change"><button type="button" class="pill" data-aff="picture" aria-pressed="true">Picture</button><button type="button" class="pill" data-aff="ring" aria-pressed="false">Ring</button><button type="button" class="pill" data-aff="both" aria-pressed="false">Both</button></div></div>
+                  <div class="tc-row tc-hidden" id="softRow"><span>Softness</span><input type="range" id="brushSoft" min="0" max="1" step="0.01" value="0.4" aria-label="Paint backdrop brush softness"><output id="brushSoftOut"></output></div>
+                  <div class="tc-row tc-hidden" id="strengthRow"><span>Strength</span><input type="range" id="brushStrength" min="0.1" max="1" step="0.01" value="1" aria-label="Paint backdrop brush strength"><output id="brushStrengthOut"></output></div>
+                  <div class="btns tc-hidden" id="smartRow"><button type="button" class="tbtn" id="smartClear">Clear strokes</button></div>
+                </div>
+                <div class="btns">
+                  <button type="button" class="tbtn" id="undo" disabled title="Undo (Ctrl+Z)">Undo</button>
+                  <button type="button" class="tbtn" id="redo" disabled title="Redo (Ctrl+Shift+Z or Ctrl+Y)">Redo</button>
+                  <button type="button" class="tbtn" id="playAnim" aria-pressed="false" title="Play the animated looks in the preview">&#9654; Play</button>
+                </div>
+                <details class="tc-layers" id="layers">
+                  <summary>Layers and locks</summary>
+                  <div id="layerRows"></div>
+                </details>
+                <details class="tc-keys" id="keys">
+                  <summary>Keyboard shortcuts</summary>
+                  <dl>
+                    <dt><kbd>&larr;</kbd> <kbd>&uarr;</kbd> <kbd>&rarr;</kbd> <kbd>&darr;</kbd></dt><dd>Nudge the picture 1 px (with <kbd>Shift</kbd>, 10 px), or the selected object in the Select tool. Click the token first.</dd>
+                    <dt><kbd>+</kbd> <kbd>&minus;</kbd> <kbd>0</kbd></dt><dd>Zoom the view in, out, or back to the whole token</dd>
+                    <dt><kbd>Space</kbd> + drag</dt><dd>Pan the view with any tool (the middle mouse button works too)</dd>
+                    <dt><kbd>Ctrl</kbd> + scroll</dt><dd>Zoom the view in the Picture tool</dd>
+                    <dt><kbd>[</kbd> <kbd>]</kbd></dt><dd>Smaller or bigger brush</dd>
+                    <dt><kbd>V</kbd> <kbd>H</kbd></dt><dd>Picture, Pan view</dd>
+                    <dt><kbd>W</kbd> <kbd>K</kbd> <kbd>X</kbd> <kbd>E</kbd> <kbd>R</kbd></dt><dd>Magic wand, Keep, Remove, Erase, Restore</dd>
+                    <dt><kbd>G</kbd> <kbd>U</kbd></dt><dd>Paint backdrop, Unpaint</dd>
+                    <dt><kbd>P</kbd> <kbd>B</kbd></dt><dd>Pop out, Push back</dd>
+                    <dt><kbd>Shift</kbd> + <kbd>E</kbd> <kbd>R</kbd></dt><dd>Erase ring, Restore ring</dd>
+                    <dt><kbd>O</kbd>, <kbd>Delete</kbd></dt><dd>Select objects; delete the selected one</dd>
+                    <dt><kbd>Ctrl</kbd> + <kbd>Z</kbd></dt><dd>Undo. Redo is <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> or <kbd>Ctrl</kbd> + <kbd>Y</kbd></dd>
+                    <dt><kbd>Esc</kbd></dt><dd>Cancel a color pick, deselect an object, or go back to the Picture tool</dd>
+                  </dl>
+                </details>
               </div>
             </div>
           </div>
 
           <div class="tc-right">
             <div class="panel">
-              <h2><span class="num">1</span>Picture</h2>
+              <h2><span class="num">1</span>Picture<button type="button" class="tc-lock" id="lockImg" aria-pressed="false" aria-label="Lock the picture's size and position">&#128275; Lock</button></h2>
               <div class="btns">
                 <input class="tc-file" type="file" id="file" accept="image/*">
                 <label class="tbtn primary" for="file">Choose picture</label>
@@ -155,40 +285,83 @@
               </div>
               <p class="hint">Or drop a picture on the token, or paste one. PNG, JPEG, WebP or GIF. Use a picture you have the right to use.</p>
               <p class="error" id="fileErr"></p>
+              <div class="tc-row"><span>Picture size</span><input type="range" id="picSize" min="0.2" max="4" step="0.01" value="1" aria-label="Picture size"><output id="picSizeOut">100%</output></div>
+              <div class="btns">
+                <button type="button" class="tbtn" id="flip">Flip</button>
+                <button type="button" class="tbtn" id="center">Center</button>
+              </div>
+              <div class="tc-sub">Adjust the picture</div>
+              <div class="tc-row"><span>Brightness</span><input type="range" id="fBright" min="-100" max="100" step="1" value="0" aria-label="Brightness"><output id="fBrightOut">0</output></div>
+              <div class="tc-row"><span>Contrast</span><input type="range" id="fContrast" min="-100" max="100" step="1" value="0" aria-label="Contrast"><output id="fContrastOut">0</output></div>
+              <div class="tc-row"><span>Saturation</span><input type="range" id="fSat" min="0" max="200" step="1" value="100" aria-label="Saturation"><output id="fSatOut">100%</output></div>
+              <label class="tc-check"><input type="checkbox" id="fGray"> Grayscale</label>
+              <label class="tc-check"><input type="checkbox" id="fSepia"> Sepia</label>
+              <div class="btns"><button type="button" class="tbtn" id="fDefeated">Defeated look</button><button type="button" class="tbtn" id="fReset">Reset adjustments</button></div>
+              <p class="hint">The lock stops dragging, resizing, flipping and centering the picture, so dragging pans the view instead. The cut-out has its own lock in <em>Layers and locks</em> under the token. Adjustments change only the picture, not the ring or fill, and reset when you choose a new picture.</p>
             </div>
 
             <div class="panel">
-              <h2><span class="num">2</span>Ring</h2>
+              <h2><span class="num">2</span>Ring<button type="button" class="tc-lock" id="lockRing" aria-pressed="false" aria-label="Lock the ring">&#128275; Lock</button></h2>
+              <details class="tc-more" id="tplBox">
+                <summary>Start from a template</summary>
+                <div><div class="tc-tpl" id="templates" role="group" aria-label="Templates"></div>
+                <div class="btns"><button type="button" class="tbtn" id="randomRing">Random ring</button></div>
+                <p class="hint">A template sets the ring, its color, the shape, the backdrop and the lettering font in one tap; your picture and masks stay as they are. <em>Random ring</em> rolls a style, a matching color and a backdrop.</p></div>
+              </details>
+              <div class="tc-sub">Shape</div>
+              <div class="pills" id="shapes" role="group" aria-label="Token shape"></div>
+              <div class="pills tc-games" id="games" role="group" aria-label="Which ring styles to show"></div>
               <div class="pills" id="fams" role="group" aria-label="Ring family"></div>
               <div class="tc-rings" id="rings" role="group" aria-label="Ring style"></div>
-              <label class="tc-check"><input type="checkbox" id="noRing"> No ring, just the round picture</label>
+              <label class="tc-check"><input type="checkbox" id="noRing"> No ring, just the picture in the shape</label>
               <div class="tc-row"><span>Thickness</span><input type="range" id="thick" min="0.03" max="0.18" step="0.005" value="0.075" aria-label="Ring thickness"><output id="thickOut"></output></div>
               <div class="tc-row"><span>Ring size</span><input type="range" id="rsize" min="0.7" max="1" step="0.01" value="1" aria-label="Ring size"><output id="rsizeOut"></output></div>
               <div class="tc-colors">
-                <label>Ring color <input type="color" id="ringColor" value="#8a2b2b"></label>
+                <span class="tc-pickc"><label>Ring color <input type="color" id="ringColor" value="#8a2b2b"></label><button type="button" class="tc-drop" id="pickRing" data-pick="ringColor" aria-pressed="false" aria-label="Pick the ring color from the token" title="Pick the ring color from the token"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5l5 5M17 2.5a2.1 2.1 0 0 1 3 3l-2.5 2.5-3-3zM14.5 5.5l-9 9V18h3.5l9-9M5.5 18L3 21"/></svg></button></span>
                 <label class="tc-check"><input type="checkbox" id="tint"> Tint every style</label>
               </div>
-              <p class="hint">The ring color paints the Painted styles. Tick <em>Tint every style</em> to shade metal, wood, stone and the rest with it too. A smaller ring size leaves room for a pop-out to rise above the ring.</p>
+              <div class="tc-row"><span>Glow</span><input type="range" id="ringGlow" min="0" max="2" step="0.05" value="1" aria-label="Glow of the light-up ring styles"><output id="ringGlowOut"></output></div>
+              <div class="tc-row"><span>Flicker</span><select id="ringFlicker" aria-label="Flicker of the neon ring"><option value="off">Off (steady)</option><option value="subtle">Subtle (a gentle pulse)</option><option value="strong">Strong (pulse and quick dips)</option></select></div>
+              <div class="tc-sub">Side</div>
+              <div class="pills tc-sides" id="sides" role="group" aria-label="Side preset"></div>
+              <label class="tc-check"><input type="checkbox" id="sideMark"> Add a small side mark on the ring</label>
+              <div class="tc-sub">Depth</div>
+              <div class="tc-row"><span>Inner shadow</span><input type="range" id="inner" min="0" max="0.8" step="0.01" value="0.38" aria-label="Inner shadow strength"><output id="innerOut"></output></div>
+              <div class="tc-row"><span>Inner bevel</span><input type="range" id="bevel" min="0" max="1" step="0.01" value="0" aria-label="Inner bevel strength"><output id="bevelOut"></output></div>
+              <div class="btns"><button type="button" class="tbtn" id="clearRingMask">Bring the whole ring back</button></div>
+              <p class="hint">The ring color paints the Painted styles, the lights on the Tech styles and the whole Energy family. Tick <em>Tint every style</em> to shade metal, wood, stone and the rest with it too. Styles marked &#9654; move in the animated download and when you press <em>Play</em>. <em>Glow</em> sets how brightly the Energy styles, the neon tube and the lights on the Tech styles shine: 0% leaves them unlit, 200% gives a wide, bright halo. <em>Flicker</em> sets how the neon tube flickers when it animates. Glowing styles look best with a ring size a little under 100%, so the glow has room. The <em>Ring</em> mode erases pieces of the ring (or use <em>Affects: Ring</em> with Erase); erased parts are see-through. Square and hex suit grid and hex maps on other tabletops; the bot's own battle maps show every token as a circle. The lock keeps every ring setting as it is.</p>
             </div>
 
             <div class="panel">
-              <h2><span class="num">3</span>Background</h2>
+              <h2><span class="num">3</span>Background<button type="button" class="tc-lock" id="lockBackdrop" aria-pressed="false" aria-label="Lock the backdrop">&#128275; Lock</button></h2>
               <div class="tc-sub">Remove the picture's background</div>
-              <div class="btns"><button type="button" class="tbtn" id="autoBg">Remove background</button><button type="button" class="tbtn" id="resetCut">Bring it all back</button></div>
+              <div class="btns"><button type="button" class="tbtn" id="autoBg">Remove background</button><button type="button" class="tbtn" id="aiBtn">&#10024; AI remove</button><button type="button" class="tbtn" id="refine">Refine edge</button><button type="button" class="tbtn" id="resetCut">Bring it all back</button></div>
               <div class="tc-row"><span>Tolerance</span><input type="range" id="tol" min="1" max="100" step="1" value="28" aria-label="Color tolerance"><output id="tolOut">28</output></div>
-              <label class="tc-check"><input type="checkbox" id="contig" checked> Magic wand takes touching pixels only</label>
-              <label class="tc-check"><input type="checkbox" id="soften" checked> Soften the cut edge</label>
+              <div class="tc-row"><span>Edge softness</span><input type="range" id="edgeSoft" min="0" max="12" step="0.5" value="4" aria-label="Edge softness"><output id="edgeSoftOut"></output></div>
               <div class="tc-row"><span>Shrink edge</span><input type="range" id="shrink" min="0" max="3" step="1" value="0" aria-label="Shrink the cut edge"><output id="shrinkOut">0 px</output></div>
-              <p class="hint"><em>Remove background</em> clears the color running in from the picture's edges, so it works best on a plain backdrop. Then use the <em>Magic wand</em> on any patch it missed, and <em>Erase</em> or <em>Restore</em> to touch up by hand. Removed parts show faintly while one of those tools is on.</p>
-              <div class="tc-sub">Fill behind the figure</div>
-              <label>Fill<select id="fillType"><option value="none">None (see-through)</option><option value="solid">Solid color</option><option value="linear">Gradient</option><option value="radial">Glow</option></select></label>
-              <div class="tc-colors" id="fillColors"><label>Color <input type="color" id="fill1" value="#6f93a6"></label><label id="fill2Wrap">Second <input type="color" id="fill2" value="#1d2830"></label></div>
-              <p class="hint">The fill shows wherever the picture is see-through, so remove the background first.</p>
+              <label class="tc-check"><input type="checkbox" id="contig" checked> Magic wand takes touching pixels only</label>
+              <label class="tc-check"><input type="checkbox" id="clean" checked> Clean up specks and fill small holes</label>
+              <label class="tc-check"><input type="checkbox" id="despill" checked> Remove color fringe</label>
+              <label>Smart select and AI results go to<select id="smartTo"><option value="cut">Cut out (removes the background)</option><option value="cover">Painted backdrop (covers it, nothing removed)</option></select></label>
+              <p class="hint"><em>Remove background</em> clears the color running in from the picture's edges, so it works best on a plain backdrop. For a busy scene, switch to <em>Cut out</em> and use <em>Smart select</em>: draw a rough <em>Keep</em> stroke over the figure and a <em>Remove</em> stroke over the background, and the edge is found for you. <em>AI remove</em> downloads a small model (about 4.6 MB, plus a one-time engine of about 15 MB from a code CDN) the first time; it runs on this device and your picture never leaves it. <em>Refine edge</em> snaps any cut to the picture's real edges, which helps hair and fur. Then use the <em>Magic wand</em>, <em>Erase</em> and <em>Restore</em> to touch up. Removed parts show faintly while a cut-out tool is on.</p>
+              <div class="tc-sub">Backdrop behind the figure</div>
+              <label>Fill<select id="fillType"><option value="none">None (see-through)</option><option value="solid">Solid color</option><option value="linear">Gradient</option><option value="radial">Glow</option><option value="texture">Texture</option></select></label>
+              <div id="texBox" class="tc-hidden">
+                <div class="tc-tex" id="textures" role="group" aria-label="Backdrop texture"></div>
+                <div class="tc-row"><span>Scale</span><input type="range" id="texScale" min="0.5" max="2" step="0.05" value="1" aria-label="Texture scale"><output id="texScaleOut"></output></div>
+                <div class="tc-row"><span>Tint</span><input type="range" id="texTint" min="0" max="1" step="0.01" value="0" aria-label="Texture tint strength (uses the fill color)"><output id="texTintOut"></output></div>
+                <div class="tc-row"><span>Darken edges</span><input type="range" id="texVig" min="0" max="1" step="0.01" value="0.4" aria-label="Darken the texture's edges"><output id="texVigOut"></output></div>
+                <div class="btns"><button type="button" class="tbtn" id="texShuffle">Shuffle</button></div>
+              </div>
+              <div class="tc-colors" id="fillColors"><span class="tc-pickc"><label>Color <input type="color" id="fill1" value="#6f93a6"></label><button type="button" class="tc-drop" data-pick="fill1" aria-pressed="false" aria-label="Pick the fill color from the token" title="Pick the fill color from the token"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5l5 5M17 2.5a2.1 2.1 0 0 1 3 3l-2.5 2.5-3-3zM14.5 5.5l-9 9V18h3.5l9-9M5.5 18L3 21"/></svg></button></span><span class="tc-pickc" id="fill2Wrap"><label>Second <input type="color" id="fill2" value="#1d2830"></label><button type="button" class="tc-drop" data-pick="fill2" aria-pressed="false" aria-label="Pick the second fill color from the token" title="Pick the second fill color from the token"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5l5 5M17 2.5a2.1 2.1 0 0 1 3 3l-2.5 2.5-3-3zM14.5 5.5l-9 9V18h3.5l9-9M5.5 18L3 21"/></svg></button></span></div>
+              <div class="tc-sub">Painted backdrop</div>
+              <div class="btns"><button type="button" class="tbtn" id="coverRemoved">Cover what was removed</button><button type="button" class="tbtn" id="clearCover">Clear painted backdrop</button></div>
+              <p class="hint">The backdrop shows wherever the picture is see-through. Instead of removing the background you can keep the whole photo and use the <em>Backdrop</em> mode: <em>Paint backdrop</em> lays the backdrop over the parts you don't want and <em>Unpaint</em> brings the photo back. Nothing is deleted, the picture locks don't stop it, and the painted area moves with the picture. <em>Cover what was removed</em> turns an earlier removal into painted backdrop. The dropper buttons pick a color by tapping the token. The lock keeps the fill, the texture and the painted backdrop as they are.</p>
             </div>
 
             <div class="panel">
               <h2><span class="num">4</span>Break the ring</h2>
-              <p class="hint" style="margin-top:0">Paint with <em>Pop out</em> over the parts that should sit in front of the ring; <em>Push back</em> undoes it. Only the picture shows there, so remove its background first.</p>
+              <p class="hint" style="margin-top:0">Switch to <em>Pop out</em> and paint over the parts that should sit in front of the ring; <em>Push back</em> undoes it. Only the picture shows there, so remove its background first. Zoom the view to paint along a fine edge.</p>
               <label class="tc-check"><input type="checkbox" id="popTop"> Everything above a line breaks the ring</label>
               <div class="tc-row"><span>Line</span><input type="range" id="popLine" min="0.05" max="0.7" step="0.01" value="0.4" aria-label="How far down the pop-out line sits"><output id="popLineOut"></output></div>
               <label class="tc-check"><input type="checkbox" id="popShadow" checked> Shadow under the pop-out</label>
@@ -196,13 +369,72 @@
             </div>
 
             <div class="panel">
-              <h2><span class="num">5</span>Download</h2>
+              <h2><span class="num">5</span>Text and objects</h2>
+              <div class="tc-sub">Lettering on the ring</div>
+              <label>Top <input type="text" id="txtTop" maxlength="40" placeholder="A name, such as GRUK" autocomplete="off"></label>
+              <label>Bottom <input type="text" id="txtBottom" maxlength="40" placeholder="A title, such as Goblin Warchief" autocomplete="off"></label>
+              <label>Font<select id="font" class="tc-fontsel"></select></label>
+              <div class="pills" id="textWhere" role="group" aria-label="Where the lettering sits"><button type="button" class="pill" data-where="on" aria-pressed="true">On the ring</button><button type="button" class="pill" data-where="inside" aria-pressed="false">Inside</button><button type="button" class="pill" data-where="outside" aria-pressed="false">Outside</button></div>
+              <div class="tc-row"><span>Size</span><input type="range" id="textSize" min="0.3" max="1.2" step="0.01" value="0.62" aria-label="Lettering size"><output id="textSizeOut"></output></div>
+              <div class="tc-row"><span>Spacing</span><input type="range" id="textTrack" min="-0.1" max="0.6" step="0.01" value="0.06" aria-label="Letter spacing"><output id="textTrackOut"></output></div>
+              <div class="tc-colors"><label>Letters <input type="color" id="textFill" value="#f4e7c3"></label><label>Outline <input type="color" id="textStroke" value="#1b1208"></label></div>
+              <div class="tc-row"><span>Outline</span><input type="range" id="textStrokeW" min="0" max="0.4" step="0.01" value="0.14" aria-label="Outline width"><output id="textStrokeWOut"></output></div>
+              <label class="tc-check"><input type="checkbox" id="textUnderPop"> The pop-out covers the lettering</label>
+              <div class="tc-sub">Number badge, Elite or Weak, status pip</div>
+              <div class="tc-grid2">
+                <label>Number or letter <input type="text" id="badgeText" maxlength="3" placeholder="1" autocomplete="off"></label>
+                <label>Badge<select id="badgeShape"><option value="circle">Circle</option><option value="shield">Shield</option></select></label>
+                <label>Badge spot<select id="badgeClock" class="tc-clock"></select></label>
+                <span class="tc-pickc"><label>Badge color <input type="color" id="badgeColor" value="#c43e34"></label></span>
+              </div>
+              <div class="pills" id="markKind" role="group" aria-label="Elite or Weak mark"><button type="button" class="pill" data-mark="" aria-pressed="true">No mark</button><button type="button" class="pill" data-mark="elite" aria-pressed="false">Elite</button><button type="button" class="pill" data-mark="weak" aria-pressed="false">Weak</button></div>
+              <div class="tc-grid2">
+                <label>Mark spot<select id="markClock" class="tc-clock"></select></label>
+                <label>Status pip<select id="pipKind"><option value="">None</option><option value="#e04848">Red</option><option value="#f0b429">Amber</option><option value="#3fb760">Green</option><option value="#3a7ae0">Blue</option><option value="#9b59d0">Purple</option><option value="#e8e8e8">White</option></select></label>
+                <label>Pip label <input type="text" id="pipLabel" maxlength="2" placeholder="!" autocomplete="off"></label>
+                <label>Pip spot<select id="pipClock" class="tc-clock"></select></label>
+              </div>
+              <div class="tc-sub">Placeable objects</div>
+              <div class="btns" id="addObjs"><button type="button" class="tbtn" data-add="ribbon">Banner</button><button type="button" class="tbtn" data-add="scroll">Scroll</button><button type="button" class="tbtn" data-add="plaque">Plaque</button><button type="button" class="tbtn" data-add="nameplate">Nameplate</button><button type="button" class="tbtn" data-add="neon">Neon sign</button></div>
+              <div id="objForm" class="tc-hidden">
+                <label>Object text <input type="text" id="objText" maxlength="30" autocomplete="off"></label>
+                <label>Object font<select id="objFont" class="tc-fontsel"></select></label>
+                <div class="tc-colors" id="objColors"><label>Color <input type="color" id="objColor" value="#8a2b2b"></label><label id="objTextColorWrap">Letters <input type="color" id="objTextColor" value="#fff3d6"></label></div>
+                <div class="tc-row" id="objBendRow"><span>Bend</span><input type="range" id="objBend" min="-0.5" max="0.5" step="0.01" value="0.15" aria-label="Banner bend"><output id="objBendOut"></output></div>
+                <div id="neonForm">
+                  <div class="pills tc-neon" id="neonColors" role="group" aria-label="Neon color"></div>
+                  <label class="tc-check"><input type="checkbox" id="neonPlate" checked> Dark backing plate</label>
+                  <label class="tc-check"><input type="checkbox" id="neonBorder"> Tube border</label>
+                  <div class="tc-row"><span>Glow</span><input type="range" id="neonGlow" min="0" max="2" step="0.05" value="1" aria-label="Neon sign glow"><output id="neonGlowOut">100%</output></div>
+                  <div class="tc-row"><span>Flicker</span><select id="neonFlick" aria-label="Neon sign flicker"><option value="off">Off (steady)</option><option value="subtle">Subtle (a gentle pulse)</option><option value="strong">Strong (pulse and quick dips)</option></select></div>
+                </div>
+                <div class="btns"><button type="button" class="tbtn" id="objFront">Bring to front</button><button type="button" class="tbtn" id="objDelete">Delete object</button></div>
+              </div>
+              <p class="hint">Lettering follows the ring's outline; on a polygon it runs straight along each side. Fonts load from Google Fonts the first time you pick one (offline, a system font stands in). Badges sit on the ring at a clock position. Placed objects are moved with the <em>Objects</em> mode: drag one to move it, the corner handle resizes it and the top handle turns it; arrow keys nudge it and <em>Delete</em> removes it. A neon sign has its own <em>Glow</em> (0% is switched off, 200% blazes) and <em>Flicker</em>, which shows in the preview and the animated download. The <em>Objects</em> lock in <em>Layers and locks</em> keeps them all in place.</p>
+            </div>
+
+            <div class="panel">
+              <h2><span class="num">6</span>Download</h2>
               <div class="tc-dl">
                 <button type="button" class="tbtn primary" data-size="256">256 px</button>
                 <button type="button" class="tbtn primary" data-size="512">512 px</button>
                 <button type="button" class="tbtn primary" data-size="1024">1024 px</button>
               </div>
-              <p class="hint">A PNG with a see-through outside. 512 px suits most maps. To use it in Table Goblin, upload it with <code>/tgchar set_avatar</code> for your character, or <code>/tgnpc set_avatar</code> for a GM's creature. The bot checks every uploaded image for inappropriate content, the same as any other avatar.</p>
+              <div class="tc-row"><span>Creature size</span><select id="creature" aria-label="Creature size"><option value="256">Tiny to Medium: 256 px</option><option value="512" selected>Large: 512 px</option><option value="768">Huge: 768 px</option><option value="1024">Gargantuan: 1024 px</option></select><button type="button" class="tbtn" id="dlCreature">Download</button></div>
+              <label class="tc-check"><input type="checkbox" id="dropShadow"> Drop shadow under the token</label>
+              <div class="btns"><button type="button" class="tbtn" id="copyImg">Copy image</button><button type="button" class="tbtn tc-hidden" id="dlWebp">WebP 512 px</button></div>
+              <p class="hint">A PNG with a see-through outside. 512 px suits most maps; the creature sizes give a bigger creature more pixels so it stays sharp when it covers several squares (the bot scales every token to the grid itself, so 512 px is plenty there). <em>Copy image</em> copies the 512 px token so you can paste it straight into a Discord message. The drop shadow lifts the token off the map; leave it off if your map adds its own. To use it in Table Goblin, upload it with <code>/tgchar set_avatar</code> for your character, or <code>/tgnpc set_avatar</code> for a GM's creature. The bot checks every uploaded image for inappropriate content, the same as any other avatar.</p>
+              <div class="tc-sub">Numbered batch</div>
+              <div class="tc-row"><span>Count</span><input type="number" id="batchN" min="2" max="12" value="4" aria-label="How many tokens (2 to 12)"><select id="batchKind" aria-label="Numbers or letters"><option value="num">1, 2, 3</option><option value="let">A, B, C</option></select></div>
+              <div class="btns"><button type="button" class="tbtn" id="batchZip">Download ZIP</button></div>
+              <p class="hint">Makes up to 12 copies of this token with the number badge counting up (Goblin 1 to Goblin 6), all in one ZIP at 512 px. It uses the badge's shape, color and spot from section 5.</p>
+              <div class="tc-sub">Animated</div>
+              <div class="tc-row"><span>Loop</span><select id="animLen" aria-label="Loop length"><option value="1">1 second, 12 frames</option><option value="1.5" selected>1.5 seconds, 18 frames</option><option value="2">2 seconds, 20 frames</option></select></div>
+              <div class="btns"><button type="button" class="tbtn" id="dlApng">Animated (APNG) 512 px</button><button type="button" class="tbtn" id="dlGif">GIF 512 px</button></div>
+              <p class="hint">Animates the neon, glowing runes, energy shield, holographic, plasma, ember and HUD reticle rings and flickering neon signs, at the Glow and Flicker you set. APNG keeps soft, see-through edges; GIF works everywhere but its edges are hard. The encoder downloads the first time you use it. The bot's battle maps show the first frame only, since maps are drawn as still pictures; other tabletops and profile pictures can show the animation.</p>
+              <div class="tc-sub">Project file</div>
+              <div class="btns"><button type="button" class="tbtn" id="saveProject">Save project</button><input class="tc-file" type="file" id="loadFile" accept=".json,application/json"><label class="tbtn" for="loadFile">Open project</label><button type="button" class="tbtn" id="savePreset">Save ring preset</button></div>
+              <p class="hint">A project file (<code>.tgtoken.json</code>) holds the picture, its cut-out, pop-out, painted backdrop, ring erasing, lettering, objects and every setting, so you can finish the token later or share it as a template. It is saved only where you put it; nothing is kept by this site or in the browser. A ring preset holds the settings only, without the picture; open it the same way.</p>
             </div>
           </div>
         </div>
@@ -217,716 +449,12 @@
   </main>
 </div>
 
-<script>
-(function () {
-  "use strict";
-  // Token creator: everything is drawn on canvases in this page. The picture never leaves the device; only the ring and fill
-  // settings are remembered in this browser (localStorage), never the picture.
-  var M = 1024, C = M / 2, MAX_SRC = 1200, UNDO_MAX = 12, STORE = "tg-token-v1";
-  var LX = -0.55, LY = -0.835;   // light from the top left
-  function $(id) { return document.getElementById(id); }
-  function mk(w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h || w; return c; }
-  function cx2(c, read) { return c.getContext("2d", read ? { willReadFrequently: true } : undefined); }
-  function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
-  function smooth(e0, e1, x) { var t = clamp01((x - e0) / (e1 - e0)); return t * t * (3 - 2 * t); }
-  function hex(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
-  function mix(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
-  function mul(a, k) { return [a[0] * k, a[1] * k, a[2] * k]; }
-  var WHITE = [255, 255, 255];
-
-  // ---------- noise ----------
-  function hash2(ix, iy, s) {
-    var h = Math.imul(ix, 374761393) ^ Math.imul(iy, 668265263) ^ Math.imul(s, 2246822519);
-    h = Math.imul(h ^ (h >>> 13), 1274126177); h ^= h >>> 16;
-    return (h >>> 0) / 4294967296;
-  }
-  function vnoise(x, y, s) {
-    var ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy, ux = fx * fx * (3 - 2 * fx), uy = fy * fy * (3 - 2 * fy);
-    var a = hash2(ix, iy, s), b = hash2(ix + 1, iy, s), c = hash2(ix, iy + 1, s), d = hash2(ix + 1, iy + 1, s);
-    return a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy;
-  }
-  function fbm(x, y, s, oct) {
-    var v = 0, amp = 0.5, f = 1, tot = 0;
-    for (var i = 0; i < oct; i++) { v += amp * vnoise(x * f, y * f, s + i * 17); tot += amp; amp *= 0.5; f *= 2; }
-    return v / tot;
-  }
-  function rng(seed) {
-    var a = seed >>> 0;
-    return function () { a = (a + 0x6D2B79F5) >>> 0; var t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
-  }
-  function crackAt(u, v, f, s, w) { return 1 - smooth(0, w, Math.abs(fbm(u * f, v * f, s, 4) - 0.5)); }
-
-  // ---------- ring styles (procedural, drawn per pixel, then decorations) ----------
-  var ROUND = { kind: "round", k: 0.55, spec: 0.35 }, GLOSS = { kind: "round", k: 0.75, spec: 0.8 }, METAL = { kind: "round", k: 0.95, spec: 0.9 },
-      FLAT = { kind: "flat", k: 0.5, spec: 0.15 }, SOFT = { kind: "round", k: 0.4, spec: 0.1 };
-  function metalPix(dk, lt) {
-    var D = hex(dk), L = hex(lt);
-    return function (p) {
-      var s = 0.5 + 0.3 * Math.sin(p.a * 2 + 0.7) + 0.17 * Math.sin(p.a * 5 + 2.1);
-      var br = vnoise(p.dn * 900, 0.5, 11) - 0.5;
-      return mix(D, L, clamp01(s + br * 0.28));
-    };
-  }
-  function woodPix(dk, lt, seed) {
-    var D = hex(dk), L = hex(lt);
-    return function (p) {
-      var w = p.t * 3.2 + fbm(p.u * 5, p.v * 5, seed, 3) * 3;
-      var g = 0.5 + 0.5 * Math.sin(w * Math.PI * 2);
-      var fib = vnoise(p.u * 260 + p.v * 40, p.v * 260 - p.u * 40, seed + 3);
-      return mix(D, L, clamp01(g * 0.72 + fib * 0.28));
-    };
-  }
-  function fbmPix(dk, lt, f, seed) { var D = hex(dk), L = hex(lt); return function (p) { return mix(D, L, fbm(p.u * f, p.v * f, seed, 3)); }; }
-
-  var GLYPHS = [
-    [[0, -.5, 0, .5], [0, -.5, .3, -.25], [0, -.15, .3, .1]],
-    [[0, -.5, 0, .5], [0, -.5, .3, -.2], [.3, -.2, .3, .5]],
-    [[0, -.5, 0, .5], [0, -.25, .28, 0], [.28, 0, 0, .25]],
-    [[0, -.5, 0, .5], [0, -.5, -.28, -.2], [0, -.5, .28, -.2]],
-    [[0, -.5, 0, .5], [-.28, -.2, .28, .2]],
-    [[-.28, -.5, .28, .5], [.28, -.5, -.28, .5]],
-    [[0, -.5, 0, .5], [0, -.1, .28, -.35], [0, -.1, -.28, -.35]],
-    [[-.2, -.5, -.2, .5], [.2, -.5, .2, .5], [-.2, -.2, .2, .1]],
-    [[.2, -.5, -.15, -.15], [-.15, -.15, .15, .15], [.15, .15, -.2, .5]],
-    [[0, -.5, 0, .5], [0, -.5, .25, -.3], [.25, -.3, 0, -.1], [0, -.1, .25, .1], [.25, .1, 0, .3]],
-    [[-.25, -.5, -.25, .5], [.25, -.5, .25, .5], [-.25, -.5, .25, -.2], [.25, -.5, -.25, -.2]],
-    [[0, -.5, 0, .5], [0, .5, .28, .3]],
-    [[0, -.5, .28, 0], [.28, 0, 0, .5], [0, .5, -.28, 0], [-.28, 0, 0, -.5]],
-    [[-.25, -.5, -.25, .5], [-.25, -.5, .25, -.2], [.25, -.2, -.25, .1]],
-    [[0, -.5, 0, .5], [-.28, -.1, .28, -.1], [-.28, .15, .28, .15]],
-    [[-.28, -.35, .28, .35], [0, -.5, 0, .5]]
-  ];
-  function glyphPath(g, gl, h) { g.beginPath(); gl.forEach(function (s) { g.moveTo(s[0] * h, s[1] * h); g.lineTo(s[2] * h, s[3] * h); }); }
-  function runesDeco(mode, color) {
-    return function (g, N, r0, r1) {
-      var band = r1 - r0, rm = (r0 + r1) / 2, h = band * 0.56, c = N / 2;
-      var n = Math.max(8, Math.floor(2 * Math.PI * rm / (h * 0.95)));
-      g.lineCap = "round"; g.lineJoin = "round";
-      for (var k = 0; k < n; k++) {
-        var th = k / n * Math.PI * 2;
-        g.save(); g.translate(c + Math.cos(th) * rm, c + Math.sin(th) * rm); g.rotate(th + Math.PI / 2);
-        var gl = GLYPHS[(k * 7 + 3) % GLYPHS.length];
-        if (mode === "carve") {
-          glyphPath(g, gl, h); g.strokeStyle = "rgba(0,0,0,0.62)"; g.lineWidth = h * 0.15; g.stroke();
-          g.translate(h * 0.03, h * 0.045); glyphPath(g, gl, h); g.strokeStyle = "rgba(255,255,255,0.2)"; g.lineWidth = h * 0.05; g.stroke();
-        } else {
-          g.shadowColor = color; g.shadowBlur = h * 0.5; glyphPath(g, gl, h); g.strokeStyle = color; g.lineWidth = h * 0.12; g.stroke(); g.stroke();
-          g.shadowBlur = 0; glyphPath(g, gl, h); g.strokeStyle = "rgba(255,255,255,0.75)"; g.lineWidth = h * 0.04; g.stroke();
-        }
-        g.restore();
-      }
-    };
-  }
-  function studsDeco(g, N, r0, r1) {
-    var band = r1 - r0, rm = (r0 + r1) / 2, c = N / 2, sr = band * 0.17, n = Math.max(8, Math.round(2 * Math.PI * rm / (band * 1.25)));
-    for (var k = 0; k < n; k++) {
-      var th = k / n * Math.PI * 2, x = c + Math.cos(th) * rm, y = c + Math.sin(th) * rm;
-      g.fillStyle = "rgba(0,0,0,0.45)"; g.beginPath(); g.arc(x + sr * 0.18, y + sr * 0.25, sr, 0, Math.PI * 2); g.fill();
-      var gr = g.createRadialGradient(x - sr * 0.35, y - sr * 0.35, sr * 0.1, x, y, sr);
-      gr.addColorStop(0, "#ffffff"); gr.addColorStop(0.35, "#d7dbe0"); gr.addColorStop(1, "#4d535a");
-      g.fillStyle = gr; g.beginPath(); g.arc(x, y, sr, 0, Math.PI * 2); g.fill();
-    }
-  }
-  function stitchDeco(g, N, r0, r1) {
-    var band = r1 - r0, c = N / 2;
-    g.setLineDash([band * 0.16, band * 0.11]); g.lineCap = "round";
-    [r0 + band * 0.2, r1 - band * 0.2].forEach(function (r) {
-      g.strokeStyle = "rgba(0,0,0,0.45)"; g.lineWidth = band * 0.07; g.beginPath(); g.arc(c + band * 0.01, c + band * 0.015, r, 0, Math.PI * 2); g.stroke();
-      g.strokeStyle = "rgba(236,214,170,0.92)"; g.lineWidth = band * 0.045; g.beginPath(); g.arc(c, c, r, 0, Math.PI * 2); g.stroke();
-    });
-    g.setLineDash([]);
-  }
-  function vineDeco(g, N, r0, r1) {
-    var band = r1 - r0, rm = (r0 + r1) / 2, c = N / 2, R = rng(77), waves = 14, i;
-    g.strokeStyle = "#3b5420"; g.lineWidth = band * 0.07; g.lineCap = "round"; g.beginPath();
-    for (i = 0; i <= 720; i++) { var a = i / 720 * Math.PI * 2, r = rm + Math.sin(a * waves) * band * 0.18; if (i) g.lineTo(c + Math.cos(a) * r, c + Math.sin(a) * r); else g.moveTo(c + Math.cos(a) * r, c + Math.sin(a) * r); }
-    g.stroke();
-    var n = Math.max(10, Math.round(2 * Math.PI * rm / (band * 0.5))), greens = ["#4f7d2a", "#6a9a35", "#87b347", "#3e6b23"];
-    for (i = 0; i < n; i++) {
-      var th = i / n * Math.PI * 2 + R() * 0.05, side = i % 2 ? 1 : -1, rr = rm + Math.sin(th * waves) * band * 0.18 + side * band * 0.1;
-      var len = band * (0.34 + R() * 0.12), wid = band * (0.13 + R() * 0.05);
-      g.save(); g.translate(c + Math.cos(th) * rr, c + Math.sin(th) * rr); g.rotate(th + Math.PI / 2 + side * 0.75);
-      g.fillStyle = "rgba(0,0,0,0.3)"; g.beginPath(); g.ellipse(len * 0.05, len * 0.06, len / 2, wid / 2, 0, 0, Math.PI * 2); g.fill();
-      g.fillStyle = greens[Math.floor(R() * greens.length)]; g.beginPath(); g.ellipse(0, 0, len / 2, wid / 2, 0, 0, Math.PI * 2); g.fill();
-      g.strokeStyle = "rgba(20,40,10,0.55)"; g.lineWidth = Math.max(0.6, band * 0.012); g.beginPath(); g.moveTo(-len / 2, 0); g.lineTo(len / 2, 0); g.stroke();
-      g.restore();
-    }
-  }
-  function starDeco(g, N, r0, r1) {
-    var band = r1 - r0, c = N / 2, R = rng(9), n = Math.round(Math.PI * (r0 + r1) / band * 6), i;
-    for (i = 0; i < n; i++) {
-      var th = R() * Math.PI * 2, r = r0 + band * (0.15 + R() * 0.7), s = band * (0.012 + R() * 0.03);
-      g.fillStyle = "rgba(255,255,240," + (0.45 + R() * 0.55).toFixed(2) + ")"; g.beginPath(); g.arc(c + Math.cos(th) * r, c + Math.sin(th) * r, s, 0, Math.PI * 2); g.fill();
-    }
-    for (i = 0; i < 12; i++) {
-      var t2 = R() * Math.PI * 2, r2 = r0 + band * (0.3 + R() * 0.4), x = c + Math.cos(t2) * r2, y = c + Math.sin(t2) * r2, L = band * (0.12 + R() * 0.08);
-      g.fillStyle = "#fff8d8"; g.beginPath(); g.moveTo(x, y - L); g.lineTo(x + L * 0.18, y); g.lineTo(x, y + L); g.lineTo(x - L * 0.18, y); g.closePath(); g.fill();
-      g.beginPath(); g.moveTo(x - L, y); g.lineTo(x, y + L * 0.18); g.lineTo(x + L, y); g.lineTo(x, y - L * 0.18); g.closePath(); g.fill();
-    }
-    g.strokeStyle = "#d9b45a"; g.lineWidth = band * 0.045;
-    [r0 + band * 0.06, r1 - band * 0.06].forEach(function (r) { g.beginPath(); g.arc(c, c, r, 0, Math.PI * 2); g.stroke(); });
-  }
-
-  var STYLES = [];
-  function add(fam, name, pix, shade, deco) { STYLES.push({ id: fam + ":" + name, fam: fam, name: name, pix: pix, shade: shade, deco: deco || null }); }
-  // Painted: the ring color
-  add("Painted", "Flat", function (p, col) { return col; }, FLAT);
-  add("Painted", "Glossy", function (p, col) { return col; }, GLOSS);
-  add("Painted", "Double", function (p, col) { return p.t > 0.42 && p.t < 0.58 ? mul(col, 0.42) : col; }, ROUND);
-  add("Painted", "Studded", function (p, col) { return col; }, FLAT, studsDeco);
-  add("Painted", "Rope", function (p, col) { return mul(col, 0.68 + 0.45 * (0.5 + 0.5 * Math.sin(p.a * 40 + p.t * 4.5))); }, ROUND);
-  add("Painted", "Striped", function (p, col) { return Math.floor((p.a / (2 * Math.PI) + 0.5) * 16) % 2 ? mix(col, WHITE, 0.6) : col; }, ROUND);
-  // Metal
-  [["Gold", "#6a4a10", "#ffe48a"], ["Silver", "#5a6068", "#f5f7fa"], ["Bronze", "#5a3512", "#e2a467"], ["Iron", "#26292d", "#a2abb4"],
-   ["Copper", "#5c2a14", "#f2a27c"], ["Mithral", "#45657e", "#eaf6ff"], ["Black steel", "#0f1114", "#5b636c"], ["Rose gold", "#7a4040", "#ffd0c0"]]
-    .forEach(function (m) { add("Metal", m[0], metalPix(m[1], m[2]), METAL); });
-  // Carved runes
-  add("Runes", "Stone", fbmPix("#5c5a56", "#9a978f", 9, 101), SOFT, runesDeco("carve"));
-  add("Runes", "Gilded", metalPix("#6a4a10", "#ffe48a"), METAL, runesDeco("carve"));
-  add("Runes", "Oak", woodPix("#6b4423", "#b07b4c", 5), ROUND, runesDeco("carve"));
-  add("Runes", "Arcane", fbmPix("#141230", "#36306e", 7, 102), SOFT, runesDeco("glow", "#8fd3ff"));
-  add("Runes", "Infernal", fbmPix("#220a0a", "#5c1a12", 7, 103), SOFT, runesDeco("glow", "#ff7a3c"));
-  add("Runes", "Fey", fbmPix("#102c1e", "#2c5e3e", 7, 104), SOFT, runesDeco("glow", "#b8ffb0"));
-  add("Runes", "Frost", fbmPix("#6e8496", "#c4d6e4", 7, 105), SOFT, runesDeco("glow", "#3fc4ff"));
-  // Wood
-  [["Oak", "#6b4423", "#b07b4c"], ["Walnut", "#3a2314", "#74502f"], ["Birch", "#b59a6b", "#ecdcb6"], ["Ebony", "#120e0c", "#3f302a"],
-   ["Mahogany", "#4a1a10", "#9a4a2c"], ["Driftwood", "#7d786e", "#c8c2b4"]]
-    .forEach(function (w, i) { add("Wood", w[0], woodPix(w[1], w[2], 200 + i), ROUND); });
-  // Stone
-  add("Stone", "Granite", function (p) {
-    var base = mix([88, 86, 84], [150, 146, 140], fbm(p.u * 10, p.v * 10, 4, 3)), sp = hash2(Math.floor(p.u * 420), Math.floor(p.v * 420), 5);
-    return sp < 0.12 ? mul(base, 0.45) : sp > 0.93 ? mix(base, [235, 230, 225], 0.6) : base;
-  }, ROUND);
-  add("Stone", "Marble", function (p) {
-    var m = Math.sin((p.u * 3 + p.v * 2) * Math.PI * 2 + fbm(p.u * 4, p.v * 4, 21, 4) * 8), vein = Math.pow(1 - Math.abs(m), 10);
-    return mix(mix([238, 235, 228], [205, 200, 192], fbm(p.u * 6, p.v * 6, 22, 2)), [110, 108, 112], vein * 0.8);
-  }, GLOSS);
-  add("Stone", "Slate", function (p) { return mix([40, 46, 52], [100, 108, 116], fbm(p.u * 3 + p.v * 1.5, p.v * 22 - p.u * 6, 23, 3)); }, FLAT);
-  add("Stone", "Sandstone", function (p) {
-    var b = 0.5 + 0.5 * Math.sin(p.t * 9 + fbm(p.u * 4, p.v * 4, 31, 3) * 5);
-    return mix([160, 112, 66], [226, 190, 138], b * 0.8 + hash2(Math.floor(p.u * 500), Math.floor(p.v * 500), 32) * 0.2);
-  }, ROUND);
-  add("Stone", "Blocks", function (p) {
-    var f = (p.a / (2 * Math.PI) + 0.5) * 14, bi = Math.floor(f), fr = f - bi;
-    if (fr < 0.035 || fr > 0.965 || p.t < 0.07 || p.t > 0.93) return [52, 49, 45];
-    var e = Math.min(fr, 1 - fr, (p.t - 0.07) * 0.6, (0.93 - p.t) * 0.6), lip = smooth(0, 0.06, e);
-    return mul(mix([109, 106, 99], [168, 163, 152], hash2(bi, 7, 3) * 0.6 + fbm(p.u * 14, p.v * 14, 9, 3) * 0.5), 0.78 + 0.22 * lip);
-  }, FLAT);
-  add("Stone", "Obsidian", function (p) { return mix([8, 8, 12], [52, 44, 72], fbm(p.u * 5, p.v * 5, 41, 3) * 0.85); }, { kind: "round", k: 0.9, spec: 1.2 });
-  // More
-  add("More", "Bone", function (p) {
-    var base = mix([190, 177, 144], [244, 236, 214], fbm(p.u * 7, p.v * 7, 51, 3));
-    return hash2(Math.floor(p.u * 300), Math.floor(p.v * 300), 52) < 0.05 ? mul(base, 0.8) : base;
-  }, ROUND);
-  add("More", "Jade", fbmPix("#145038", "#7ccb98", 6, 61), GLOSS);
-  add("More", "Leather", fbmPix("#3e2212", "#7a4a2a", 12, 71), FLAT, stitchDeco);
-  add("More", "Ice", function (p) {
-    return mix(mix([150, 195, 225], [232, 246, 255], fbm(p.u * 5, p.v * 5, 81, 3)), WHITE, crackAt(p.u, p.v, 8, 82, 0.03) * 0.85);
-  }, GLOSS);
-  add("More", "Ember", function (p) {
-    var rock = mix([24, 16, 14], [64, 42, 34], fbm(p.u * 8, p.v * 8, 91, 3)), cr = crackAt(p.u, p.v, 7, 92, 0.05);
-    return mix(rock, mix([255, 80, 16], [255, 226, 130], cr), cr);
-  }, SOFT);
-  add("More", "Vines", woodPix("#3c2c1a", "#6a5232", 300), ROUND, vineDeco);
-  add("More", "Starry", function (p) { return mix([10, 14, 38], [40, 46, 100], fbm(p.u * 4, p.v * 4, 95, 3)); }, SOFT, starDeco);
-  var FAMS = ["Painted", "Metal", "Runes", "Wood", "Stone", "More"];
-  var FAM_LABEL = { Painted: "Painted", Metal: "Metal", Runes: "Carved runes", Wood: "Wood", Stone: "Stone", More: "More" };
-  function styleById(id) { for (var i = 0; i < STYLES.length; i++) if (STYLES[i].id === id) return STYLES[i]; return null; }
-
-  function shade(rgb, p, sh) {
-    var nrm;
-    if (sh.kind === "round") nrm = -Math.cos(Math.PI * p.t);
-    else { var e = 0.16; nrm = p.t < e ? -0.85 : p.t > 1 - e ? 0.85 : 0; }
-    var lam = (p.rx * LX + p.ry * LY) * nrm, b = 1 + lam * sh.k;
-    if (sh.kind === "round") b *= 0.84 + 0.16 * Math.sin(Math.PI * p.t);
-    b *= 0.72 + 0.28 * Math.min(1, p.t / 0.05, (1 - p.t) / 0.05);
-    var sp = sh.spec && lam > 0 ? Math.pow(lam, 7) * sh.spec * 255 : 0;
-    return [rgb[0] * b + sp, rgb[1] * b + sp, rgb[2] * b + sp];
-  }
-  function annulus(g, c, r0, r1) { g.beginPath(); g.arc(c, c, r1, 0, Math.PI * 2); g.arc(c, c, r0, 0, Math.PI * 2, true); }
-  function paintRing(N, r0, r1, st, col, tint) {
-    var cv = mk(N), g = cx2(cv), id = g.createImageData(N, N), D = id.data, c = N / 2, p = {};
-    var lo = Math.max(0, Math.floor(c - r1 - 1)), hi = Math.min(N, Math.ceil(c + r1 + 1)), band = r1 - r0;
-    for (var y = lo; y < hi; y++) {
-      for (var x = lo; x < hi; x++) {
-        var dx = x + 0.5 - c, dy = y + 0.5 - c, d = Math.sqrt(dx * dx + dy * dy);
-        var cov = clamp01(r1 + 0.5 - d) * clamp01(d - r0 + 0.5);
-        if (cov <= 0) continue;
-        p.t = clamp01((d - r0) / band); p.a = Math.atan2(dy, dx); p.u = (x + 0.5) / N; p.v = (y + 0.5) / N; p.dn = d / N;
-        p.rx = d ? dx / d : 0; p.ry = d ? dy / d : 0;
-        var rgb = st.pix(p, col);
-        if (tint && st.fam !== "Painted") {
-          var l = (rgb[0] * 0.3 + rgb[1] * 0.59 + rgb[2] * 0.11) / 255;
-          rgb = mix(rgb, [col[0] * l * 1.5, col[1] * l * 1.5, col[2] * l * 1.5], 0.65);
-        }
-        rgb = shade(rgb, p, st.shade);
-        var i = (y * N + x) * 4;
-        D[i] = rgb[0]; D[i + 1] = rgb[1]; D[i + 2] = rgb[2]; D[i + 3] = cov * 255;
-      }
-    }
-    g.putImageData(id, 0, 0);
-    if (st.deco) { g.save(); annulus(g, c, r0, r1); g.clip("evenodd"); st.deco(g, N, r0, r1, col); g.restore(); }
-    return cv;
-  }
-
-  // ---------- state ----------
-  var S = {
-    style: "Metal:Gold", fam: "Metal", thick: 0.075, rsize: 1, ringColor: "#8a2b2b", tint: false, noRing: false,
-    fillType: "radial", fill1: "#6f93a6", fill2: "#1d2830", popTop: false, popLine: 0.4, popShadow: true,
-    tol: 28, contig: true, soften: true, shrink: 0
-  };
-  try { var saved = JSON.parse(localStorage.getItem(STORE) || "{}"); Object.keys(S).forEach(function (k) { if (typeof saved[k] === typeof S[k]) S[k] = saved[k]; }); } catch (e) { /* storage is optional */ }
-  if (!styleById(S.style)) S.style = "Metal:Gold";
-  if (FAMS.indexOf(S.fam) < 0) S.fam = "Metal";
-  function persist() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { /* storage is optional */ } }
-
-  var src = null, srcData = null, sw = 0, sh = 0, baseScale = 1, fileBase = "token";
-  var cut = null, cutG = null, hasCut = false, subj = null, subjG = null, rem = null, subjDirty = false;
-  var pop = mk(M), popG = cx2(pop, true), popEff = mk(M), popEffG = cx2(popEff), hasPop = false;
-  var master = mk(M), mg = cx2(master), tmp = mk(M), tg = cx2(tmp), tint = mk(M), tintG = cx2(tint);
-  var view = { x: 0, y: 0, zoom: 1, flip: false };
-  var tool = "move", undo = [], draft = false, lineActive = 0, hover = null, gesture = null, pts = new Map();
-  var pv = $("pv"), pg = cx2(pv);
-
-  function ringR1() { return C * S.rsize - 3; }
-  function ringR0() { return S.noRing ? ringR1() : ringR1() - S.thick * M; }
-  var ringCache = { key: "", c: null };
-  function ringLayer() {
-    if (S.noRing) return null;
-    var N = draft ? 512 : M, key = [S.style, S.thick, S.rsize, S.ringColor, S.tint, N].join("|");
-    if (ringCache.key !== key) { var k = N / M; ringCache.c = paintRing(N, ringR0() * k, ringR1() * k, styleById(S.style), hex(S.ringColor), S.tint); ringCache.key = key; }
-    return ringCache.c;
-  }
-
-  // ---------- picture ----------
-  function scale() { return baseScale * view.zoom; }
-  function place(g, c) {
-    g.save(); g.translate(C + view.x, C + view.y); g.scale(scale() * (view.flip ? -1 : 1), scale()); g.drawImage(c, -sw / 2, -sh / 2); g.restore();
-  }
-  function toSrc(p) { return [(p[0] - C - view.x) / scale() * (view.flip ? -1 : 1) + sw / 2, (p[1] - C - view.y) / scale() + sh / 2]; }
-  function setImage(im, name) {
-    var w = im.naturalWidth || im.width, h = im.naturalHeight || im.height;
-    if (!w || !h) { $("fileErr").textContent = "That picture is empty."; return; }
-    var k = Math.min(1, MAX_SRC / Math.max(w, h));
-    sw = Math.max(1, Math.round(w * k)); sh = Math.max(1, Math.round(h * k));
-    src = mk(sw, sh); var sg = cx2(src, true); sg.imageSmoothingQuality = "high"; sg.drawImage(im, 0, 0, sw, sh);
-    srcData = sg.getImageData(0, 0, sw, sh);
-    cut = mk(sw, sh); cutG = cx2(cut, true); cutG.fillStyle = "#fff"; cutG.fillRect(0, 0, sw, sh); hasCut = false;
-    subj = mk(sw, sh); subjG = cx2(subj); rem = mk(sw, sh);
-    popG.clearRect(0, 0, M, M); hasPop = false;
-    baseScale = M * 0.86 / Math.min(sw, sh);
-    view = { x: 0, y: 0, zoom: 1, flip: false }; syncZoom();
-    undo = []; $("undo").disabled = true;
-    fileBase = (name || "token").replace(/\.[a-z0-9]+$/i, "").replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "token";
-    $("fileErr").textContent = "";
-    subjDirty = true; hint(); schedule();
-  }
-  function loadFile(f) {
-    if (!f) return;
-    if (!/^image\//.test(f.type || "") && !/\.(png|jpe?g|webp|gif|bmp|avif)$/i.test(f.name || "")) { $("fileErr").textContent = "That isn't a picture file."; return; }
-    var url = URL.createObjectURL(f), im = new Image();
-    im.onload = function () { setImage(im, f.name); URL.revokeObjectURL(url); };
-    im.onerror = function () { URL.revokeObjectURL(url); $("fileErr").textContent = "Couldn't read that picture. Try a PNG, JPEG, WebP or GIF."; };
-    im.src = url;
-  }
-  function sample() {
-    var c = mk(600), g = cx2(c);
-    g.fillStyle = "#dfe7d6"; g.fillRect(0, 0, 600, 600);
-    g.fillStyle = "#3d6b4f"; g.beginPath(); g.moveTo(170, 600); g.lineTo(215, 360); g.quadraticCurveTo(300, 320, 385, 360); g.lineTo(430, 600); g.closePath(); g.fill();
-    g.fillStyle = "#c79a3b"; g.fillRect(200, 470, 200, 22);
-    g.fillStyle = "#7fae4a"; g.beginPath(); g.ellipse(300, 285, 78, 86, 0, 0, Math.PI * 2); g.fill();
-    g.beginPath(); g.moveTo(225, 270); g.lineTo(140, 225); g.lineTo(230, 300); g.closePath(); g.fill();
-    g.beginPath(); g.moveTo(375, 270); g.lineTo(460, 225); g.lineTo(370, 300); g.closePath(); g.fill();
-    g.fillStyle = "#fff6c8"; g.beginPath(); g.arc(270, 282, 13, 0, Math.PI * 2); g.arc(330, 282, 13, 0, Math.PI * 2); g.fill();
-    g.fillStyle = "#1c1a14"; g.beginPath(); g.arc(272, 284, 6, 0, Math.PI * 2); g.arc(328, 284, 6, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = "#1c1a14"; g.lineWidth = 5; g.beginPath(); g.arc(300, 318, 26, 0.2, Math.PI - 0.2); g.stroke();
-    g.fillStyle = "#5a2d82"; g.beginPath(); g.moveTo(205, 225); g.lineTo(395, 225); g.lineTo(300, 10); g.closePath(); g.fill();
-    g.fillStyle = "#3f1f5c"; g.beginPath(); g.ellipse(300, 225, 120, 22, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = "#f2d35c"; g.beginPath(); g.arc(300, 150, 12, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = "#7b5530"; g.lineWidth = 14; g.lineCap = "round"; g.beginPath(); g.moveTo(470, 600); g.lineTo(505, 70); g.stroke();
-    g.fillStyle = "#7fd8ff"; g.beginPath(); g.arc(506, 62, 26, 0, Math.PI * 2); g.fill();
-    var im = new Image(); im.onload = function () { setImage(im, "goblin-wizard"); }; im.src = c.toDataURL("image/png");
-  }
-
-  // ---------- cutout ----------
-  function rebuildSubject(fast) {
-    if (!src) return;
-    subjG.globalCompositeOperation = "copy"; subjG.drawImage(src, 0, 0); subjG.globalCompositeOperation = "source-over";
-    if (hasCut) {
-      var maskC = cut;
-      if (!fast && (S.soften || S.shrink > 0)) {
-        var md = cutG.getImageData(0, 0, sw, sh), n = sw * sh, a = new Float32Array(n), i;
-        for (i = 0; i < n; i++) a[i] = md.data[i * 4 + 3];
-        if (S.shrink > 0) a = erode(a, sw, sh, S.shrink);
-        if (S.soften) { a = blur(a, sw, sh); a = blur(a, sw, sh); }
-        for (i = 0; i < n; i++) { md.data[i * 4] = md.data[i * 4 + 1] = md.data[i * 4 + 2] = 255; md.data[i * 4 + 3] = a[i]; }
-        maskC = mk(sw, sh); cx2(maskC).putImageData(md, 0, 0);
-      }
-      subjG.globalCompositeOperation = "destination-in"; subjG.drawImage(maskC, 0, 0); subjG.globalCompositeOperation = "source-over";
-      var rg = cx2(rem); rg.globalCompositeOperation = "copy"; rg.drawImage(src, 0, 0);
-      rg.globalCompositeOperation = "destination-out"; rg.drawImage(cut, 0, 0); rg.globalCompositeOperation = "source-over";
-    }
-    subjDirty = false;
-  }
-  function erode(a, w, h, r) {
-    var o = new Float32Array(a.length), x, y, k, m;
-    for (y = 0; y < h; y++) for (x = 0; x < w; x++) { m = 255; for (k = -r; k <= r; k++) { var xx = x + k; if (xx >= 0 && xx < w && a[y * w + xx] < m) m = a[y * w + xx]; } o[y * w + x] = m; }
-    var o2 = new Float32Array(a.length);
-    for (y = 0; y < h; y++) for (x = 0; x < w; x++) { m = 255; for (k = -r; k <= r; k++) { var yy = y + k; if (yy >= 0 && yy < h && o[yy * w + x] < m) m = o[yy * w + x]; } o2[y * w + x] = m; }
-    return o2;
-  }
-  function blur(a, w, h) {
-    var o = new Float32Array(a.length), x, y, i;
-    for (y = 0; y < h; y++) for (x = 0; x < w; x++) { i = y * w + x; o[i] = (a[x > 0 ? i - 1 : i] + a[i] + a[x < w - 1 ? i + 1 : i]) / 3; }
-    var o2 = new Float32Array(a.length);
-    for (y = 0; y < h; y++) for (x = 0; x < w; x++) { i = y * w + x; o2[i] = (o[y > 0 ? i - w : i] + o[i] + o[y < h - 1 ? i + w : i]) / 3; }
-    return o2;
-  }
-  function flood(seeds, contiguous) {
-    var w = sw, h = sh, P = srcData.data, cd = cutG.getImageData(0, 0, w, h), A = cd.data, T = S.tol * 2.2, T2 = T * T, removed = 0, p;
-    function close(q, r, g, b) { var i = q * 4; if (P[i + 3] < 24) return true; var dr = P[i] - r, dg = P[i + 1] - g, db = P[i + 2] - b; return dr * dr + dg * dg + db * db <= T2; }
-    if (!contiguous) {
-      var j = seeds[0] * 4, R = P[j], G = P[j + 1], B = P[j + 2];
-      for (p = 0; p < w * h; p++) if (close(p, R, G, B) && A[p * 4 + 3]) { A[p * 4 + 3] = 0; removed++; }
-    } else {
-      var seen = new Uint8Array(w * h), stack = new Int32Array(w * h);
-      for (var s = 0; s < seeds.length; s++) {
-        var s0 = seeds[s]; if (seen[s0]) continue;
-        var i0 = s0 * 4, r = P[i0], g = P[i0 + 1], b = P[i0 + 2], sp = 0;
-        stack[sp++] = s0; seen[s0] = 1;
-        while (sp) {
-          p = stack[--sp];
-          if (!close(p, r, g, b)) continue;
-          if (A[p * 4 + 3]) { A[p * 4 + 3] = 0; removed++; }
-          var x = p % w, y = (p - x) / w;
-          if (x > 0 && !seen[p - 1]) { seen[p - 1] = 1; stack[sp++] = p - 1; }
-          if (x < w - 1 && !seen[p + 1]) { seen[p + 1] = 1; stack[sp++] = p + 1; }
-          if (y > 0 && !seen[p - w]) { seen[p - w] = 1; stack[sp++] = p - w; }
-          if (y < h - 1 && !seen[p + w]) { seen[p + w] = 1; stack[sp++] = p + w; }
-        }
-      }
-    }
-    cutG.putImageData(cd, 0, 0);
-    if (removed) hasCut = true;
-    subjDirty = true;
-    return removed;
-  }
-  function autoBackground() {
-    if (!src) { say("Choose a picture first."); return; }
-    pushUndo("cut");
-    // The backdrop is the color (or colors) covering most of the picture's edge. Seed only from edge pixels of those colors, so a
-    // figure that runs off the bottom edge (a robe, a staff) is never taken as background.
-    var edge = [], x, y, P = srcData.data, i, j;
-    for (x = 0; x < sw; x++) { edge.push(x); if (sh > 1) edge.push((sh - 1) * sw + x); }
-    for (y = 1; y < sh - 1; y++) { edge.push(y * sw); if (sw > 1) edge.push(y * sw + sw - 1); }
-    var clusters = [], near = 40 * 40, own = new Int32Array(edge.length).fill(-1);
-    for (j = 0; j < edge.length; j++) {
-      i = edge[j] * 4; if (P[i + 3] < 24) continue;
-      var best = -1;
-      for (var k = 0; k < clusters.length; k++) {
-        var c = clusters[k], dr = P[i] - c.r / c.n, dg = P[i + 1] - c.g / c.n, db = P[i + 2] - c.b / c.n;
-        if (dr * dr + dg * dg + db * db < near) { best = k; break; }
-      }
-      if (best < 0) { if (clusters.length >= 64) continue; clusters.push({ n: 0, r: 0, g: 0, b: 0 }); best = clusters.length - 1; }
-      var cl = clusters[best]; cl.n++; cl.r += P[i]; cl.g += P[i + 1]; cl.b += P[i + 2]; own[j] = best;
-    }
-    var seeds = [];
-    for (j = 0; j < edge.length; j++) {
-      i = edge[j] * 4;
-      if (P[i + 3] < 24 || (own[j] >= 0 && clusters[own[j]].n >= edge.length * 0.12)) seeds.push(edge[j]);
-    }
-    var n = seeds.length ? flood(seeds, true) : 0;
-    if (!n) say("Nothing matched the edge color. Raise the tolerance, or use the Magic wand.");
-    else if (n > sw * sh * 0.97) say("That removed almost everything. Undo, then lower the tolerance.");
-    else say("Background removed. Touch up with the Magic wand, Erase and Restore.");
-    setTool(tool === "move" ? "restore" : tool, true);
-    schedule();
-  }
-  function wandAt(p) {
-    var q = toSrc(p), x = Math.floor(q[0]), y = Math.floor(q[1]);
-    if (x < 0 || y < 0 || x >= sw || y >= sh) { say("That spot is outside the picture."); return; }
-    pushUndo("cut");
-    var n = flood([y * sw + x], S.contig);
-    say(n ? "Removed " + Math.round(n * 100 / (sw * sh)) + "% of the picture. Undo if that was too much." : "Nothing left to remove there.");
-    if (!n) { undo.pop(); $("undo").disabled = !undo.length; }
-  }
-
-  // ---------- undo ----------
-  function pushUndo(kind) {
-    if (kind === "cut") { if (!cut) return; undo.push({ kind: kind, data: cutG.getImageData(0, 0, sw, sh), hasCut: hasCut }); }
-    else undo.push({ kind: kind, data: popG.getImageData(0, 0, M, M), hasPop: hasPop });
-    if (undo.length > UNDO_MAX) undo.shift();
-    $("undo").disabled = false;
-  }
-  function doUndo() {
-    var u = undo.pop(); if (!u) return;
-    if (u.kind === "cut") { if (u.data.width === sw && u.data.height === sh) { cutG.putImageData(u.data, 0, 0); hasCut = u.hasCut; subjDirty = true; } }
-    else { popG.putImageData(u.data, 0, 0); hasPop = u.hasPop; }
-    $("undo").disabled = !undo.length; schedule();
-  }
-
-  // ---------- compose ----------
-  function fill(g, r) {
-    if (S.fillType === "none") return;
-    var gr;
-    if (S.fillType === "solid") g.fillStyle = S.fill1;
-    else if (S.fillType === "linear") { gr = g.createLinearGradient(0, C - r, 0, C + r); gr.addColorStop(0, S.fill1); gr.addColorStop(1, S.fill2); g.fillStyle = gr; }
-    else { gr = g.createRadialGradient(C, C * 0.86, r * 0.05, C, C, r * 1.05); gr.addColorStop(0, S.fill1); gr.addColorStop(1, S.fill2); g.fillStyle = gr; }
-    g.fillRect(0, 0, M, M);
-  }
-  function popMask() {
-    popEffG.clearRect(0, 0, M, M);
-    if (hasPop) popEffG.drawImage(pop, 0, 0);
-    if (S.popTop) { popEffG.fillStyle = "#fff"; popEffG.fillRect(0, 0, M, S.popLine * M); }
-    return hasPop || S.popTop;
-  }
-  function compose() {
-    if (subjDirty) rebuildSubject(gesture && gesture.kind === "brush");
-    var r1 = ringR1(), r0 = ringR0(), ring = ringLayer();
-    mg.clearRect(0, 0, M, M);
-    mg.save(); mg.beginPath(); mg.arc(C, C, r0 + 0.5, 0, Math.PI * 2); mg.clip();
-    fill(mg, r0);
-    if (src) place(mg, subj);
-    if (ring) {
-      var band = r1 - r0, gr = mg.createRadialGradient(C, C, Math.max(0, r0 - band * 0.5), C, C, r0 + 1);
-      gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,0.38)"); mg.fillStyle = gr; mg.fillRect(0, 0, M, M);
-    }
-    mg.restore();
-    if (ring) mg.drawImage(ring, 0, 0, M, M);
-    if (src && popMask()) {
-      /* The popped part starts where the inner ring shading starts (where it is still zero), not at the ring's edge, so it covers the
-         shading and leaves no curved seam along the ring. Its shadow falls only on the ring and outside it -- a shadow cast inward from
-         the cut edge drew the ring's curve right across the figure. The shadow is drawn on its own (the image far off-canvas, the
-         shadow offset back) so the popped pixels are drawn once and their soft edges don't darken. */
-      var rIn = ring ? Math.max(0, r0 - (r1 - r0) * 0.5 - 1) : Math.max(0, r0 - 1);
-      tg.clearRect(0, 0, M, M); place(tg, subj);
-      tg.globalCompositeOperation = "destination-in"; tg.drawImage(popEff, 0, 0);
-      tg.globalCompositeOperation = "destination-out"; tg.beginPath(); tg.arc(C, C, rIn, 0, Math.PI * 2); tg.fill();
-      tg.globalCompositeOperation = "source-over";
-      if (S.popShadow) {
-        mg.save();
-        mg.beginPath(); mg.rect(0, 0, M, M); mg.arc(C, C, r0, 0, Math.PI * 2); mg.clip("evenodd");
-        mg.shadowColor = "rgba(0,0,0,0.5)"; mg.shadowBlur = M * 0.014; mg.shadowOffsetX = M * 4; mg.shadowOffsetY = M * 0.006;
-        mg.drawImage(tmp, -M * 4, 0); mg.restore();
-      }
-      mg.drawImage(tmp, 0, 0);
-    }
-  }
-  function accent() { return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2F6C5E"; }
-  function isBrush(t) { return t === "erase" || t === "restore" || t === "pop" || t === "unpop"; }
-  function isCutTool(t) { return t === "wand" || t === "erase" || t === "restore"; }
-  function draw() {
-    compose();
-    var P = pv.width, k = P / M;
-    pg.clearRect(0, 0, P, P);
-    if (src && gesture && (gesture.kind === "pan" || gesture.kind === "pinch")) { pg.save(); pg.globalAlpha = 0.28; pg.scale(k, k); place(pg, src); pg.restore(); }
-    pg.imageSmoothingQuality = "high";
-    pg.drawImage(master, 0, 0, P, P);
-    if (src && hasCut && isCutTool(tool)) { pg.save(); pg.globalAlpha = 0.3; pg.scale(k, k); place(pg, rem); pg.restore(); }
-    if (src && (tool === "pop" || tool === "unpop" || lineActive) && popMask()) {
-      tintG.globalCompositeOperation = "copy"; tintG.drawImage(popEff, 0, 0);
-      tintG.globalCompositeOperation = "source-in"; tintG.fillStyle = accent(); tintG.fillRect(0, 0, M, M); tintG.globalCompositeOperation = "source-over";
-      pg.save(); pg.globalAlpha = 0.32; pg.drawImage(tint, 0, 0, P, P); pg.restore();
-    }
-    if (S.popTop && (tool === "pop" || tool === "unpop" || lineActive)) {
-      pg.save(); pg.setLineDash([8, 6]); pg.strokeStyle = accent(); pg.lineWidth = 2; pg.beginPath(); pg.moveTo(0, S.popLine * P); pg.lineTo(P, S.popLine * P); pg.stroke(); pg.restore();
-    }
-    if (hover && isBrush(tool)) {
-      var r = +$("brush").value * k;
-      pg.save(); pg.lineWidth = 1.5; pg.strokeStyle = "rgba(0,0,0,0.7)"; pg.beginPath(); pg.arc(hover[0] * k, hover[1] * k, r, 0, Math.PI * 2); pg.stroke();
-      pg.strokeStyle = "rgba(255,255,255,0.9)"; pg.beginPath(); pg.arc(hover[0] * k, hover[1] * k, r + 1.5, 0, Math.PI * 2); pg.stroke(); pg.restore();
-    }
-  }
-  var pending = false;
-  function schedule() { if (pending) return; pending = true; requestAnimationFrame(function () { pending = false; draw(); }); }
-
-  // ---------- export ----------
-  function exportPng(N) {
-    var wasDraft = draft; draft = false;
-    var keep = gesture; gesture = null; compose(); gesture = keep; draft = wasDraft;
-    var c = master, size = M;
-    while (size / 2 >= N) { var h = mk(size / 2), hg = cx2(h); hg.imageSmoothingQuality = "high"; hg.drawImage(c, 0, 0, size / 2, size / 2); c = h; size /= 2; }
-    var name = fileBase + "-token-" + N + ".png";
-    function save(url, revoke) { var a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); if (revoke) setTimeout(function () { URL.revokeObjectURL(url); }, 4000); }
-    if (c.toBlob) c.toBlob(function (b) { if (b) save(URL.createObjectURL(b), true); else save(c.toDataURL("image/png"), false); }, "image/png");
-    else save(c.toDataURL("image/png"), false);
-    if (window.tgEvent) try { window.tgEvent("token-download-" + N); } catch (e) { /* counting is optional */ }
-    say("Downloaded " + name + ".");
-  }
-
-  // ---------- pointer ----------
-  function tokenPt(e) { var r = pv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * M, (e.clientY - r.top) / r.height * M]; }
-  function dab(a, b) {
-    var rt = +$("brush").value, dx = b[0] - a[0], dy = b[1] - a[1], steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / (rt * 0.3))), i, q;
-    if (tool === "pop" || tool === "unpop") {
-      popG.globalCompositeOperation = tool === "pop" ? "source-over" : "destination-out"; popG.fillStyle = "#fff";
-      for (i = 0; i <= steps; i++) { q = [a[0] + dx * i / steps, a[1] + dy * i / steps]; popG.beginPath(); popG.arc(q[0], q[1], rt, 0, Math.PI * 2); popG.fill(); }
-      popG.globalCompositeOperation = "source-over"; if (tool === "pop") hasPop = true;
-    } else {
-      var rs = rt / scale();
-      cutG.globalCompositeOperation = tool === "erase" ? "destination-out" : "source-over"; cutG.fillStyle = "#fff";
-      for (i = 0; i <= steps; i++) { q = toSrc([a[0] + dx * i / steps, a[1] + dy * i / steps]); cutG.beginPath(); cutG.arc(q[0], q[1], rs, 0, Math.PI * 2); cutG.fill(); }
-      cutG.globalCompositeOperation = "source-over"; hasCut = true; subjDirty = true;
-    }
-  }
-  function zoomAbout(z, p) {
-    z = Math.min(4, Math.max(0.2, z)); var k = z / view.zoom;
-    view.x = p[0] - C - (p[0] - C - view.x) * k; view.y = p[1] - C - (p[1] - C - view.y) * k; view.zoom = z; syncZoom();
-  }
-  pv.addEventListener("pointerdown", function (e) {
-    if (e.button > 0) return;
-    try { pv.setPointerCapture(e.pointerId); } catch (err) { /* not every pointer can be captured */ }
-    var p = tokenPt(e); pts.set(e.pointerId, p); hover = p;
-    if (!src) { say("Choose a picture first."); return; }
-    e.preventDefault();
-    if (pts.size === 2) {
-      var v = Array.from(pts.values()), mid = [(v[0][0] + v[1][0]) / 2, (v[0][1] + v[1][1]) / 2];
-      if (gesture && gesture.kind === "brush") { gesture = null; subjDirty = true; }
-      gesture = { kind: "pinch", d: Math.max(1, Math.hypot(v[0][0] - v[1][0], v[0][1] - v[1][1])), zoom: view.zoom, x: view.x, y: view.y, mid: mid };
-    } else if (pts.size === 1) {
-      if (tool === "move") gesture = { kind: "pan", p: p, x: view.x, y: view.y };
-      else if (tool === "wand") wandAt(p);
-      else { pushUndo(tool === "pop" || tool === "unpop" ? "pop" : "cut"); gesture = { kind: "brush", last: p }; dab(p, p); }
-    }
-    schedule();
-  });
-  pv.addEventListener("pointermove", function (e) {
-    var p = tokenPt(e); hover = p;
-    if (pts.has(e.pointerId)) pts.set(e.pointerId, p);
-    if (!gesture) { if (isBrush(tool)) schedule(); return; }
-    if (gesture.kind === "pan") { view.x = gesture.x + p[0] - gesture.p[0]; view.y = gesture.y + p[1] - gesture.p[1]; }
-    else if (gesture.kind === "pinch" && pts.size >= 2) {
-      var v = Array.from(pts.values()), mid = [(v[0][0] + v[1][0]) / 2, (v[0][1] + v[1][1]) / 2], d = Math.hypot(v[0][0] - v[1][0], v[0][1] - v[1][1]);
-      var z = Math.min(4, Math.max(0.2, gesture.zoom * d / gesture.d)), k = z / gesture.zoom;
-      view.x = mid[0] - C - (gesture.mid[0] - C - gesture.x) * k; view.y = mid[1] - C - (gesture.mid[1] - C - gesture.y) * k; view.zoom = z; syncZoom();
-    } else if (gesture.kind === "brush") { dab(gesture.last, p); gesture.last = p; }
-    schedule();
-  });
-  function endPointer(e) {
-    pts.delete(e.pointerId);
-    if (gesture && gesture.kind === "brush") subjDirty = true;
-    if (!pts.size || (gesture && gesture.kind === "pinch")) gesture = null;
-    if (e.type !== "pointerup" || e.pointerType !== "mouse") { if (!pts.size && e.pointerType !== "mouse") hover = null; }
-    schedule();
-  }
-  pv.addEventListener("pointerup", endPointer);
-  pv.addEventListener("pointercancel", endPointer);
-  pv.addEventListener("pointerleave", function () { if (!gesture) { hover = null; schedule(); } });
-  pv.addEventListener("wheel", function (e) { if (!src) return; e.preventDefault(); zoomAbout(view.zoom * (e.deltaY < 0 ? 1.07 : 1 / 1.07), tokenPt(e)); schedule(); }, { passive: false });
-
-  // ---------- controls ----------
-  function say(t) { $("status").textContent = t; }
-  var HINTS = {
-    move: "Drag to move the picture. Scroll, pinch or use Zoom to resize.",
-    wand: "Tap a patch of background to remove it. Tolerance sets how alike the colors must be.",
-    erase: "Paint to remove parts of the picture.",
-    restore: "Paint to bring removed parts back. Removed parts show faintly.",
-    pop: "Paint over the parts that should sit in front of the ring: a hat, a horn, a sword tip.",
-    unpop: "Paint to send parts back behind the ring."
-  };
-  function hint() { say(src ? HINTS[tool] : "Choose a picture to start, or try the sample."); }
-  function setTool(t, quiet) {
-    tool = t;
-    Array.prototype.forEach.call(document.querySelectorAll("#tools .pill"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.tool === t)); });
-    pv.classList.toggle("brush", t !== "move");
-    $("brushRow").classList.toggle("tc-hidden", !isBrush(t));
-    if (!quiet) hint();
-    schedule();
-  }
-  Array.prototype.forEach.call(document.querySelectorAll("#tools .pill"), function (b) { b.addEventListener("click", function () { setTool(b.dataset.tool); }); });
-  function syncZoom() { $("zoom").value = view.zoom; $("zoomOut").textContent = Math.round(view.zoom * 100) + "%"; }
-  $("zoom").addEventListener("input", function (e) { zoomAbout(+e.target.value, [C, C]); schedule(); });
-  $("brush").addEventListener("input", function (e) { $("brushOut").textContent = e.target.value; hover = [C, C]; schedule(); });
-  $("undo").addEventListener("click", doUndo);
-  $("flip").addEventListener("click", function () { if (!src) return; view.flip = !view.flip; view.x = -view.x; subjDirty = true; schedule(); });
-  $("center").addEventListener("click", function () { view.x = 0; view.y = 0; view.zoom = 1; syncZoom(); schedule(); });
-  document.addEventListener("keydown", function (e) {
-    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "z" && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "")) { e.preventDefault(); doUndo(); }
-  });
-
-  $("file").addEventListener("change", function (e) { loadFile(e.target.files && e.target.files[0]); e.target.value = ""; });
-  $("sample").addEventListener("click", sample);
-  var stage = $("stage");
-  stage.addEventListener("dragover", function (e) { e.preventDefault(); stage.classList.add("dragover"); });
-  stage.addEventListener("dragleave", function () { stage.classList.remove("dragover"); });
-  stage.addEventListener("drop", function (e) { e.preventDefault(); stage.classList.remove("dragover"); loadFile(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]); });
-  window.addEventListener("paste", function (e) {
-    var items = (e.clipboardData && e.clipboardData.items) || [];
-    for (var i = 0; i < items.length; i++) if (items[i].type && items[i].type.indexOf("image/") === 0) { loadFile(items[i].getAsFile()); e.preventDefault(); return; }
-  });
-
-  // ring picker
-  var dpr = Math.min(2, window.devicePixelRatio || 1), TH = Math.round(46 * dpr);
-  function thumb(st) { var r1 = TH / 2 - 1; return paintRing(TH, r1 - TH * 0.17, r1, st, hex(S.ringColor), S.tint); }
-  function renderFams() {
-    $("fams").innerHTML = "";
-    FAMS.forEach(function (f) {
-      var b = document.createElement("button"); b.type = "button"; b.className = "pill"; b.textContent = FAM_LABEL[f];
-      b.setAttribute("aria-pressed", String(f === S.fam));
-      b.addEventListener("click", function () { S.fam = f; persist(); renderFams(); renderRings(); });
-      $("fams").appendChild(b);
-    });
-  }
-  function renderRings() {
-    var box = $("rings"); box.innerHTML = "";
-    STYLES.filter(function (st) { return st.fam === S.fam; }).forEach(function (st) {
-      var b = document.createElement("button"); b.type = "button"; b.className = "tc-ring"; b.dataset.id = st.id;
-      b.setAttribute("aria-pressed", String(st.id === S.style && !S.noRing)); b.setAttribute("aria-label", FAM_LABEL[st.fam] + ": " + st.name);
-      var cv = thumb(st); b.appendChild(cv); var s = document.createElement("span"); s.textContent = st.name; b.appendChild(s);
-      b.addEventListener("click", function () { S.style = st.id; S.noRing = false; $("noRing").checked = false; persist(); markRings(); schedule(); });
-      box.appendChild(b);
-    });
-  }
-  function markRings() { Array.prototype.forEach.call(document.querySelectorAll(".tc-ring"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.id === S.style && !S.noRing)); }); }
-  var thumbTimer = 0;
-  function refreshThumbs() { clearTimeout(thumbTimer); thumbTimer = setTimeout(renderRings, 120); }
-
-  function bindRange(id, key, fmt, opts) {
-    var el = $(id), out = $(id + "Out");
-    el.value = S[key]; if (out) out.textContent = fmt(S[key]);
-    el.addEventListener("input", function () { S[key] = +el.value; if (out) out.textContent = fmt(S[key]); if (opts && opts.draft) draft = true; if (opts && opts.line) lineActive = 1; schedule(); });
-    el.addEventListener("change", function () { draft = false; persist(); if (opts && opts.subj) subjDirty = true; if (opts && opts.line) setTimeout(function () { lineActive = 0; schedule(); }, 1200); schedule(); });
-  }
-  bindRange("thick", "thick", function (v) { return Math.round(v * 200) + "%"; }, { draft: true });
-  bindRange("rsize", "rsize", function (v) { return Math.round(v * 100) + "%"; }, { draft: true });
-  bindRange("tol", "tol", function (v) { return String(v); });
-  bindRange("shrink", "shrink", function (v) { return v + " px"; }, { subj: true });
-  bindRange("popLine", "popLine", function (v) { return Math.round(v * 100) + "%"; }, { line: true });
-  $("shrink").addEventListener("input", function () { subjDirty = true; });
-  function bindCheck(id, key, after) { var el = $(id); el.checked = S[key]; el.addEventListener("change", function () { S[key] = el.checked; persist(); if (after) after(); schedule(); }); }
-  bindCheck("noRing", "noRing", markRings);
-  bindCheck("tint", "tint", renderRings);
-  bindCheck("contig", "contig");
-  bindCheck("soften", "soften", function () { subjDirty = true; });
-  bindCheck("popTop", "popTop", function () { lineActive = 1; setTimeout(function () { lineActive = 0; schedule(); }, 1500); });
-  bindCheck("popShadow", "popShadow");
-  $("ringColor").value = S.ringColor;
-  $("ringColor").addEventListener("input", function (e) { S.ringColor = e.target.value; refreshThumbs(); schedule(); });
-  $("ringColor").addEventListener("change", function () { persist(); });
-  function syncFill() { $("fillColors").classList.toggle("tc-hidden", S.fillType === "none"); $("fill2Wrap").classList.toggle("tc-hidden", S.fillType === "solid" || S.fillType === "none"); }
-  $("fillType").value = S.fillType; syncFill();
-  $("fillType").addEventListener("change", function (e) { S.fillType = e.target.value; syncFill(); persist(); schedule(); });
-  ["fill1", "fill2"].forEach(function (id) { $(id).value = S[id]; $(id).addEventListener("input", function (e) { S[id] = e.target.value; schedule(); }); $(id).addEventListener("change", persist); });
-  $("autoBg").addEventListener("click", autoBackground);
-  $("resetCut").addEventListener("click", function () {
-    if (!src || !hasCut) return;
-    pushUndo("cut"); cutG.fillStyle = "#fff"; cutG.fillRect(0, 0, sw, sh); hasCut = false; subjDirty = true; say("The whole picture is back."); schedule();
-  });
-  $("clearPop").addEventListener("click", function () { if (!hasPop && !S.popTop) return; if (hasPop) pushUndo("pop"); popG.clearRect(0, 0, M, M); hasPop = false; S.popTop = false; $("popTop").checked = false; persist(); schedule(); });
-  Array.prototype.forEach.call(document.querySelectorAll(".tc-dl [data-size]"), function (b) { b.addEventListener("click", function () { exportPng(+b.dataset.size); }); });
-
-  function sizeCanvas() {
-    var w = pv.getBoundingClientRect().width || 512, P = Math.min(M, Math.max(256, Math.round(w * (window.devicePixelRatio || 1))));
-    if (pv.width !== P) { pv.width = pv.height = P; schedule(); }
-  }
-  if (window.ResizeObserver) new ResizeObserver(sizeCanvas).observe(stage); else window.addEventListener("resize", sizeCanvas);
-  sizeCanvas();
-  renderFams(); renderRings(); setTool("move"); schedule();
-  // for checks in a browser console: the composed token's size and whether its corners are see-through
-  window.tgToken = { exportPng: exportPng, styles: function () { return STYLES.map(function (s) { return s.id; }); },
-    state: function () { return { style: S.style, hasImage: !!src, hasCut: hasCut, hasPop: hasPop, popTop: S.popTop, tool: tool }; } };
-})();
-</script>
+<script src="token-rings.js"></script>
+<script src="token-textures.js"></script>
+<script src="token-bgremove.js"></script>
+<script src="token-objects.js"></script>
+<script src="token-export.js"></script>
+<script src="token-creator.js"></script>
 <script>
   /* A collapse/expand button in the corner of each section, as on Map prep and the character builder. Each section remembers how you
      left it, in this browser only. */
@@ -936,16 +464,18 @@
     try { saved = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { saved = {}; }
     Array.prototype.forEach.call(document.querySelectorAll(".tc-layout .panel"), function (panel) {
       var head = panel.querySelector(":scope > h2"); if (!head) return;
-      var id = head.textContent.replace(/[^A-Za-z]+/g, "").toLowerCase();
+      // the heading's own words, without a lock button's label, so the remembered state keeps its key
+      var bare = head.cloneNode(true); Array.prototype.forEach.call(bare.querySelectorAll("button"), function (b) { b.remove(); });
+      var name = bare.textContent, id = name.replace(/[^A-Za-z]+/g, "").toLowerCase();
       var btn = document.createElement("button"); btn.type = "button"; btn.className = "collapse-btn";
       var set = function (collapsed, remember) {
         panel.classList.toggle("collapsed", collapsed); btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
-        var title = head.textContent.replace(/^[\d\s·]+/, "").trim();
+        var title = name.replace(/^[\d\s·]+/, "").trim();
         btn.setAttribute("aria-label", (collapsed ? "Expand " : "Collapse ") + title); btn.title = collapsed ? "Expand this section" : "Collapse this section";
         if (remember) { saved[id] = collapsed; try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* private window: not remembered */ } }
       };
       btn.addEventListener("click", function () { set(!panel.classList.contains("collapsed"), true); });
-      head.addEventListener("click", function () { if (panel.classList.contains("collapsed")) set(false, true); });
+      head.addEventListener("click", function (e) { if (e.target.closest("button")) return; if (panel.classList.contains("collapsed")) set(false, true); });
       set(!!saved[id], false); panel.insertBefore(btn, head.nextSibling);
     });
   }());
