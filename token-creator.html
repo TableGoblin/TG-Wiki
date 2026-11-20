@@ -694,13 +694,22 @@
     mg.restore();
     if (ring) mg.drawImage(ring, 0, 0, M, M);
     if (src && popMask()) {
+      /* The popped part starts where the inner ring shading starts (where it is still zero), not at the ring's edge, so it covers the
+         shading and leaves no curved seam along the ring. Its shadow falls only on the ring and outside it -- a shadow cast inward from
+         the cut edge drew the ring's curve right across the figure. The shadow is drawn on its own (the image far off-canvas, the
+         shadow offset back) so the popped pixels are drawn once and their soft edges don't darken. */
+      var rIn = ring ? Math.max(0, r0 - (r1 - r0) * 0.5 - 1) : Math.max(0, r0 - 1);
       tg.clearRect(0, 0, M, M); place(tg, subj);
       tg.globalCompositeOperation = "destination-in"; tg.drawImage(popEff, 0, 0);
-      tg.globalCompositeOperation = "destination-out"; tg.beginPath(); tg.arc(C, C, Math.max(0, r0 - 1), 0, Math.PI * 2); tg.fill();
+      tg.globalCompositeOperation = "destination-out"; tg.beginPath(); tg.arc(C, C, rIn, 0, Math.PI * 2); tg.fill();
       tg.globalCompositeOperation = "source-over";
-      mg.save();
-      if (S.popShadow) { mg.shadowColor = "rgba(0,0,0,0.5)"; mg.shadowBlur = M * 0.014; mg.shadowOffsetY = M * 0.006; }
-      mg.drawImage(tmp, 0, 0); mg.restore();
+      if (S.popShadow) {
+        mg.save();
+        mg.beginPath(); mg.rect(0, 0, M, M); mg.arc(C, C, r0, 0, Math.PI * 2); mg.clip("evenodd");
+        mg.shadowColor = "rgba(0,0,0,0.5)"; mg.shadowBlur = M * 0.014; mg.shadowOffsetX = M * 4; mg.shadowOffsetY = M * 0.006;
+        mg.drawImage(tmp, -M * 4, 0); mg.restore();
+      }
+      mg.drawImage(tmp, 0, 0);
     }
   }
   function accent() { return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2F6C5E"; }
