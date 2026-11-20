@@ -426,7 +426,8 @@
     var out = [], cls = curClass(), bg = curBackground();
     if (cls) cls.skills.forEach(function (s) { out.push(s); });
     if (bg) bg.skills.forEach(function (s) { out.push(s); });
-    l1FeatNames().concat(bg ? (bg.feats || []) : []).forEach(function (n) { var f = featInfo(n); if (f) (f.trains || []).forEach(function (s) { out.push(s); }); });
+    chosenOptions().forEach(function (o) { (o[4] || []).forEach(function (s) { out.push(s); }); });     /* D2242: a Leaf Order's Diplomacy, a bloodline's two skills */
+    l1FeatNames().concat(bg ? (bg.feats || []) : []).concat(optionGrants()).forEach(function (n) { var f = featInfo(n); if (f) (f.trains || []).forEach(function (s) { out.push(s); }); });
     return out;
   }
   function fixedSkills() { var g = grantList(); return g.filter(function (s, i) { return g.indexOf(s) === i; }); }
@@ -681,8 +682,16 @@
         p.appendChild(b);
       });
       var picked = g.options.filter(function (o) { return S.groups[g.feature] === o[0]; })[0];
-      if (picked) detailFor(box, picked[0], "origins", function (t) { return t.option[c.name + "|" + g.feature + "|" + picked[0]] || picked[1]; }, (picked[3] && picked[3].length) ? "Grants: " + picked[3].join(", ") : "");
+      if (picked) detailFor(box, picked[0], "origins", function (t) { return t.option[c.name + "|" + g.feature + "|" + picked[0]] || picked[1]; }, optionDetail(picked));
     });
+  }
+
+  function optionDetail(o) {                                                 /* D2242: what a chosen option gives outright -- feats, trained skills, focus spells */
+    var bits = [];
+    if (o[3] && o[3].length) bits.push("Grants: " + o[3].join(", "));
+    if (o[4] && o[4].length) bits.push("Trained in: " + o[4].map(cap1).join(", "));
+    if (o[5] && o[5].length) bits.push("Focus spell" + (o[5].length > 1 ? "s" : "") + ": " + o[5].join(", "));
+    return bits.join(" · ");
   }
 
   function renderVoluntary() {
@@ -1007,6 +1016,13 @@
     if (cls) cls.groups.forEach(function (g) { g.options.forEach(function (o) { if (S.groups[g.feature] === o[0]) out.push(o); }); });
     return out;
   }
+  function focusSpells() {                                                   /* D2242: the class's own focus spells and the chosen options' (Cornucopia) */
+    var cls = curClass(), out = []; if (!cls) return out;
+    (cls.focus || []).forEach(function (n) { if (out.indexOf(n) < 0) out.push(n); });
+    chosenOptions().forEach(function (o) { (o[5] || []).forEach(function (n) { if (out.indexOf(n) < 0) out.push(n); }); });
+    return out;
+  }
+  function focusPoints() { return Math.min(3, focusSpells().filter(function (n) { return !/ \(cantrip\)$/.test(n); }).length); }
   function optionGrants() { var out = []; chosenOptions().forEach(function (o) { (o[3] || []).forEach(function (n) { if (out.indexOf(n) < 0) out.push(n); }); }); return out; }
   function grantedFeats() {                                                  /* the feats chosen options and the background hand over outright (Lingering Composition, Hobnobber) */
     var out = optionGrants(), bg = curBackground();
@@ -1285,6 +1301,7 @@
     if (cls) l1.appendChild(line("Class", cls.name + (S.keyAttr ? " (key " + NAMES[S.keyAttr] + ")" : "")));
     Object.keys(S.groups).forEach(function (f) { l1.appendChild(line(f, S.groups[f])); });
     var auto = grantedFeats(); if (auto.length) l1.appendChild(line("Granted", auto.join(", ")));
+    var focus = focusSpells(); if (focus.length) l1.appendChild(line("Focus spells", focus.join(", ") + (focusPoints() ? " (focus pool " + focusPoints() + ")" : "")));
     var trained = fixedSkills().concat(S.skills);
     if (trained.length) { var sc = trained.map(function (s) { return skillLine(s, 1); }); var wrapSk = el("span", "chips"); sc.forEach(function (n) { wrapSk.appendChild(n); }); l1.appendChild(line("Trained", [wrapSk])); }
     [["ancestry", "Ancestry feat"], ["ancestry2", "Ancestry feat (paragon)"], ["class", "Class feat"], ["skill", "Skill feat"], ["calling", "Mythic calling"]].forEach(function (p) { if (S.feats[p[0]]) l1.appendChild(line(p[1], S.feats[p[0]])); });
