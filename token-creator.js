@@ -3,7 +3,7 @@
    the lettering. Loaded after token-rings.js, token-textures.js, token-bgremove.js, token-objects.js and token-export.js. */
 (function () {
   "use strict";
-  var TG = window.TGTok, K = TG.rings, TX = TG.textures, BG = TG.bg, OB = TG.objects, EX = TG.exporter;
+  var TG = window.TGTok, K = TG.rings, TX = TG.textures, BG = TG.bg, OB = TG.objects, PR = TG.props, EX = TG.exporter;
   var M = 1024, C = M / 2, MAX_SRC = 1200, UNDO_MAX = 30, STORE = "tg-token-v1";
   var TAU = K.TAU, LX = K.LX, LY = K.LY, mk = K.mk, cx2 = K.cx2, clamp01 = K.clamp01, hex = K.hex, toHex = K.toHex, mix = K.mix, rng = K.rng;
   var STYLES = K.STYLES, FAMS = K.FAMS, FAM_LABEL = K.FAM_LABEL, FAM_GAME = K.FAM_GAME, styleById = K.styleById, paintRing = K.paintRing;
@@ -13,7 +13,10 @@
   // ---------- state ----------
   var S = {
     style: "Metal:Gold", fam: "Metal", game: "all", thick: 0.075, rsize: 1, ringColor: "#8a2b2b", tint: false, noRing: false, side: "", sideMark: false,
-    shape: "circle", inner: 0.38, bevel: 0, ringGlow: 1, ringFlicker: "strong",
+    shape: "circle", inner: 0.38, bevel: 0, ringGlow: 1, ringFlicker: "strong", ringLen: 1, ringCount: 16,
+    // the ring stack, outside in (up to 3); the fields above (style, ringColor, tint, thick, ringGlow, ringFlicker, ringLen, ringCount)
+    // are the entry being edited, rings[ringSel]. An older file without a list loads as a one-ring stack made from those fields.
+    rings: [], ringSel: 0, ringGap: 0,
     fillType: "radial", fill1: "#6f93a6", fill2: "#1d2830", tex: "parchment", texScale: 1, texTint: 0, texVig: 0.4, texSeed: 1,
     popTop: false, popLine: 0.4, popShadow: true, dropShadow: false,
     tol: 28, contig: true, edgeSoft: 4, shrink: 0, clean: true, despill: true, smartTo: "cut",
@@ -23,6 +26,7 @@
   };
   function loadSettings(obj) {
     Object.keys(S).forEach(function (k) { if (obj && typeof obj[k] === typeof S[k]) S[k] = obj[k]; });
+    if (obj && !Array.isArray(obj.rings)) { S.rings = []; S.ringSel = 0; }   // an older file or preset: one ring, from its own fields
     if (!styleById(S.style)) S.style = "Metal:Gold";
     if (["all", "fantasy", "scifi"].indexOf(S.game) < 0) S.game = "all";
     if (famsShown().indexOf(S.fam) < 0) S.fam = famsShown()[0];
@@ -36,10 +40,50 @@
     S.font = OB.fontById(S.font).id;
     S.ringGlow = Math.max(0, Math.min(2, S.ringGlow));
     if (["off", "subtle", "strong"].indexOf(S.ringFlicker) < 0) S.ringFlicker = "strong";
+    S.ringLen = Math.max(0.4, Math.min(2, +S.ringLen || 1)); S.ringCount = Math.max(6, Math.min(40, Math.round(+S.ringCount || 16)));
+    S.ringGap = Math.max(0, Math.min(0.05, +S.ringGap || 0));
+    S.rings = Array.isArray(S.rings) ? S.rings.slice(0, RMAX).filter(function (e) { return e && typeof e === "object"; }).map(normEntry) : [];
+    ringList();
     syncR();
   }
+  // ---------- the ring stack ----------
+  var RMAX = 3;
+  function curEntry() { return { style: S.style, color: S.ringColor, tint: S.tint, thick: S.thick, glow: S.ringGlow, flicker: S.ringFlicker, len: S.ringLen, count: S.ringCount }; }
+  function normEntry(e) {
+    function num(v, lo, hi, d) { v = +v; return isFinite(v) ? Math.max(lo, Math.min(hi, v)) : d; }
+    return { style: styleById(e.style) ? e.style : "Metal:Gold", color: /^#[0-9a-f]{6}$/i.test(e.color) ? e.color : "#8a2b2b", tint: !!e.tint,
+      thick: num(e.thick, 0.02, 0.18, 0.075), glow: num(e.glow, 0, 2, 1), flicker: ["off", "subtle", "strong"].indexOf(e.flicker) >= 0 ? e.flicker : "strong",
+      len: num(e.len, 0.4, 2, 1), count: Math.round(num(e.count, 6, 40, 16)) };
+  }
+  // The list, with the entry being edited brought up to date from the controls' fields.
+  function ringList() {
+    if (!Array.isArray(S.rings) || !S.rings.length) S.rings = [curEntry()];
+    if (S.rings.length > RMAX) S.rings.length = RMAX;
+    S.ringSel = Math.max(0, Math.min(S.rings.length - 1, S.ringSel | 0));
+    S.rings[S.ringSel] = curEntry();
+    return S.rings;
+  }
+  function loadEntry(i) {
+    var e = S.rings[i]; if (!e) return;
+    S.ringSel = i; S.style = e.style; S.ringColor = e.color; S.tint = e.tint; S.thick = e.thick; S.ringGlow = e.glow; S.ringFlicker = e.flicker; S.ringLen = e.len; S.ringCount = e.count;
+    var st = styleById(e.style); if (st) { S.fam = st.fam; if (famsShown().indexOf(S.fam) < 0) S.game = "all"; }
+  }
+  // Each ring's band, outside in: { e, st, r0, r1, i }. A ring that would leave too little room for the picture is left out.
+  function ringBands() {
+    var list = ringList(), out = [], r1 = ringR1(), min = r1 * 0.3;
+    for (var i = 0; i < list.length; i++) {
+      var e = list[i], r0 = Math.max(min, r1 - e.thick * M);
+      if (r1 - r0 < 2) break;
+      out.push({ e: e, st: styleById(e.style), r0: r0, r1: r1, i: i });
+      r1 = r0 - S.ringGap * M;
+      if (r1 <= min + 2) break;
+    }
+    return out;
+  }
+  function innerBand() { if (S.noRing) return 0; var b = ringBands(); return b.length ? b[b.length - 1].r1 - b[b.length - 1].r0 : ringR1() - ringR0(); }
+  function ringsAnim() { return ringBands().some(function (b) { return b.st && b.st.anim; }); }
   // the ring drawing reads the loop length, Glow and Flicker from the shared ring settings
-  function syncR() { K.R.loop = S.animLen; K.R.glow = S.ringGlow; K.R.flick = S.ringFlicker; }
+  function syncR() { K.R.loop = S.animLen; K.R.glow = S.ringGlow; K.R.flick = S.ringFlicker; K.R.len = S.ringLen; K.R.count = S.ringCount; }
   function persist() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { /* storage is optional */ } }
   // Side presets. Player, Enemy and Neutral are the bot's battle-map side colors; Ally is a bluish green that stays apart from red for
   // red-green color blindness. Each also has its own mark shape, so color is never the only signal.
@@ -84,7 +128,7 @@
   function shp() { return K.shapeById(S.shape); }
   function halfR() { return C * S.rsize - 3; }
   function ringR1() { return halfR() * shp().fit; }
-  function ringR0() { return S.noRing ? ringR1() : Math.max(ringR1() * 0.3, ringR1() - S.thick * M); }
+  function ringR0() { if (S.noRing) return ringR1(); var b = ringBands(); return b.length ? b[b.length - 1].r0 : Math.max(ringR1() * 0.3, ringR1() - S.thick * M); }
   function geo(N) { var k = (N || M) / M; return { shape: shp(), cx: C * k, cy: (C + halfR() * shp().oy) * k }; }
   // The token's outline. Every clip and outline goes through here, for every shape. It adds a closed subpath (callers begin the path).
   function shapePath(g, r, cx, cy) {
@@ -97,9 +141,19 @@
     if (S.noRing) return null;
     t = t || 0;
     syncR();
-    var N = draft || playing ? 512 : M, k = N / M, key = [S.style, S.thick, S.rsize, S.ringColor, S.tint, S.shape, S.ringGlow, S.ringFlicker, S.animLen, N].join("|");
-    function paint() { return paintRing(N, ringR0() * k, ringR1() * k, ringStyle(), hex(S.ringColor), S.tint, t, geo(N)); }
-    if (t && ringStyle().anim) {   // frames of an animated ring, kept while the settings stay the same
+    var bands = ringBands(), N = draft || playing ? 512 : M, k = N / M;
+    var key = [JSON.stringify(bands.map(function (b) { return [b.e, b.r0, b.r1]; })), S.rsize, S.shape, S.ringGlow, S.ringFlicker, S.animLen, N].join("|");
+    function paint() {   // each ring with its own Glow, Flicker, Length and Count, the innermost first so an outer ring sits on top
+      var out = null;
+      for (var i = bands.length - 1; i >= 0; i--) {
+        var b = bands[i]; K.R.glow = b.e.glow; K.R.flick = b.e.flicker; K.R.len = b.e.len; K.R.count = b.e.count;
+        var c = paintRing(N, b.r0 * k, b.r1 * k, b.st, hex(b.e.color), b.e.tint, t, geo(N));
+        if (!out) out = c; else { var og = cx2(out); og.drawImage(c, 0, 0); }
+      }
+      syncR();
+      return out || mk(N);
+    }
+    if (t && ringsAnim()) {   // frames of an animated ring, kept while the settings stay the same
       if (ringFrames.key !== key) ringFrames = { key: key, f: {} };
       var fk = t.toFixed(4);
       if (!ringFrames.f[fk]) ringFrames.f[fk] = paint();
@@ -510,11 +564,20 @@
     if (CT.mark.kind) { q = badgeSpot(CT.mark.clock, rm); OB.badge(g, q[0], q[1], { kind: CT.mark.kind, color: CT.mark.kind === "elite" ? "#b8322a" : "#4a6a8a", size: sz * 0.9 }); }
     if (CT.badge.text) { q = badgeSpot(CT.badge.clock, rm); OB.badge(g, q[0], q[1], { kind: "number", text: CT.badge.text, color: CT.badge.color, shape: CT.badge.shape, size: sz }); }
   }
-  function drawObjects(g, t) { CT.objs.forEach(function (O) { OB.drawObject(g, O, t); }); }
+  // Props sit in front of everything (the default) or under the ring and over the picture (layer "under"); banners and signs in front.
+  function ringEnv() { var G0 = geo(); return { shape: G0.shape, cx: G0.cx, cy: G0.cy, r0: ringR0(), r1: ringR1() }; }
+  function isProp(O) { return !!O && O.type === "prop"; }
+  function drawObjects(g, t, under) {
+    CT.objs.forEach(function (O) {
+      if (isProp(O)) { if ((O.layer === "under") === !!under) PR.draw(g, O, t); }
+      else if (!under) OB.drawObject(g, O, t);
+    });
+  }
   function compose(t) {
     t = t || 0;
     if (subjDirty) rebuildSubject(gesture && gesture.kind === "brush");
-    var r1 = ringR1(), r0 = ringR0(), ring = V.ring ? ringLayer(t) : null, band = r1 - r0;
+    var r1 = ringR1(), r0 = ringR0(), ring = V.ring ? ringLayer(t) : null, band = innerBand();   // the innermost ring's band
+    PR.setEnv(ringEnv());
     mg.clearRect(0, 0, M, M);
     mg.save(); mg.beginPath(); shapePath(mg, r0 + 0.5); mg.clip();
     if (V.backdrop) fill(mg, r0);
@@ -529,6 +592,13 @@
       }
     }
     mg.restore();
+    if (ring && V.backdrop && S.ringGap > 0) {   // the gaps between stacked rings show the backdrop
+      var bs = ringBands();
+      for (var gi = 0; gi + 1 < bs.length; gi++) { mg.save(); mg.beginPath(); shapePath(mg, bs[gi].r0 + 0.5); shapePath(mg, bs[gi + 1].r1 - 0.5); mg.clip("evenodd"); fill(mg, r1); mg.restore(); }
+    }
+    if (V.objects && CT.objs.some(function (O) { return isProp(O) && O.layer === "under"; })) {   // props under the ring, kept inside the token
+      mg.save(); mg.beginPath(); shapePath(mg, r1); mg.clip(); drawObjects(mg, t, true); mg.restore();
+    }
     if (ring) {
       // the ring, less any erased parts (see-through there; the picture stays clipped to the inner edge)
       ringTmpG.globalCompositeOperation = "copy"; ringTmpG.drawImage(ring, 0, 0, M, M); ringTmpG.globalCompositeOperation = "source-over";
@@ -623,18 +693,28 @@
   function srcToToken(q) { return [(q[0] - sw / 2) * scale() * (img.flip ? -1 : 1) + C + img.x, (q[1] - sh / 2) * scale() + C + img.y]; }
   function handleSpots(O) {
     var hh = OB.objHalf(O), px = M / (pv.width * cam.z) * (pv.width / (pv.getBoundingClientRect().width || pv.width));
-    return { corner: OB.fromLocal(O, [hh[0], hh[1]]), rot: OB.fromLocal(O, [0, -hh[1] - 26 * px]), r: 9 * px, hh: hh, px: px };
+    var ring = PR.isRing(O);
+    return { corner: OB.fromLocal(O, [hh[0], hh[1]]), rot: ring ? null : OB.fromLocal(O, [0, -hh[1] - 26 * px]), r: 9 * px, hh: hh, px: px,
+      flip: isProp(O) && !ring ? OB.fromLocal(O, [-hh[0], -hh[1]]) : null };
   }
   function drawHandles(O, px) {
     var H = handleSpots(O), hh = H.hh, ac = accent();
     pg.save(); pg.translate(O.x, O.y); pg.rotate(O.rot || 0);
     pg.setLineDash([6 * px, 4 * px]); pg.strokeStyle = ac; pg.lineWidth = 1.5 * px; pg.strokeRect(-hh[0], -hh[1], hh[0] * 2, hh[1] * 2);
-    pg.setLineDash([]); pg.beginPath(); pg.moveTo(0, -hh[1]); pg.lineTo(0, -hh[1] - 26 * H.px); pg.stroke();
+    pg.setLineDash([]); if (H.rot) { pg.beginPath(); pg.moveTo(0, -hh[1]); pg.lineTo(0, -hh[1] - 26 * H.px); pg.stroke(); }
     pg.restore();
     [H.corner, H.rot].forEach(function (q, i) {
+      if (!q) return;
       pg.fillStyle = i ? "#ffffff" : ac; pg.strokeStyle = i ? ac : "#ffffff"; pg.lineWidth = 2 * px;
       pg.beginPath(); if (i) pg.arc(q[0], q[1], H.r, 0, TAU); else pg.rect(q[0] - H.r, q[1] - H.r, H.r * 2, H.r * 2); pg.fill(); pg.stroke();
     });
+    if (H.flip) {   // the flip handle: a round button with a two-way arrow
+      var f = H.flip, r = H.r;
+      pg.fillStyle = ac; pg.strokeStyle = "#ffffff"; pg.lineWidth = 2 * px; pg.beginPath(); pg.arc(f[0], f[1], r * 1.1, 0, TAU); pg.fill(); pg.stroke();
+      pg.beginPath(); pg.moveTo(f[0] - r * 0.6, f[1]); pg.lineTo(f[0] + r * 0.6, f[1]);
+      pg.moveTo(f[0] - r * 0.3, f[1] - r * 0.3); pg.lineTo(f[0] - r * 0.62, f[1]); pg.lineTo(f[0] - r * 0.3, f[1] + r * 0.3);
+      pg.moveTo(f[0] + r * 0.3, f[1] - r * 0.3); pg.lineTo(f[0] + r * 0.62, f[1]); pg.lineTo(f[0] + r * 0.3, f[1] + r * 0.3); pg.lineWidth = 1.6 * px; pg.stroke();
+    }
   }
   function drawInset() {
     var N = insetCv.width, k = N / M, h = M / (2 * cam.z);
@@ -649,7 +729,8 @@
   // Play runs the animated rings at 512 px while it plays; a flickering neon sign flickers in the preview all the time.
   function animFrames() { return S.animLen <= 1 ? 12 : S.animLen <= 1.5 ? 18 : 20; }
   function neonFlickering() { return V.objects && CT.objs.some(function (O) { return O.style === "neon" && O.neon && OB.neonMode(O.neon) !== "off"; }); }
-  function hasAnimation() { return (!S.noRing && V.ring && ringStyle().anim) || neonFlickering(); }
+  function propsMove() { return V.objects && CT.objs.some(function (O) { return PR.moves(O); }); }
+  function hasAnimation() { return (!S.noRing && V.ring && ringsAnim()) || neonFlickering() || propsMove(); }
   var tickTimer = 0;
   function tick() {
     clearTimeout(tickTimer);
@@ -661,7 +742,7 @@
   }
   function setPlaying(on) {
     playing = on; $("playAnim").setAttribute("aria-pressed", String(on)); $("playAnim").innerHTML = on ? "&#10074;&#10074; Pause" : "&#9654; Play";
-    if (on && !hasAnimation()) say("Nothing on this token moves yet. Pick a ring marked ▶, or add a neon sign with flicker on.");
+    if (on && !hasAnimation()) say("Nothing on this token moves yet. Pick a ring marked ▶, add a neon sign with flicker on, or add twinkling lights or drifting snowflakes.");
     if (!on) { animT = 0; ringFrames = { key: "", f: {} }; }
     tick(); schedule();
   }
@@ -766,7 +847,7 @@
   }
   function exportAnim(kind) {
     if (busy) return;
-    if (!hasAnimation()) { say("Nothing on this token moves yet. Pick a ring marked ▶, or add a neon sign with flicker on."); return; }
+    if (!hasAnimation()) { say("Nothing on this token moves yet. Pick a ring marked ▶, add a neon sign with flicker on, or add twinkling lights or drifting snowflakes."); return; }
     busy = true; progress(0.02); say("Drawing the frames...");
     var N = 512, n = animFrames(), delay = Math.round(S.animLen * 1000 / n);
     animFrameData(N, function (f) { progress(f * 0.7); }).then(function (frames) {
@@ -815,7 +896,7 @@
       if (P.filters) { Object.keys(F).forEach(function (k) { if (typeof P.filters[k] === typeof F[k]) F[k] = P.filters[k]; }); syncFilters(); applyFilters(); }
       if (Array.isArray(P.strokes)) strokes = P.strokes.filter(function (s) { return s && (s.kind === 1 || s.kind === 2) && Array.isArray(s.pts); });
       if (P.model && Array.isArray(P.model.rgb) && Array.isArray(P.model.lab)) model = { rgb: P.model.rgb, lab: P.model.lab };
-      if (d.content && typeof d.content === "object") { CT = Object.assign(freshContent(), d.content); if (!Array.isArray(CT.objs)) CT.objs = []; }
+      if (d.content && typeof d.content === "object") { CT = Object.assign(freshContent(), d.content); if (!Array.isArray(CT.objs)) CT.objs = []; CT.objs = CT.objs.map(PR.clean).filter(Boolean); }
       if (d.locks) Object.keys(L).forEach(function (k) { L[k] = !!d.locks[k]; });
       if (d.visible) Object.keys(V).forEach(function (k) { if (typeof d.visible[k] === "boolean") V[k] = d.visible[k]; });
       fileBase = d.fileBase || fileBase;
@@ -883,15 +964,25 @@
     if ((tool === "pop" || tool === "unpop") && !src) return "Choose a picture first.";
     return "";
   }
+  // Ring erasing works on every ring, or on one ring of the stack: its band, reaching half way into the gaps (and past the outer edge
+  // for the outermost ring), as [inner, outer] radii.
+  var eraseRing = -1;
+  function eraseBand() {
+    if (eraseRing < 0) return null;
+    var bs = ringBands(), b = bs[eraseRing], h = S.ringGap * M / 2; if (!b) return null;
+    return [eraseRing === bs.length - 1 ? 0.5 : b.r0 - h, eraseRing === 0 ? M * 2 : b.r1 + h];
+  }
   function dab(a, b) {
     var rt = +$("brush").value, dx = b[0] - a[0], dy = b[1] - a[1], steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / (rt * 0.3))), i, q;
     var targets = gesture && gesture.targets ? gesture.targets : brushTargets();
     targets.forEach(function (tgt) {
       if (tgt === "pop" || tgt === "ring") {
-        var g = tgt === "pop" ? popG : ringMaskG, add = tool === "pop" || tool === "rerase" || tool === "erase";
+        var g = tgt === "pop" ? popG : ringMaskG, add = tool === "pop" || tool === "rerase" || tool === "erase", only = tgt === "ring" ? eraseBand() : null;
+        if (only) { g.save(); g.beginPath(); shapePath(g, only[1]); shapePath(g, only[0]); g.clip("evenodd"); }
         g.globalCompositeOperation = add ? "source-over" : "destination-out"; g.fillStyle = "#fff";
         for (i = 0; i <= steps; i++) { q = [a[0] + dx * i / steps, a[1] + dy * i / steps]; g.beginPath(); g.arc(q[0], q[1], rt, 0, TAU); g.fill(); }
         g.globalCompositeOperation = "source-over";
+        if (only) g.restore();
         if (tgt === "pop" && add) hasPop = true;
         if (tgt === "ring" && add) hasRingMask = true;
       } else if (tgt === "cut") {
@@ -925,7 +1016,8 @@
   function pansView() { return tool === "pan" || spaceDown || (tool === "move" && L.imgXform); }
   function objAt(p) {
     var pad = 6 * M / (pv.width * cam.z);
-    for (var i = CT.objs.length - 1; i >= 0; i--) if (OB.hitObject(CT.objs[i], p, pad)) return i;
+    PR.setEnv(ringEnv());
+    for (var i = CT.objs.length - 1; i >= 0; i--) if (OB.hitObject(CT.objs[i], p, pad) || (PR.isRing(CT.objs[i]) && PR.hitRing(CT.objs[i], p, pad))) return i;
     return -1;
   }
   function startObjectGesture(p) {
@@ -934,12 +1026,13 @@
     if (O) {
       var H = handleSpots(O);
       if (Math.hypot(p[0] - H.corner[0], p[1] - H.corner[1]) <= H.r * 1.8) { pushUndo("obj"); gesture = { kind: "objscale", w: O.w, h: O.h, d0: Math.hypot(p[0] - O.x, p[1] - O.y) }; return; }
-      if (Math.hypot(p[0] - H.rot[0], p[1] - H.rot[1]) <= H.r * 1.8) { pushUndo("obj"); gesture = { kind: "objrot", r0: O.rot || 0, a0: Math.atan2(p[1] - O.y, p[0] - O.x) }; return; }
+      if (H.flip && Math.hypot(p[0] - H.flip[0], p[1] - H.flip[1]) <= H.r * 1.8) { flipObject(); return; }
+      if (H.rot && Math.hypot(p[0] - H.rot[0], p[1] - H.rot[1]) <= H.r * 1.8) { pushUndo("obj"); gesture = { kind: "objrot", r0: O.rot || 0, a0: Math.atan2(p[1] - O.y, p[0] - O.x) }; return; }
     }
     var hit = objAt(p);
     if (hit !== sel) { sel = hit; syncObjForm(); }
-    if (hit >= 0) { gesture = { kind: "objmove", p: p, x: CT.objs[hit].x, y: CT.objs[hit].y, pushed: false }; say("Drag to move it; the corner handle resizes it and the round handle turns it."); }
-    else say(CT.objs.length ? "Tap an object to select it." : "Add a banner, scroll, plaque, nameplate or neon sign in the Text and objects section.");
+    if (hit >= 0) { gesture = { kind: "objmove", p: p, x: CT.objs[hit].x, y: CT.objs[hit].y, pushed: false }; say(PR.isRing(CT.objs[hit]) ? "Drag to slide the lights around the ring; the corner handle sizes the bulbs." : "Drag to move it; the corner handle resizes it, the round handle turns it and a prop's arrow handle flips it."); }
+    else say(CT.objs.length ? "Tap an object to select it." : "Add a banner, scroll, plaque, nameplate, neon sign or holiday prop in the Text and objects section.");
   }
   pv.addEventListener("pointerdown", function (e) {
     if (e.button > 1) return;
@@ -994,6 +1087,7 @@
     else if (gesture.kind === "objmove" && CT.objs[sel]) {
       if (!gesture.pushed) { pushUndo("obj"); gesture.pushed = true; }
       CT.objs[sel].x = gesture.x + p[0] - gesture.p[0]; CT.objs[sel].y = gesture.y + p[1] - gesture.p[1];
+      if (PR.isRing(CT.objs[sel])) PR.snap(CT.objs[sel], ringEnv());   // a garland slides along the ring
     } else if (gesture.kind === "objscale" && CT.objs[sel]) {
       var O = CT.objs[sel], k2 = Math.max(0.15, Math.min(4, Math.hypot(p[0] - O.x, p[1] - O.y) / Math.max(1, gesture.d0)));
       O.w = Math.max(40, Math.min(M * 1.4, gesture.w * k2)); O.h = Math.max(14, Math.min(M, gesture.h * k2));
@@ -1038,7 +1132,9 @@
   function nudge(dx, dy) {
     if (tool === "select" && sel >= 0 && CT.objs[sel]) {
       if (L.objects) { say("The objects are locked. Unlock them in Layers and locks."); return; }
-      pushUndo("obj", true); CT.objs[sel].x += dx; CT.objs[sel].y += dy; schedule(); return;
+      pushUndo("obj", true); CT.objs[sel].x += dx; CT.objs[sel].y += dy;
+      if (PR.isRing(CT.objs[sel])) PR.snap(CT.objs[sel], ringEnv());
+      schedule(); return;
     }
     if (!src) return;
     if (L.imgXform) {
@@ -1112,7 +1208,7 @@
     unpop: "Paint to send parts back behind the ring." + ZOOM_HINT,
     rerase: "Paint to erase pieces of the ring; erased parts are see-through." + ZOOM_HINT,
     rrestore: "Paint to bring erased parts of the ring back." + ZOOM_HINT,
-    select: "Tap an object to select it, then drag it, resize it with the corner handle or turn it with the round handle. Arrow keys nudge it."
+    select: "Tap an object or prop to select it, then drag it, resize it with the corner handle, turn it with the round handle or flip a prop with its arrow handle. Arrow keys nudge it."
   };
   function hint() {
     if (!src && tool !== "select" && tool !== "rerase" && tool !== "rrestore") { say("Choose a picture to start, or try the sample."); return; }
@@ -1156,7 +1252,7 @@
   $("center").addEventListener("click", function () { if (!src || L.imgXform) return; pushUndo("xform"); img.x = 0; img.y = 0; img.zoom = 1; syncSize(); schedule(); });
 
   // locks and layers (this token only, never stored in the browser)
-  var RING_CTRLS = ["noRing", "thick", "rsize", "ringColor", "pickRing", "tint", "ringGlow", "ringFlicker", "sideMark", "inner", "bevel", "clearRingMask", "randomRing"];
+  var RING_CTRLS = ["noRing", "thick", "rsize", "ringColor", "pickRing", "tint", "ringGlow", "ringFlicker", "ringLen", "ringCount", "ringGap", "ringAdd", "sideMark", "inner", "bevel", "clearRingMask", "randomRing"];
   var BACKDROP_CTRLS = ["fillType", "fill1", "fill2", "texScale", "texTint", "texVig", "texShuffle", "coverRemoved", "clearCover"];
   function setLockBtn(id, on, what) {
     var b = $(id); if (!b) return; b.setAttribute("aria-pressed", String(on));
@@ -1166,6 +1262,7 @@
   function syncLocks() {
     RING_CTRLS.forEach(function (id) { $(id).disabled = L.ring; });
     each("#rings .tc-ring, #sides .pill, #shapes .pill, #templates .tc-ring", function (b) { b.disabled = L.ring; });
+    renderRingList();   // the ring list's own buttons (move, remove, add, which ring the eraser works on)
     BACKDROP_CTRLS.forEach(function (id) { $(id).disabled = L.backdrop; });
     each("#textures .tc-ring, #fillColors .tc-drop", function (b) { b.disabled = L.backdrop; });
     ["picSize", "flip", "center"].forEach(function (id) { $(id).disabled = L.imgXform; });
@@ -1284,7 +1381,7 @@
   function selectStyle(id) {
     if (L.ring) return;
     var st = styleById(id); if (!st) return;
-    S.style = id; S.noRing = false; $("noRing").checked = false;
+    S.style = id; S.noRing = false; $("noRing").checked = false; renderRingList();
     if (st.glow && S.rsize > 0.96) { S.rsize = 0.94; $("rsize").value = S.rsize; $("rsizeOut").textContent = pct(S.rsize); say("Ring size set to 94% so the glow has room around the ring."); }
     persist(); markRings(); schedule();
   }
@@ -1342,14 +1439,15 @@
     ["thick", "thick", function (v) { return Math.round(v * 200) + "%"; }, { draft: true }], ["rsize", "rsize", pct, { draft: true }],
     ["tol", "tol", function (v) { return String(v); }], ["edgeSoft", "edgeSoft", function (v) { return String(v); }, { subj: true }],
     ["shrink", "shrink", function (v) { return v + " px"; }, { subj: true }], ["popLine", "popLine", pct, { line: true }], ["inner", "inner", pct], ["bevel", "bevel", pct],
-    ["ringGlow", "ringGlow", pct, { draft: true, thumbs: true }], ["texScale", "texScale", pct, { draft: true }], ["texTint", "texTint", pct, { draft: true }], ["texVig", "texVig", pct, { draft: true }],
+    ["ringGlow", "ringGlow", pct, { draft: true, thumbs: true }], ["ringLen", "ringLen", pct, { draft: true, thumbs: true }],
+    ["ringCount", "ringCount", function (v) { return String(v); }, { draft: true, thumbs: true }], ["ringGap", "ringGap", function (v) { return Math.round(v * 1000) / 10 + "%"; }, { draft: true }], ["texScale", "texScale", pct, { draft: true }], ["texTint", "texTint", pct, { draft: true }], ["texVig", "texVig", pct, { draft: true }],
     ["brushSoft", "brushSoft", pct], ["brushStrength", "brushStrength", pct],
     ["textSize", "textSize", pct], ["textTrack", "textTrack", pct], ["textStrokeW", "textStrokeW", pct]
   ];
   RANGES.forEach(function (r) { bindRange(r[0], r[1], r[2], r[3]); });
   function bindCheck(id, key, after) { var el = $(id); el.checked = S[key]; el.addEventListener("change", function () { S[key] = el.checked; persist(); if (after) after(); schedule(); }); }
   bindCheck("noRing", "noRing", markRings);
-  bindCheck("tint", "tint", renderRings);
+  bindCheck("tint", "tint", function () { renderRings(); renderRingList(); });
   bindCheck("contig", "contig");
   bindCheck("clean", "clean");
   bindCheck("despill", "despill", function () { subjDirty = true; });
@@ -1360,7 +1458,61 @@
   bindCheck("textUnderPop", "textUnderPop");
   $("ringColor").value = S.ringColor;
   $("ringColor").addEventListener("input", function (e) { if (L.ring) return; S.ringColor = e.target.value; refreshThumbs(); schedule(); });
-  $("ringColor").addEventListener("change", function () { persist(); });
+  $("ringColor").addEventListener("change", function () { persist(); renderRingList(); });
+
+  // the ring stack list: pick a ring to edit it with the controls above, add one (up to 3), move it out or in, or remove it
+  function ringName(e) { var st = styleById(e.style); return st ? FAM_LABEL[st.fam] + ": " + st.name : e.style; }
+  function renderRingList() {
+    var box = $("ringList"), list = ringList(); box.innerHTML = "";
+    list.forEach(function (e, i) {
+      var row = document.createElement("div"); row.className = "tc-ringrow";
+      var pick = document.createElement("button"); pick.type = "button"; pick.className = "pill tc-ringpick"; pick.setAttribute("aria-pressed", String(i === S.ringSel));
+      var sw = document.createElement("i"); sw.style.background = e.color; pick.appendChild(sw);
+      pick.appendChild(document.createTextNode("Ring " + (i + 1) + " \u00b7 " + ringName(e)));
+      pick.title = "Edit ring " + (i + 1); pick.addEventListener("click", function () { pickRing(i); });
+      row.appendChild(pick);
+      [["up", "\u25b2", "Move ring " + (i + 1) + " outward", i > 0], ["down", "\u25bc", "Move ring " + (i + 1) + " inward", i < list.length - 1], ["del", "\u2715", "Remove ring " + (i + 1), list.length > 1]].forEach(function (a) {
+        var b = document.createElement("button"); b.type = "button"; b.className = "tc-ic"; b.textContent = a[1]; b.setAttribute("aria-label", a[2]); b.title = a[2];
+        b.disabled = !a[3] || L.ring;
+        b.addEventListener("click", function () { if (a[0] === "del") removeRing(i); else moveRing(i, a[0] === "up" ? -1 : 1); });
+        row.appendChild(b);
+      });
+      box.appendChild(row);
+    });
+    $("ringAdd").disabled = L.ring || list.length >= RMAX;
+    $("ringGapRow").classList.toggle("tc-hidden", list.length < 2);
+    var st = styleById(S.style); $("sculptRows").classList.toggle("tc-hidden", !(st && st.lenCount));
+    renderEraseRing();
+  }
+  function renderEraseRing() {
+    var n = ringBands().length, box = $("eraseRing");
+    if (eraseRing >= n) eraseRing = -1;
+    $("eraseRingRow").classList.toggle("tc-hidden", n < 2);
+    pillsInto(box, [["-1", "All rings"]].concat(ringBands().map(function (b) { return [String(b.i), "Ring " + (b.i + 1)]; })), String(eraseRing), function (v) { eraseRing = +v; renderEraseRing(); });
+    each("#eraseRing .pill", function (b) { b.disabled = L.ring; });
+  }
+  function afterStack(msg) { ringFrames = { key: "", f: {} }; persist(); syncControls(); if (msg) say(msg); }
+  function pickRing(i) { if (L.ring) return; ringList(); loadEntry(i); afterStack("Editing ring " + (i + 1) + ". The style, color, thickness, Glow and Flicker above change this ring."); }
+  function addRing() {
+    if (L.ring) return;
+    var list = ringList(); if (list.length >= RMAX) { say("A token can have up to 3 rings."); return; }
+    var e = Object.assign(curEntry(), { thick: 0.04 }); list.push(e); loadEntry(list.length - 1);
+    afterStack("Added ring " + list.length + " inside the others. Pick its style and color above.");
+  }
+  function removeRing(i) {
+    if (L.ring) return;
+    var list = ringList(); if (list.length < 2) return;
+    list.splice(i, 1); loadEntry(Math.min(S.ringSel > i ? S.ringSel - 1 : S.ringSel === i ? Math.max(0, i - 1) : S.ringSel, list.length - 1));
+    afterStack("Ring " + (i + 1) + " removed. Undo doesn't cover ring settings, so add it again if you need it.");
+  }
+  function moveRing(i, d) {
+    if (L.ring) return;
+    var list = ringList(), j = i + d; if (j < 0 || j >= list.length) return;
+    var tmp = list[i]; list[i] = list[j]; list[j] = tmp;
+    loadEntry(S.ringSel === i ? j : S.ringSel === j ? i : S.ringSel);
+    afterStack("Ring moved " + (d < 0 ? "outward." : "inward."));
+  }
+  $("ringAdd").addEventListener("click", addRing);
   function syncFill() {
     $("fillColors").classList.toggle("tc-hidden", S.fillType === "none");
     $("fill2Wrap").classList.toggle("tc-hidden", S.fillType === "solid" || S.fillType === "none" || S.fillType === "texture");
@@ -1494,6 +1646,10 @@
     var O = sel >= 0 ? CT.objs[sel] : null;
     $("objForm").classList.toggle("tc-hidden", !O);
     if (!O) { schedule(); return; }
+    var prop = isProp(O);
+    $("objTextForm").classList.toggle("tc-hidden", prop); $("propForm").classList.toggle("tc-hidden", !prop);
+    if (prop) { syncPropForm(O); schedule(); return; }
+    $("objKind").textContent = "Selected object"; $("objColorLabel").textContent = "Color"; $("objColors").classList.remove("tc-hidden");
     $("objText").value = O.text || ""; renderFonts(); $("objFont").value = O.font;
     $("objColor").value = O.style === "neon" ? (O.neon.color) : O.color; $("objTextColor").value = O.textColor || "#ffffff";
     $("objTextColorWrap").classList.toggle("tc-hidden", O.style === "neon");
@@ -1506,10 +1662,71 @@
     }
     schedule();
   }
+  // ---------- props ----------
+  function syncPropForm(O) {
+    var d = PR.byId(O.prop), lights = O.prop === "lights";
+    $("objKind").textContent = d.label;
+    $("objColors").classList.toggle("tc-hidden", !d.tint); $("objTextColorWrap").classList.add("tc-hidden");
+    $("objBendRow").classList.add("tc-hidden"); $("neonForm").classList.add("tc-hidden");
+    if (d.tint) { $("objColorLabel").textContent = d.tintLabel || "Color"; $("objColor").value = O.color || d.tint; }
+    each("#propLayer .pill", function (b) { b.setAttribute("aria-pressed", String(b.dataset.layer === (O.layer === "under" ? "under" : "front"))); });
+    $("lightsForm").classList.toggle("tc-hidden", !lights);
+    if (lights) {
+      each("#lightsMode .pill", function (b) { b.setAttribute("aria-pressed", String(b.dataset.lmode === (O.mode === "ring" ? "ring" : "straight"))); });
+      $("lightsSpanRow").classList.toggle("tc-hidden", O.mode !== "ring"); $("lightsSpan").value = O.span || 200; $("lightsSpanOut").textContent = (O.span || 200) + "\u00b0";
+      $("lightsMulti").checked = O.multi !== false; $("lightsTwinkle").checked = O.twinkle !== false;
+    }
+    $("snowDriftWrap").classList.toggle("tc-hidden", O.prop !== "snowflakes"); $("snowDrift").checked = O.drift !== false;
+    $("propFlip").classList.toggle("tc-hidden", PR.isRing(O)); $("propShuffle").classList.toggle("tc-hidden", !d.scatter);
+  }
+  function addProp(id) {
+    if (L.objects) { say("The objects are locked. Unlock them in Layers and locks."); return; }
+    var O = PR.make(id, M, ringEnv()); if (!O) return;
+    pushUndo("obj"); CT.objs.push(O); sel = CT.objs.length - 1;
+    setTool("select", true); syncObjForm(); tick(); schedule();
+    say("Added the " + PR.byId(id).label.toLowerCase() + ". " + (PR.isRing(O) ? "Drag it to slide it around the ring." : "Drag it into place; the handles size, turn and flip it."));
+  }
+  function flipObject() {
+    var O = CT.objs[sel]; if (!isProp(O) || PR.isRing(O)) return;
+    if (L.objects) { say("The objects are locked. Unlock them in Layers and locks."); return; }
+    pushUndo("obj"); O.flip = !O.flip; schedule(); say(O.flip ? "Flipped." : "Flipped back.");
+  }
+  var propGroup = "christmas";
+  try { propGroup = new Date().getMonth() === 10 && new Date().getDate() < 28 ? "thanksgiving" : "christmas"; } catch (e) { /* default */ }
+  function renderProps() {
+    var box = $("propPicker"); box.innerHTML = "";
+    each("#propGroups .pill", function (b) { b.setAttribute("aria-pressed", String(b.dataset.group === propGroup)); });
+    PR.PROPS.forEach(function (d) {
+      if (d.group !== propGroup) return;
+      var b = document.createElement("button"); b.type = "button"; b.className = "tc-ring"; b.dataset.prop = d.id; b.title = "Add the " + d.label.toLowerCase();
+      b.appendChild(PR.thumb(d.id, 96)); var sp = document.createElement("span"); sp.textContent = d.label; b.appendChild(sp);
+      b.addEventListener("click", function () { addProp(d.id); });
+      box.appendChild(b);
+    });
+  }
+  each("#propGroups .pill", function (b) { b.addEventListener("click", function () { propGroup = b.dataset.group; renderProps(); }); });
+  each("#propLayer .pill", function (b) { b.addEventListener("click", function () { objEdit(function (O) { O.layer = b.dataset.layer; }); syncObjForm(); }); });
+  each("#lightsMode .pill", function (b) {
+    b.addEventListener("click", function () {
+      objEdit(function (O) {
+        var e = ringEnv();
+        if (b.dataset.lmode === "ring") { if (O.mode !== "ring") { O.h = M * 0.11; O.w = O.h * 4; } O.mode = "ring"; O.rot = 0; PR.snap(O, e); }
+        else if (O.mode === "ring") { O.mode = "straight"; O.w = M * 0.6; O.h = O.w / 4; O.x = C; O.y = M * 0.5; }
+      });
+      syncObjForm(); tick();
+    });
+  });
+  $("lightsSpan").addEventListener("input", function (e) { $("lightsSpanOut").textContent = e.target.value + "\u00b0"; objEdit(function (O) { O.span = +e.target.value; }, true); });
+  $("lightsMulti").addEventListener("change", function (e) { objEdit(function (O) { O.multi = e.target.checked; }); });
+  $("lightsTwinkle").addEventListener("change", function (e) { objEdit(function (O) { O.twinkle = e.target.checked; }); tick(); });
+  $("snowDrift").addEventListener("change", function (e) { objEdit(function (O) { O.drift = e.target.checked; }); tick(); });
+  $("propFlip").addEventListener("click", flipObject);
+  $("propShuffle").addEventListener("click", function () { objEdit(function (O) { O.seed = ((O.seed || 0) + 1) % 997; }); });
+  renderProps();
   function objEdit(fn, coalesce) { var O = CT.objs[sel]; if (!O) return; contentEdit(function () { fn(O); }, coalesce); }
   $("objText").addEventListener("input", function (e) { objEdit(function (O) { O.text = e.target.value; }, true); });
   $("objFont").addEventListener("change", function (e) { objEdit(function (O) { O.font = e.target.value; OB.ensureFont(O.font); }); });
-  $("objColor").addEventListener("input", function (e) { objEdit(function (O) { if (O.style === "neon") O.neon.color = e.target.value; else O.color = e.target.value; }, true); });
+  $("objColor").addEventListener("input", function (e) { objEdit(function (O) { if (O.style === "neon" && O.neon) O.neon.color = e.target.value; else O.color = e.target.value; }, true); });
   $("objTextColor").addEventListener("input", function (e) { objEdit(function (O) { O.textColor = e.target.value; }, true); });
   $("objBend").addEventListener("input", function (e) { $("objBendOut").textContent = pct(+e.target.value); objEdit(function (O) { O.bend = +e.target.value; }, true); });
   $("neonGlow").addEventListener("input", function (e) { $("neonGlowOut").textContent = pct(+e.target.value); objEdit(function (O) { O.neon.glow = +e.target.value; }, true); });
@@ -1584,7 +1801,7 @@
     ["ringColor", "fill1", "fill2", "textFill", "textStroke"].forEach(function (id) { $(id).value = S[id]; });
     $("fillType").value = S.fillType; $("smartTo").value = S.smartTo; $("animLen").value = String(S.animLen); $("ringFlicker").value = S.ringFlicker; syncR();
     syncFill(); syncAffects(); syncWhere(); renderFonts();
-    renderGames(); renderFams(); renderShapes(); renderRings(); renderSides(); renderTextures(); syncLocks();
+    renderGames(); renderFams(); renderShapes(); renderRings(); renderSides(); renderTextures(); renderRingList(); syncLocks();
     subjDirty = true; schedule();
   }
 
@@ -1596,7 +1813,7 @@
   if (window.ResizeObserver) new ResizeObserver(sizeCanvas).observe(stageEl); else window.addEventListener("resize", sizeCanvas);
   sizeCanvas();
   fillClocks(); renderFonts(); renderTemplates(); syncContent(); syncAffects(); syncWhere();
-  renderGames(); renderFams(); renderShapes(); renderRings(); renderSides(); renderTextures(); syncLocks(); syncUndo(); setTool("move"); schedule();
+  renderGames(); renderFams(); renderShapes(); renderRings(); renderSides(); renderTextures(); renderRingList(); syncLocks(); syncUndo(); setTool("move"); schedule();
 
   // for checks in a browser console and the page tests. pixel() composes the token as exported (no camera) and reads one pixel.
   window.tgToken = {
@@ -1605,7 +1822,7 @@
     textures: function () { return TX.TEXTURES.map(function (t) { return t.id; }); },
     shapes: function () { return K.SHAPES.map(function (s) { return s.id; }); },
     state: function () {
-      return { style: S.style, shape: S.shape, ringGlow: S.ringGlow, ringFlicker: S.ringFlicker, fillType: S.fillType, tex: S.tex, hasImage: !!src, hasCut: hasCut, hasPop: hasPop, hasCover: hasCover, hasRingMask: hasRingMask,
+      return { style: S.style, rings: ringList().length, ringSel: S.ringSel, eraseRing: eraseRing, shape: S.shape, ringGlow: S.ringGlow, ringFlicker: S.ringFlicker, fillType: S.fillType, tex: S.tex, hasImage: !!src, hasCut: hasCut, hasPop: hasPop, hasCover: hasCover, hasRingMask: hasRingMask,
         popTop: S.popTop, tool: tool, mode: TOOL_MODE[tool], affects: S.affects,
         cam: { z: cam.z, x: cam.x, y: cam.y }, img: { x: img.x, y: img.y, zoom: img.zoom, flip: img.flip },
         locks: { ring: L.ring, imgXform: L.imgXform, imgIn: L.imgIn, imgOut: L.imgOut, backdrop: L.backdrop, objects: L.objects },
@@ -1623,10 +1840,13 @@
     undo: doUndo, redo: doRedo,
     autoBg: autoBackground, refine: refineEdge, aiRemove: aiRemove,
     smart: function (list) { strokes = list.map(function (s) { return { kind: s.kind, r: s.r, pts: s.pts }; }); runSmart(); },
-    addObject: addObject, selectObject: function (i) { sel = i; syncObjForm(); schedule(); },
+    addObject: addObject, addProp: addProp, props: function () { return PR.PROPS.map(function (d) { return d.id; }); }, selectObject: function (i) { sel = i; syncObjForm(); schedule(); },
     pixel: function (x, y, t) { var wasDraft = draft; draft = false; compose(t || 0); draft = wasDraft; return Array.prototype.slice.call(mg.getImageData(x, y, 1, 1).data); },
     alpha: function (which, x, y) { var c = which === "cut" ? cut : which === "cover" ? cover : which === "pop" ? pop : ringMask; return c ? cx2(c, true).getImageData(x, y, 1, 1).data[3] : -1; },
     ringFrame: function (id, N, t, shape) { var st = styleById(id), s = K.shapeById(shape || "circle"), r1 = (N / 2 - 1) * s.fit; return st ? paintRing(N, r1 - N * 0.17, r1, st, hex(S.ringColor), S.tint, t || 0, { shape: s, cx: N / 2, cy: N / 2 + (N / 2 - 1) * s.oy }) : null; },
+    ringList: function () { return JSON.parse(JSON.stringify(ringList())); }, addRing: addRing, removeRing: removeRing, moveRing: moveRing, pickRing: pickRing,
+    setRings: function (list, sel) { S.rings = list.map(normEntry); S.ringSel = 0; loadEntry(sel || 0); afterStack(); }, eraseRing: function (i) { eraseRing = i; renderEraseRing(); },
+    bands: function () { return ringBands().map(function (b) { return { style: b.e.style, r0: b.r0, r1: b.r1 }; }); },
     zipBatch: batchBytes, project: projectData, loadProject: loadProject, frames: animFrameData, hasAnimation: hasAnimation,
     exportAnimBytes: function (kind) { var n = animFrames(); return animFrameData(512).then(function (fr) { return kind === "gif" ? EX.gif(fr, 512, 512, Math.round(S.animLen * 1000 / n)) : EX.apng(fr, 512, 512, Math.round(S.animLen * 1000 / n)); }); },
     exportBytes: function (N, type) { return fontsFirst().then(function () { return EX.canvasBytes(renderToken(N), type || "image/png", 0.92); }); },

@@ -113,6 +113,16 @@
   .tc-fontsel option { font-size: 15px; }
   .tc-objlist { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
   .tc-neon .pill i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; box-shadow: 0 0 6px currentColor; }
+  .tc-ringlist { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 6px; }
+  .tc-ringrow { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .tc-ringrow .tc-ringpick { flex: 1 1 auto; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; }
+  .tc-ringrow .tc-ringpick i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; border: 1px solid rgba(0,0,0,.35); }
+  .tc-ringrow .tc-ringpick[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-wash); font-weight: 600; }
+  .tc-ringrow .tc-ic { min-width: 32px; }
+  .tc-ic:disabled { opacity: .4; cursor: default; }
+  #eraseRingRow .pills { margin: 0; }
+  .tc-props { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; margin: 4px 0 10px; }
+  .tc-props .tc-ring canvas { width: 48px; height: 48px; }
   .tc-tpl { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; margin: 6px 0; }
   .tc-tpl .tc-ring { font-size: 12px; }
   .tc-note { font-size: 12.5px; color: var(--text-2); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; margin: 8px 0 0; }
@@ -310,6 +320,10 @@
               </details>
               <div class="tc-sub">Shape</div>
               <div class="pills" id="shapes" role="group" aria-label="Token shape"></div>
+              <div class="tc-sub">Rings, outside in</div>
+              <div class="tc-ringlist" id="ringList"></div>
+              <div class="btns tc-ringbtns"><button type="button" class="tbtn" id="ringAdd">Add ring</button></div>
+              <div class="tc-row" id="ringGapRow"><span>Gap</span><input type="range" id="ringGap" min="0" max="0.05" step="0.0025" value="0" aria-label="Gap between the rings"><output id="ringGapOut"></output></div>
               <div class="pills tc-games" id="games" role="group" aria-label="Which ring styles to show"></div>
               <div class="pills" id="fams" role="group" aria-label="Ring family"></div>
               <div class="tc-rings" id="rings" role="group" aria-label="Ring style"></div>
@@ -321,6 +335,10 @@
                 <label class="tc-check"><input type="checkbox" id="tint"> Tint every style</label>
               </div>
               <div class="tc-row"><span>Glow</span><input type="range" id="ringGlow" min="0" max="2" step="0.05" value="1" aria-label="Glow of the light-up ring styles"><output id="ringGlowOut"></output></div>
+              <div id="sculptRows">
+                <div class="tc-row"><span>Length</span><input type="range" id="ringLen" min="0.4" max="2" step="0.05" value="1" aria-label="Length of the spikes, thorns, flames or arms"><output id="ringLenOut"></output></div>
+                <div class="tc-row"><span>Count</span><input type="range" id="ringCount" min="6" max="40" step="1" value="16" aria-label="How many spikes, flames, shards or arms"><output id="ringCountOut"></output></div>
+              </div>
               <div class="tc-row"><span>Flicker</span><select id="ringFlicker" aria-label="Flicker of the neon ring"><option value="off">Off (steady)</option><option value="subtle">Subtle (a gentle pulse)</option><option value="strong">Strong (pulse and quick dips)</option></select></div>
               <div class="tc-sub">Side</div>
               <div class="pills tc-sides" id="sides" role="group" aria-label="Side preset"></div>
@@ -328,8 +346,9 @@
               <div class="tc-sub">Depth</div>
               <div class="tc-row"><span>Inner shadow</span><input type="range" id="inner" min="0" max="0.8" step="0.01" value="0.38" aria-label="Inner shadow strength"><output id="innerOut"></output></div>
               <div class="tc-row"><span>Inner bevel</span><input type="range" id="bevel" min="0" max="1" step="0.01" value="0" aria-label="Inner bevel strength"><output id="bevelOut"></output></div>
+              <div class="tc-row" id="eraseRingRow"><span>Ring erasing</span><div class="pills" id="eraseRing" role="group" aria-label="Which ring the ring eraser works on"></div></div>
               <div class="btns"><button type="button" class="tbtn" id="clearRingMask">Bring the whole ring back</button></div>
-              <p class="hint">The ring color paints the Painted styles, the lights on the Tech styles and the whole Energy family. Tick <em>Tint every style</em> to shade metal, wood, stone and the rest with it too. Styles marked &#9654; move in the animated download and when you press <em>Play</em>. <em>Glow</em> sets how brightly the Energy styles, the neon tube and the lights on the Tech styles shine: 0% leaves them unlit, 200% gives a wide, bright halo. <em>Flicker</em> sets how the neon tube flickers when it animates. Glowing styles look best with a ring size a little under 100%, so the glow has room. The <em>Ring</em> mode erases pieces of the ring (or use <em>Affects: Ring</em> with Erase); erased parts are see-through. Square and hex suit grid and hex maps on other tabletops; the bot's own battle maps show every token as a circle. The lock keeps every ring setting as it is.</p>
+              <p class="hint">The ring color paints the Painted styles, the lights on the Tech styles and the whole Energy family. Tick <em>Tint every style</em> to shade metal, wood, stone and the rest with it too. Styles marked &#9654; move in the animated download and when you press <em>Play</em>. <em>Glow</em> sets how brightly the Energy styles, the neon tube and the lights on the Tech styles shine: 0% leaves them unlit, 200% gives a wide, bright halo. <em>Flicker</em> sets how the neon tube flickers when it animates. Glowing styles look best with a ring size a little under 100%, so the glow has room. The <em>Ring</em> mode erases pieces of the ring (or use <em>Affects: Ring</em> with Erase); erased parts are see-through. A token can have up to three <em>Rings</em>, stacked from the outside in, such as red, white and blue bands: pick a ring in the list to edit it with the style, color, thickness, <em>Glow</em> and <em>Flicker</em> controls, use the arrows to move it out or in, and <em>Gap</em> to space them apart. <em>Ring erasing</em> picks whether the ring eraser works on every ring or just one. The <em>Sculpted</em> family is not a clean band: barbed wire, spikes, thorny vines, a snake biting its tail, two snakes, a dragon, chain, rope, flames, tentacles, bones and crystal shards. Their <em>Length</em> and <em>Count</em> set how far the pieces reach and how many there are; they may reach past the outer edge, so lower the ring size to keep them inside the picture. The snakes, the dragon, the flames, the tentacles and the crystals move a little when animated. Square and hex suit grid and hex maps on other tabletops; the bot's own battle maps show every token as a circle. The lock keeps every ring setting as it is.</p>
             </div>
 
             <div class="panel">
@@ -396,10 +415,16 @@
               </div>
               <div class="tc-sub">Placeable objects</div>
               <div class="btns" id="addObjs"><button type="button" class="tbtn" data-add="ribbon">Banner</button><button type="button" class="tbtn" data-add="scroll">Scroll</button><button type="button" class="tbtn" data-add="plaque">Plaque</button><button type="button" class="tbtn" data-add="nameplate">Nameplate</button><button type="button" class="tbtn" data-add="neon">Neon sign</button></div>
+              <div class="tc-sub">Props: Holiday</div>
+              <div class="pills" id="propGroups" role="group" aria-label="Holiday props"><button type="button" class="pill" data-group="thanksgiving" aria-pressed="false">Thanksgiving</button><button type="button" class="pill" data-group="christmas" aria-pressed="true">Christmas</button></div>
+              <div class="tc-props" id="propPicker" role="group" aria-label="Add a prop"></div>
               <div id="objForm" class="tc-hidden">
+                <div class="tc-sub" id="objKind">Selected object</div>
+                <div id="objTextForm">
                 <label>Object text <input type="text" id="objText" maxlength="30" autocomplete="off"></label>
                 <label>Object font<select id="objFont" class="tc-fontsel"></select></label>
-                <div class="tc-colors" id="objColors"><label>Color <input type="color" id="objColor" value="#8a2b2b"></label><label id="objTextColorWrap">Letters <input type="color" id="objTextColor" value="#fff3d6"></label></div>
+                </div>
+                <div class="tc-colors" id="objColors"><label><span id="objColorLabel">Color</span> <input type="color" id="objColor" value="#8a2b2b"></label><label id="objTextColorWrap">Letters <input type="color" id="objTextColor" value="#fff3d6"></label></div>
                 <div class="tc-row" id="objBendRow"><span>Bend</span><input type="range" id="objBend" min="-0.5" max="0.5" step="0.01" value="0.15" aria-label="Banner bend"><output id="objBendOut"></output></div>
                 <div id="neonForm">
                   <div class="pills tc-neon" id="neonColors" role="group" aria-label="Neon color"></div>
@@ -408,9 +433,20 @@
                   <div class="tc-row"><span>Glow</span><input type="range" id="neonGlow" min="0" max="2" step="0.05" value="1" aria-label="Neon sign glow"><output id="neonGlowOut">100%</output></div>
                   <div class="tc-row"><span>Flicker</span><select id="neonFlick" aria-label="Neon sign flicker"><option value="off">Off (steady)</option><option value="subtle">Subtle (a gentle pulse)</option><option value="strong">Strong (pulse and quick dips)</option></select></div>
                 </div>
+                <div id="propForm">
+                  <div class="pills" id="propLayer" role="group" aria-label="Prop layer"><button type="button" class="pill" data-layer="front" aria-pressed="true">In front of the ring</button><button type="button" class="pill" data-layer="under" aria-pressed="false">Behind the ring</button></div>
+                  <div id="lightsForm">
+                    <div class="pills" id="lightsMode" role="group" aria-label="How the lights hang"><button type="button" class="pill" data-lmode="ring" aria-pressed="true">Around the ring</button><button type="button" class="pill" data-lmode="straight" aria-pressed="false">Straight</button></div>
+                    <div class="tc-row" id="lightsSpanRow"><span>Reach</span><input type="range" id="lightsSpan" min="30" max="360" step="5" value="200" aria-label="How far around the ring the lights reach"><output id="lightsSpanOut">200&deg;</output></div>
+                    <label class="tc-check"><input type="checkbox" id="lightsMulti" checked> Many colors (untick to use the bulb color)</label>
+                    <label class="tc-check"><input type="checkbox" id="lightsTwinkle" checked> Twinkle when animated</label>
+                  </div>
+                  <label class="tc-check" id="snowDriftWrap"><input type="checkbox" id="snowDrift" checked> Drift when animated</label>
+                  <div class="btns"><button type="button" class="tbtn" id="propFlip">Flip</button><button type="button" class="tbtn" id="propShuffle">Shuffle</button></div>
+                </div>
                 <div class="btns"><button type="button" class="tbtn" id="objFront">Bring to front</button><button type="button" class="tbtn" id="objDelete">Delete object</button></div>
               </div>
-              <p class="hint">Lettering follows the ring's outline; on a polygon it runs straight along each side. Fonts load from Google Fonts the first time you pick one (offline, a system font stands in). Badges sit on the ring at a clock position. Placed objects are moved with the <em>Objects</em> mode: drag one to move it, the corner handle resizes it and the top handle turns it; arrow keys nudge it and <em>Delete</em> removes it. A neon sign has its own <em>Glow</em> (0% is switched off, 200% blazes) and <em>Flicker</em>, which shows in the preview and the animated download. The <em>Objects</em> lock in <em>Layers and locks</em> keeps them all in place.</p>
+              <p class="hint">Lettering follows the ring's outline; on a polygon it runs straight along each side. Fonts load from Google Fonts the first time you pick one (offline, a system font stands in). Badges sit on the ring at a clock position. Placed objects are moved with the <em>Objects</em> mode: drag one to move it, the corner handle resizes it and the top handle turns it; arrow keys nudge it and <em>Delete</em> removes it. <em>Props</em> are little holiday stickers and costume pieces: tap one to add it, then drag, size, turn or flip it (the arrow handle at its top-left corner). Hats and antlers sit <em>In front of the ring</em> so they break over it like a pop-out; <em>Behind the ring</em> tucks a prop under the ring and over the picture. Most props take a color. The string of lights hangs <em>Around the ring</em> (drag it to slide it along, <em>Reach</em> sets how far it goes) or <em>Straight</em>; the lights twinkle and the snowflakes drift in <em>Play</em> and the animated download, and a still download shows every light lit. A neon sign has its own <em>Glow</em> (0% is switched off, 200% blazes) and <em>Flicker</em>, which shows in the preview and the animated download. The <em>Objects</em> lock in <em>Layers and locks</em> keeps them all in place.</p>
             </div>
 
             <div class="panel">
@@ -453,6 +489,7 @@
 <script src="token-textures.js"></script>
 <script src="token-bgremove.js"></script>
 <script src="token-objects.js"></script>
+<script src="token-props.js"></script>
 <script src="token-export.js"></script>
 <script src="token-creator.js"></script>
 <script>

@@ -46,7 +46,8 @@
   // Every ring, texture and object takes a time t in seconds (0 for a still token). Animated looks repeat every R.loop seconds, so an
   // exported loop has no jump. phase() is 0..TAU over one loop.
   // glow: how brightly the light-emitting ring styles shine (0 unlit .. 2 wide and bright); flick: their flicker, "off" | "subtle" | "strong"
-  var R = { loop: 1.5, glow: 1, flick: "strong" };
+  // len, count: a Sculpted ring's Length and Count (1 and 16 by default); tintOn: "Tint every style" for the ring being painted
+  var R = { loop: 1.5, glow: 1, flick: "strong", len: 1, count: 16, tintOn: false };
   function glowSpread() { return 0.4 + 0.6 * R.glow; }   // scales the halo's blur and width: 0.4 at Glow 0, 1 at 100%, 1.6 at 200%
   function phase(t) { return (t || 0) / R.loop * TAU; }
   function frac(x) { return x - Math.floor(x); }
@@ -583,9 +584,401 @@
     return mix(col, WHITE, 0.5 * (1 - Math.abs(2 * ((p.t - 0.2) / 0.6) - 1)));
   }, { kind: "fn", fn: function (rgb, p) { return p.t < 0.2 || p.t > 0.8 ? shade(rgb, p, FLAT) : rgb; } }, null, { usesColor: true, glow: haloGlow(0.3, 0.6, 0.25) });
 
-  var FAMS = ["Painted", "Metal", "Runes", "Wood", "Stone", "More", "Tech", "Energy"];
-  var FAM_LABEL = { Painted: "Painted", Metal: "Metal", Runes: "Carved runes", Wood: "Wood", Stone: "Stone", More: "More", Tech: "Tech", Energy: "Energy" };
-  var FAM_GAME = { Painted: "both", Metal: "both", Runes: "fantasy", Wood: "fantasy", Stone: "fantasy", More: "fantasy", Tech: "scifi", Energy: "scifi" };
+  // Sculpted (owner 2026-11-20): rings that aren't a clean band. Drawn as vectors along the token's outline (no pixel pass), so they
+  // follow any shape and may reach past the outer edge; anything between the pieces stays see-through. R.len and R.count are the ring's
+  // Length and Count settings; R.tintOn is "Tint every style" (the ring color then paints the main material).
+  var INKS = "rgba(28,18,12,0.92)";
+  function along(r, a0, a1, step) {   // points along the outline at radius r: [x, y, tangent angle, outward nx, ny]
+    var n = Math.max(8, Math.ceil(Math.abs(a1 - a0) * rper(r) / TAU / (step || 3))), out = [];
+    for (var i = 0; i <= n; i++) { var q = rp(r, a0 + (a1 - a0) * i / n); out.push([q[0], q[1], q[2], Math.sin(q[2]), -Math.cos(q[2])]); }
+    return out;
+  }
+  function lightAt(nx, ny) { return Math.max(0, -(nx * LX + ny * LY)) ; }   // 1 where the outward side faces the light (top left)
+  function natural(col, nat) { return R.tintOn ? col : hex(nat); }
+  function sPath(g, pts) { g.beginPath(); pts.forEach(function (q, i) { if (i) g.lineTo(q[0], q[1]); else g.moveTo(q[0], q[1]); }); }
+  function strokeTube(g, pts, w, base) {   // an inked, shaded tube along a polyline
+    g.lineCap = "round"; g.lineJoin = "round";
+    sPath(g, pts); g.strokeStyle = INKS; g.lineWidth = w * 1.35; g.stroke();
+    sPath(g, pts); g.strokeStyle = rgbStr(base); g.lineWidth = w; g.stroke();
+    for (var i = 1; i < pts.length; i++) {
+      var q = pts[i], p0 = pts[i - 1], l = lightAt(q[3], q[4]);
+      g.strokeStyle = rgbStr(mix(base, WHITE, 0.55), 0.25 + 0.5 * l); g.lineWidth = w * 0.3;
+      g.beginPath(); g.moveTo(p0[0] + p0[3] * w * 0.18, p0[1] + p0[4] * w * 0.18); g.lineTo(q[0] + q[3] * w * 0.18, q[1] + q[4] * w * 0.18); g.stroke();
+    }
+  }
+  function wavy(rm, amp, k, ph, step) {   // a strand weaving around the middle of the band
+    var pts = along(rm, 0, TAU, step || 2.5), per = rper(rm);
+    return pts.map(function (q, i) { var s = i / (pts.length - 1), o = Math.sin(s * k * TAU + ph) * amp; return [q[0] + q[3] * o, q[1] + q[4] * o, q[2], q[3], q[4]]; });
+  }
+  function nCount(base) { return Math.max(4, Math.round(base * (R.count || 16) / 16)); }
+
+  function barbedOver(g, N, r0, r1, col, t) {
+    var band = r1 - r0, rm = (r0 + r1) / 2, steel = natural(col, "#a4adb5"), w = Math.max(1.6, band * 0.14), k = Math.round(rper(rm) / (band * 0.9));
+    var A = wavy(rm, band * 0.12, k, 0), B = wavy(rm, band * 0.12, k, Math.PI);
+    strokeTube(g, A, w, steel); strokeTube(g, B, w, mul(steel, 0.85));
+    // where A crosses over B again (half of each twist), redraw A on top
+    var seg = [];
+    A.forEach(function (q, i) { var s = i / (A.length - 1); if (Math.sin(s * k * TAU * 2 + Math.PI / 2) > 0) seg.push(q); else if (seg.length) { if (seg.length > 2) strokeTube(g, seg, w, steel); seg = []; } });
+    if (seg.length > 2) strokeTube(g, seg, w, steel);
+    var nb = nCount(Math.max(6, Math.round(rper(rm) / (band * 1.8))));
+    for (var b = 0; b < nb; b++) {
+      var q = rp(rm, b / nb * TAU + 0.11), tx = Math.cos(q[2]), ty = Math.sin(q[2]), nx = Math.sin(q[2]), ny = -Math.cos(q[2]), L = band * 0.5 * (R.len || 1);
+      [[1, 1], [1, -1]].forEach(function (d) {
+        var ex = (tx * 0.55 * d[0] + nx * d[1]) * L, ey = (ty * 0.55 * d[0] + ny * d[1]) * L;
+        var pts = [[q[0] - ex, q[1] - ey, 0, nx, ny], [q[0] + ex, q[1] + ey, 0, nx, ny]];
+        strokeTube(g, pts, w * 0.75, mix(steel, WHITE, 0.1));
+      });
+      g.fillStyle = rgbStr(mul(steel, 0.7)); g.strokeStyle = INKS; g.lineWidth = w * 0.3;
+      g.beginPath(); g.ellipse(q[0], q[1], w * 1.3, w * 0.9, q[2], 0, TAU); g.fill(); g.stroke();
+    }
+  }
+
+  function spikesOver(g, N, r0, r1, col, t) {
+    var band = r1 - r0, metal = natural(col, "#6f767e"), n = nCount(16), rb = r0 + band * 0.42, len = band * 1.05 * (R.len || 1);
+    // the base band, a dark iron hoop
+    g.beginPath(); rring(g, rb); rring(g, r0); var gr = g.createLinearGradient(cur.cx - r1, cur.cy - r1, cur.cx + r1, cur.cy + r1);
+    gr.addColorStop(0, rgbStr(mix(metal, WHITE, 0.35))); gr.addColorStop(0.5, rgbStr(mul(metal, 0.7))); gr.addColorStop(1, rgbStr(mul(metal, 0.4)));
+    g.fillStyle = gr; g.fill("evenodd"); g.strokeStyle = INKS; g.lineWidth = Math.max(1, band * 0.05); g.stroke();
+    var half = rper(rb) / n * 0.36;
+    for (var i = 0; i < n; i++) {
+      var a = (i + 0.5) / n * TAU, q = rp(rb, a), tx = Math.cos(q[2]), ty = Math.sin(q[2]), nx = Math.sin(q[2]), ny = -Math.cos(q[2]);
+      var bx = q[0] - nx * band * 0.1, by = q[1] - ny * band * 0.1, tipx = q[0] + nx * len, tipy = q[1] + ny * len, l = lightAt(nx, ny);
+      g.beginPath(); g.moveTo(bx - tx * half, by - ty * half); g.lineTo(tipx, tipy); g.lineTo(bx + tx * half, by + ty * half); g.closePath();
+      var sg = g.createLinearGradient(bx - tx * half, by - ty * half, bx + tx * half, by + ty * half);
+      sg.addColorStop(0, rgbStr(mix(metal, WHITE, 0.25 + 0.4 * l))); sg.addColorStop(0.5, rgbStr(metal)); sg.addColorStop(1, rgbStr(mul(metal, 0.45)));
+      g.fillStyle = sg; g.fill(); g.strokeStyle = INKS; g.lineWidth = Math.max(1, band * 0.045); g.lineJoin = "round"; g.stroke();
+      g.strokeStyle = "rgba(255,255,255," + (0.25 + 0.4 * l).toFixed(2) + ")"; g.lineWidth = Math.max(0.6, band * 0.025);
+      g.beginPath(); g.moveTo(bx - tx * half * 0.3, by - ty * half * 0.3); g.lineTo(tipx - tx * half * 0.05 - nx * len * 0.12, tipy - ty * half * 0.05 - ny * len * 0.12); g.stroke();
+    }
+    for (i = 0; i < n; i++) { var qq = rp((r0 + rb) / 2, i / n * TAU); rivet(g, qq[0], qq[1], Math.max(1, band * 0.06)); }
+  }
+
+  function vinesOver(g, N, r0, r1, col, t) {
+    var band = r1 - r0, rm = (r0 + r1) / 2, wood = natural(col, "#5a6b2a"), w = Math.max(2, band * 0.2), k = Math.round(rper(rm) / (band * 2.2));
+    var A = wavy(rm, band * 0.18, k, 0, 3), B = wavy(rm, band * 0.18, k, Math.PI + 0.6, 3);
+    strokeTube(g, B, w * 0.85, mul(wood, 0.8)); strokeTube(g, A, w, wood);
+    var R2 = rng(41), n = nCount(Math.round(rper(rm) / (band * 0.55)));
+    [A, B].forEach(function (S, si) {
+      for (var i = 0; i < n; i++) {
+        var q = S[Math.floor((i + R2() * 0.6) / n * (S.length - 1))], side = (i + si) % 2 ? 1 : -1, L = band * (0.26 + R2() * 0.12) * (R.len || 1);
+        var tx = Math.cos(q[2]), ty = Math.sin(q[2]), nx = q[3] * side, ny = q[4] * side, hw = w * 0.42;
+        g.beginPath(); g.moveTo(q[0] - tx * hw, q[1] - ty * hw); g.quadraticCurveTo(q[0] + nx * L * 0.6 - tx * hw * 0.2, q[1] + ny * L * 0.6 - ty * hw * 0.2, q[0] + nx * L + tx * L * 0.35, q[1] + ny * L + ty * L * 0.35);
+        g.lineTo(q[0] + tx * hw, q[1] + ty * hw); g.closePath();
+        g.fillStyle = rgbStr(mix(mul(wood, 0.75), [190, 170, 110], 0.35)); g.fill(); g.strokeStyle = INKS; g.lineWidth = Math.max(0.6, band * 0.025); g.stroke();
+      }
+    });
+    for (var j = 0; j < Math.round(n / 3); j++) {   // a few leaves
+      var p = A[Math.floor((j + 0.3) / Math.round(n / 3) * (A.length - 1))], lx = p[0] + p[3] * band * 0.3, ly = p[1] + p[4] * band * 0.3, s = band * 0.3;
+      g.save(); g.translate(lx, ly); g.rotate(p[2] + (j % 2 ? 0.6 : -0.6)); g.beginPath(); g.ellipse(0, 0, s, s * 0.45, 0, 0, TAU);
+      g.fillStyle = rgbStr(j % 2 ? [74, 122, 46] : [96, 140, 54]); g.fill(); g.strokeStyle = INKS; g.lineWidth = Math.max(0.6, band * 0.03); g.stroke();
+      g.beginPath(); g.moveTo(-s * 0.8, 0); g.lineTo(s * 0.8, 0); g.strokeStyle = "rgba(220,240,180,0.6)"; g.stroke(); g.restore();
+    }
+  }
+
+  // ---- scaled creatures: a body tube along the outline from the head round to the tail ----
+  // spec: { rc, w (half width), a0 (head end), a1 (tail end), taper (tail fraction), base, belly }
+  function bodyEdges(sp) {
+    var pts = along(sp.rc, sp.a0, sp.a1, 2.5), L = [], Rr = [];
+    pts.forEach(function (q, i) {
+      var s = i / (pts.length - 1), h = sp.w * (s > 1 - sp.taper ? Math.max(0.12, (1 - s) / sp.taper) : s < 0.04 ? 0.86 + s * 3.5 : 1);
+      var o = rp(sp.rc + h, sp.a0 + (sp.a1 - sp.a0) * s), n = rp(sp.rc - h, sp.a0 + (sp.a1 - sp.a0) * s);
+      L.push([o[0], o[1], h, q[2]]); Rr.push([n[0], n[1], h, q[2]]); q.push(h);
+    });
+    return { mid: pts, out: L, inn: Rr };
+  }
+  function drawBody(g, sp, t, scales) {
+    var E = bodyEdges(sp), base = sp.base, i;
+    g.beginPath(); E.out.forEach(function (q, k) { if (k) g.lineTo(q[0], q[1]); else g.moveTo(q[0], q[1]); });
+    for (i = E.inn.length - 1; i >= 0; i--) g.lineTo(E.inn[i][0], E.inn[i][1]);
+    g.closePath();
+    g.save(); g.shadowColor = "rgba(0,0,0,0.45)"; g.shadowBlur = sp.w * 0.5; g.shadowOffsetY = sp.w * 0.18; g.fillStyle = rgbStr(base); g.fill(); g.restore();
+    g.save(); g.clip();
+    // belly (inner side) and back shading, lit from the top left
+    for (i = 1; i < E.mid.length; i++) {
+      var q = E.mid[i], p0 = E.mid[i - 1], h = q[5], l = lightAt(q[3], q[4]);
+      g.strokeStyle = rgbStr(sp.belly, 0.95); g.lineWidth = h * 0.7;
+      g.beginPath(); g.moveTo(p0[0] - p0[3] * h * 0.62, p0[1] - p0[4] * h * 0.62); g.lineTo(q[0] - q[3] * h * 0.62, q[1] - q[4] * h * 0.62); g.stroke();
+      g.strokeStyle = "rgba(255,255,230," + (0.12 + 0.4 * l).toFixed(3) + ")"; g.lineWidth = h * 0.35;
+      g.beginPath(); g.moveTo(p0[0] + p0[3] * h * 0.42, p0[1] + p0[4] * h * 0.42); g.lineTo(q[0] + q[3] * h * 0.42, q[1] + q[4] * h * 0.42); g.stroke();
+      g.strokeStyle = "rgba(0,0,0," + (0.08 + 0.25 * (1 - l)).toFixed(3) + ")"; g.lineWidth = h * 0.3;
+      g.beginPath(); g.moveTo(p0[0] + p0[3] * h * 0.85, p0[1] + p0[4] * h * 0.85); g.lineTo(q[0] + q[3] * h * 0.85, q[1] + q[4] * h * 0.85); g.stroke();
+    }
+    // scales: staggered arcs, and belly plates across the inner side
+    var step = Math.max(3, sp.w * 0.55), acc = 0, row = 0, ph = phase(t);
+    for (i = 1; i < E.mid.length; i++) {
+      var a = E.mid[i], b = E.mid[i - 1]; acc += Math.hypot(a[0] - b[0], a[1] - b[1]);
+      if (acc < step) continue; acc = 0; row++;
+      var hh = a[5], tx = Math.cos(a[2]), ty = Math.sin(a[2]), glint = 0.5 + 0.5 * Math.cos(ph - row * 0.35);
+      if (scales) for (var j = -1; j <= 2; j++) {
+        var o = (j + (row % 2 ? 0.5 : 0)) * hh * 0.42 - hh * 0.1; if (o > hh * 0.9 || o < -hh * 0.3) continue;
+        var cx = a[0] + a[3] * o, cy = a[1] + a[4] * o, sr = hh * 0.26;
+        g.strokeStyle = rgbStr(mul(base, 0.55), 0.7); g.lineWidth = Math.max(0.5, hh * 0.07);
+        g.beginPath(); g.arc(cx, cy, sr, a[2] + Math.PI * 0.5 + (sp.dir > 0 ? 0 : Math.PI), a[2] + Math.PI * 1.5 + (sp.dir > 0 ? 0 : Math.PI)); g.stroke();
+        if (glint > 0.92 && t) { g.fillStyle = "rgba(255,255,255," + ((glint - 0.92) * 5).toFixed(3) + ")"; g.beginPath(); g.arc(cx, cy, sr * 0.5, 0, TAU); g.fill(); }
+      }
+      g.strokeStyle = rgbStr(mul(sp.belly, 0.7), 0.8); g.lineWidth = Math.max(0.5, hh * 0.06);
+      g.beginPath(); g.moveTo(a[0] - a[3] * hh * 0.25, a[1] - a[4] * hh * 0.25); g.lineTo(a[0] - a[3] * hh, a[1] - a[4] * hh); g.stroke();
+      if (sp.marks && row % 3 === 0) {   // diamond marks down the back
+        g.fillStyle = rgbStr(mul(base, 0.5), 0.75); var mx = a[0] + a[3] * hh * 0.3, my = a[1] + a[4] * hh * 0.3, mr = hh * 0.32;
+        g.beginPath(); g.moveTo(mx + tx * mr * 1.4, my + ty * mr * 1.4); g.lineTo(mx + a[3] * mr, my + a[4] * mr); g.lineTo(mx - tx * mr * 1.4, my - ty * mr * 1.4); g.lineTo(mx - a[3] * mr, my - a[4] * mr); g.closePath(); g.fill();
+      }
+    }
+    g.restore();
+    g.beginPath(); E.out.forEach(function (q, k) { if (k) g.lineTo(q[0], q[1]); else g.moveTo(q[0], q[1]); });
+    for (i = E.inn.length - 1; i >= 0; i--) g.lineTo(E.inn[i][0], E.inn[i][1]);
+    g.closePath(); g.strokeStyle = INKS; g.lineWidth = Math.max(1, sp.w * 0.12); g.lineJoin = "round"; g.stroke();
+    return E;
+  }
+  // A head drawn in its own frame: +x is the way it faces, +y its back (the outward side of the ring). w is the body's half width.
+  function snakeHead(g, w, base, belly, t, bite, tongue) {
+    var hl = w * 3.1;
+    if (tongue > 0.02) {   // a forked tongue flicking out of the snout
+      var L = w * 1.6 * tongue; g.strokeStyle = "#c8263a"; g.lineWidth = Math.max(1, w * 0.14); g.lineCap = "round";
+      g.beginPath(); g.moveTo(hl * 0.95, -w * 0.1); g.lineTo(hl * 0.95 + L, -w * 0.1); g.lineTo(hl * 0.95 + L * 1.25, w * 0.15); g.moveTo(hl * 0.95 + L, -w * 0.1); g.lineTo(hl * 0.95 + L * 1.25, -w * 0.38); g.stroke();
+    }
+    function outline() {   // from the neck (as wide as the body) out to the snout and back; the neck end is left open
+      g.moveTo(-w * 0.9, w * 0.62); g.bezierCurveTo(w * 0.3, w * 0.7, w * 0.8, w * 1.35, hl * 0.62, w * 1.2); g.quadraticCurveTo(hl * 0.92, w * 1.0, hl * 0.97, w * 0.5);
+      g.quadraticCurveTo(hl * 1.06, w * 0.05, hl * 0.95, -w * 0.25);
+      if (bite) { g.lineTo(hl * 0.5, -w * 0.05); g.lineTo(hl * 0.86, -w * 0.52); }
+      g.bezierCurveTo(hl * 0.7, -w * 0.95, w * 0.6, -w * 1.1, w * 0.1, -w * 0.75); g.quadraticCurveTo(-w * 0.4, -w * 0.6, -w * 0.9, -w * 0.62);
+    }
+    g.beginPath(); outline(); g.closePath();
+    var gr = g.createLinearGradient(0, w * 1.3, 0, -w * 1.1); gr.addColorStop(0, rgbStr(mix(base, WHITE, 0.3))); gr.addColorStop(0.55, rgbStr(base)); gr.addColorStop(1, rgbStr(belly));
+    g.save(); g.shadowColor = "rgba(0,0,0,0.45)"; g.shadowBlur = w * 0.6; g.shadowOffsetY = w * 0.2; g.fillStyle = gr; g.fill(); g.restore();
+    g.beginPath(); outline(); g.strokeStyle = INKS; g.lineWidth = Math.max(1, w * 0.13); g.lineJoin = "round"; g.stroke();
+    g.strokeStyle = rgbStr(mul(base, 0.55), 0.8); g.lineWidth = Math.max(0.6, w * 0.07);   // mouth line and head plates
+    g.beginPath(); g.moveTo(hl * 0.92, -w * 0.18); g.quadraticCurveTo(hl * 0.55, -w * 0.3, w * 0.9, -w * 0.15); g.stroke();
+    g.beginPath(); g.moveTo(w * 1.3, w * 0.5); g.quadraticCurveTo(w * 1.9, w * 0.9, hl * 0.75, w * 0.62); g.stroke();
+    g.fillStyle = "#1a120c"; g.beginPath(); g.arc(hl * 0.86, w * 0.4, w * 0.08, 0, TAU); g.fill();   // nostril
+    var ex = hl * 0.56, ey = w * 0.52, er = w * 0.32;   // the eye with a slit pupil and a brow ridge
+    g.fillStyle = "#f4c430"; g.beginPath(); g.ellipse(ex, ey, er, er * 0.82, 0, 0, TAU); g.fill(); g.strokeStyle = INKS; g.lineWidth = Math.max(0.8, w * 0.08); g.stroke();
+    g.fillStyle = "#120a06"; g.beginPath(); g.ellipse(ex + er * 0.05, ey, er * 0.16, er * 0.72, 0, 0, TAU); g.fill();
+    g.fillStyle = "rgba(255,255,255,0.9)"; g.beginPath(); g.arc(ex - er * 0.35, ey + er * 0.3, er * 0.18, 0, TAU); g.fill();
+    g.strokeStyle = rgbStr(mul(base, 0.4)); g.lineWidth = Math.max(0.8, w * 0.12); g.lineCap = "round";
+    g.beginPath(); g.moveTo(ex - er * 1.2, ey + er * 1.0); g.quadraticCurveTo(ex, ey + er * 1.55, ex + er * 1.3, ey + er * 0.85); g.stroke();
+    return hl;
+  }
+  function headFrame(g, sp, at, facing) {   // facing +1: toward increasing angle; -1: toward decreasing angle (the way the body runs from it)
+    var q = rp(sp.rc, at), ang = q[2] + (facing > 0 ? 0 : Math.PI);
+    g.translate(q[0], q[1]); g.rotate(ang);
+    if (facing > 0) g.scale(1, -1);   // keep +y outward either way
+  }
+  function snakeOver(g, N, r0, r1, col, t) {
+    var band = r1 - r0, rc = (r0 + r1) / 2, base = natural(col, "#3f8a3a"), belly = mix(base, [238, 222, 150], 0.6), w = band * 0.42, top = -Math.PI / 2;
+    var off = w * 3.8 / rc;   // the head's length in angle
+    var sp = { rc: rc, w: w, a0: top + off * 0.15, a1: top + TAU - off * 0.55, taper: 0.22, base: base, belly: belly, dir: 1, marks: true };
+    drawBody(g, sp, t, true);
+    g.save(); headFrame(g, sp, top + off * 0.25, -1); snakeHead(g, w * 1.45, base, belly, t, true, 0); g.restore();
+  }
+  function twoSnakesOver(g, N, r0, r1, col, t) {
+    var band = r1 - r0, rc = (r0 + r1) / 2, w = band * 0.4, top = -Math.PI / 2, off = w * 4.4 / rc, ph = phase(t);
+    var c1 = natural(col, "#3f8a3a"), c2 = R.tintOn ? mix(col, [40, 30, 20], 0.35) : hex("#8a6a2a");
+    [[c1, 1], [c2, -1]].forEach(function (s, k) {
+      var base = s[0], belly = mix(base, [238, 222, 150], 0.6), d = s[1];
+      // each snake runs half way round: head at the top, tail crossing the other's at the bottom
+      var sp = { rc: rc + (k ? -w * 0.08 : w * 0.08), w: w, a0: top + d * off * 0.75, a1: top + d * (Math.PI + 0.32), taper: 0.3, base: base, belly: belly, dir: d, marks: true };
+      drawBody(g, sp, t, true);
+      var flick = t ? Math.max(0, Math.sin(ph * 2 + k * Math.PI)) : 0;
+      g.save(); headFrame(g, sp, top + d * off * 0.85, -d); snakeHead(g, w * 1.35, base, belly, t, false, Math.pow(flick, 1.5)); g.restore();
+    });
+  }
+  function dragonOver(g, N, r0, r1, col, t) {
+    var band = r1 - r0, rc = (r0 + r1) / 2, base = natural(col, "#a8322a"), belly = mix(base, [240, 200, 110], 0.62), w = band * 0.42, top = -Math.PI / 2;
+    var off = w * 5 / rc, ph = phase(t);
+    var sp = { rc: rc, w: w, a0: top + off * 0.05, a1: top + TAU - off * 1.15, taper: 0.13, base: base, belly: belly, dir: 1, marks: false };
+    // wings at the shoulder, behind the body
+    [[0.62, 1.0, 0.75], [0.42, 1.15, 1]].forEach(function (wg) {
+      var q = rp(rc + w * 0.5, top + wg[0] * 1.4), nx = Math.sin(q[2]), ny = -Math.cos(q[2]), tx = Math.cos(q[2]), ty = Math.sin(q[2]), S = band * 1.7 * wg[1];
+      var tipx = q[0] + nx * S * 1.1 + tx * S * 0.6, tipy = q[1] + ny * S * 1.1 + ty * S * 0.6;
+      g.beginPath(); g.moveTo(q[0] - tx * w, q[1] - ty * w); g.lineTo(tipx, tipy);
+      for (var f = 1; f <= 3; f++) { var bx = q[0] + tx * w * (0.6 + f * 0.9) + nx * S * (0.9 - f * 0.22), by = q[1] + ty * w * (0.6 + f * 0.9) + ny * S * (0.9 - f * 0.22); g.quadraticCurveTo((tipx + bx) / 2 - nx * S * 0.15, (tipy + by) / 2 - ny * S * 0.15, bx, by); }
+      g.lineTo(q[0] + tx * w * 2.4, q[1] + ty * w * 2.4); g.closePath();
+      g.fillStyle = rgbStr(mix(mul(mix(base, belly, 0.35), 0.8 * wg[2]), [60, 20, 30], 0.15)); g.fill(); g.strokeStyle = INKS; g.lineWidth = Math.max(1, band * 0.04); g.lineJoin = "round"; g.stroke();
+      g.strokeStyle = rgbStr(mul(base, 0.45)); g.lineWidth = Math.max(1, band * 0.05);
+      g.beginPath(); g.moveTo(q[0], q[1]); g.lineTo(tipx, tipy); g.stroke();
+    });
+    var E = drawBody(g, sp, t, true);
+    // spines down the back
+    var acc = 0, step = w * 0.9;
+    for (var i = 1; i < E.out.length; i++) {
+      var a = E.out[i], b = E.out[i - 1]; acc += Math.hypot(a[0] - b[0], a[1] - b[1]); if (acc < step) continue; acc = 0;
+      var m = E.mid[i], h = m[5], tx = Math.cos(m[2]), ty = Math.sin(m[2]), L = h * 0.75;
+      g.beginPath(); g.moveTo(a[0] - tx * h * 0.35, a[1] - ty * h * 0.35); g.lineTo(a[0] + m[3] * L + tx * L * 0.45, a[1] + m[4] * L + ty * L * 0.45); g.lineTo(a[0] + tx * h * 0.35, a[1] + ty * h * 0.35); g.closePath();
+      g.fillStyle = rgbStr(mix(belly, WHITE, 0.2)); g.fill(); g.strokeStyle = INKS; g.lineWidth = Math.max(0.6, h * 0.08); g.stroke();
+    }
+    // the tail's spade, just under the jaw
+    var tq = rp(rc, sp.a1), ttx = Math.cos(tq[2]), tty = Math.sin(tq[2]), tnx = Math.sin(tq[2]), tny = -Math.cos(tq[2]), s = w * 0.8;
+    g.beginPath(); g.moveTo(tq[0] - ttx * s * 0.2, tq[1] - tty * s * 0.2); g.lineTo(tq[0] + tnx * s * 0.8, tq[1] + tny * s * 0.8); g.lineTo(tq[0] + ttx * s * 1.6, tq[1] + tty * s * 1.6);
+    g.lineTo(tq[0] - tnx * s * 0.8, tq[1] - tny * s * 0.8); g.closePath(); g.fillStyle = rgbStr(mul(base, 0.85)); g.fill(); g.strokeStyle = INKS; g.lineWidth = Math.max(1, w * 0.12); g.stroke();
+    // the head, facing the tail, with horns, a frill, teeth and a flicker of flame
+    g.save(); headFrame(g, sp, top + off * 0.12, -1);
+    var hw = w * 1.5, hl = hw * 3.1; w = hw;
+    g.fillStyle = rgbStr(mix(belly, WHITE, 0.15)); g.strokeStyle = INKS; g.lineWidth = Math.max(1, w * 0.1); g.lineJoin = "round";
+    [[0.2, 1.75, -1.3], [0.6, 1.4, -0.75]].forEach(function (h) {   // horns swept back
+      g.beginPath(); g.moveTo(w * (h[0] + 0.5), w * 0.6); g.quadraticCurveTo(w * h[0], w * (h[1] + 0.3), w * h[2], w * h[1]); g.quadraticCurveTo(w * (h[0] + 0.1), w * (h[1] - 0.25), w * (h[0] + 0.95), w * 0.55); g.closePath(); g.fill(); g.stroke();
+    });
+    g.fillStyle = rgbStr(mul(base, 0.7));   // the frill behind the jaw
+    g.beginPath(); g.moveTo(w * 0.6, -w * 0.3); g.lineTo(-w * 0.5, -w * 1.2); g.lineTo(w * 0.1, -w * 0.55); g.lineTo(-w * 0.6, -w * 0.4); g.lineTo(w * 0.3, w * 0.1); g.closePath(); g.fill(); g.stroke();
+    var fl = t ? 0.55 + 0.45 * Math.sin(ph * 3) * Math.sin(ph * 2 + 1) : 0.4;   // a little flame at the mouth
+    g.save(); g.globalCompositeOperation = "lighter";
+    var fg = g.createRadialGradient(hl * 1.05, -w * 0.25, 0, hl * 1.05, -w * 0.25, w * (0.6 + fl * 0.5));
+    fg.addColorStop(0, "rgba(255,240,170,0.9)"); fg.addColorStop(0.5, "rgba(255,140,30,0.6)"); fg.addColorStop(1, "rgba(255,60,0,0)");
+    g.fillStyle = fg; g.beginPath(); g.arc(hl * 1.05, -w * 0.25, w * (0.6 + fl * 0.5), 0, TAU); g.fill(); g.restore();
+    snakeHead(g, w, base, belly, t, false, 0);
+    g.fillStyle = "#fffaf0"; for (var k = 0; k < 4; k++) { var x = hl * (0.55 + k * 0.1); g.beginPath(); g.moveTo(x, -w * 0.28); g.lineTo(x + w * 0.1, -w * 0.5); g.lineTo(x + w * 0.2, -w * 0.28); g.closePath(); g.fill(); }
+    g.restore();
+  }
+
+  function chainOver(g, N, r0, r1, col, t) {
+    var band = r1 - r0, rm = (r0 + r1) / 2, metal = natural(col, "#9aa3ab"), L = band * 1.05, n = Math.max(8, Math.round(rper(rm) / (L * 0.72)));
+    if (n % 2) n++;
+    for (var pass = 0; pass < 2; pass++) for (var i = pass; i < n; i += 2) {
+      var q = rp(rm, i / n * TAU), lw = pass ? band * 0.13 : band * 0.16, l = lightAt(Math.sin(q[2]), -Math.cos(q[2]));
+      g.save(); g.translate(q[0], q[1]); g.rotate(q[2]);
+      var hw = pass ? band * 0.13 : band * 0.3, hl = L / 2;
+      g.beginPath(); g.moveTo(-hl + hw, -hw); g.lineTo(hl - hw, -hw); g.arc(hl - hw, 0, hw, -Math.PI / 2, Math.PI / 2); g.lineTo(-hl + hw, hw); g.arc(-hl + hw, 0, hw, Math.PI / 2, Math.PI * 1.5); g.closePath();
+      g.lineJoin = "round"; g.strokeStyle = INKS; g.lineWidth = lw * 1.5; g.stroke();
+      var gr = g.createLinearGradient(0, -hw - lw, 0, hw + lw); gr.addColorStop(0, rgbStr(mix(metal, WHITE, 0.3 + 0.4 * l))); gr.addColorStop(0.5, rgbStr(metal)); gr.addColorStop(1, rgbStr(mul(metal, 0.45)));
+      g.strokeStyle = gr; g.lineWidth = lw; g.stroke();
+      g.strokeStyle = "rgba(255,255,255," + (0.2 + 0.45 * l).toFixed(2) + ")"; g.lineWidth = lw * 0.25; g.beginPath(); g.moveTo(-hl + hw, -hw - lw * 0.2); g.lineTo(hl - hw, -hw - lw * 0.2); g.stroke();
+      g.restore();
+    }
+  }
+
+  function ropeOver(g, N, r0, r1, col, t) {
+    var band = r1 - r0, rm = (r0 + r1) / 2, fiber = natural(col, "#c6a068"), w = band * 0.62, pts = along(rm, 0, TAU, 2);
+    strokeTube(g, pts, w, fiber);
+    // the twist: diagonal grooves across the rope
+    var acc = 0, step = w * 0.42;
+    g.strokeStyle = rgbStr(mul(fiber, 0.55), 0.85); g.lineWidth = Math.max(0.7, w * 0.08); g.lineCap = "round";
+    for (var i = 1; i < pts.length; i++) {
+      var a = pts[i], b = pts[i - 1]; acc += Math.hypot(a[0] - b[0], a[1] - b[1]); if (acc < step) continue; acc = 0;
+      var tx = Math.cos(a[2]), ty = Math.sin(a[2]);
+      g.beginPath(); g.moveTo(a[0] - a[3] * w * 0.45 - tx * w * 0.2, a[1] - a[4] * w * 0.45 - ty * w * 0.2); g.quadraticCurveTo(a[0] + tx * w * 0.05, a[1] + ty * w * 0.05, a[0] + a[3] * w * 0.45 + tx * w * 0.2, a[1] + a[4] * w * 0.45 + ty * w * 0.2); g.stroke();
+    }
+    var n = Math.max(3, Math.round(nCount(16) / 3));   // knots
+    for (var k = 0; k < n; k++) {
+      var q = rp(rm, (k + 0.5) / n * TAU - Math.PI / 2), s = w * 0.85;
+      g.save(); g.translate(q[0], q[1]); g.rotate(q[2]);
+      g.beginPath(); g.ellipse(0, 0, s, s * 0.82, 0, 0, TAU);
+      var gr = g.createRadialGradient(-s * 0.3, -s * 0.35, s * 0.1, 0, 0, s); gr.addColorStop(0, rgbStr(mix(fiber, WHITE, 0.35))); gr.addColorStop(1, rgbStr(mul(fiber, 0.6)));
+      g.fillStyle = gr; g.fill(); g.strokeStyle = INKS; g.lineWidth = Math.max(1, w * 0.1); g.stroke();
+      g.strokeStyle = rgbStr(mul(fiber, 0.45)); g.lineWidth = Math.max(0.8, w * 0.09);
+      g.beginPath(); g.moveTo(-s * 0.8, -s * 0.3); g.bezierCurveTo(-s * 0.2, -s * 0.9, s * 0.5, s * 0.6, s * 0.85, -s * 0.1); g.stroke();
+      g.beginPath(); g.moveTo(-s * 0.8, s * 0.35); g.bezierCurveTo(-s * 0.1, s * 0.9, s * 0.4, -s * 0.8, s * 0.8, s * 0.25); g.stroke();
+      g.restore();
+    }
+  }
+
+  function flamesOver(g, N, r0, r1, col, t) {
+    var band = r1 - r0, n = nCount(Math.round(rper(r1) / (band * 0.7))), ph = phase(t), R2 = rng(77), hot = R.tintOn ? col : [255, 110, 20];
+    var rb = r0 + band * 0.35;
+    g.beginPath(); rring(g, rb + band * 0.1); rring(g, r0); var bg = g.createLinearGradient(0, cur.cy - r1, 0, cur.cy + r1);
+    bg.addColorStop(0, "rgba(90,20,4,0.95)"); bg.addColorStop(1, "rgba(50,10,2,0.95)"); g.fillStyle = bg; g.fill("evenodd");
+    for (var layer = 0; layer < 3; layer++) {
+      var cols = [[mix(hot, [200, 30, 0], 0.4), 1.0], [hot, 0.72], [mix(hot, [255, 240, 160], 0.75), 0.42]][layer];
+      g.save(); if (layer) g.globalCompositeOperation = "lighter";
+      for (var i = 0; i < n; i++) {
+        var s1 = R2(), s2 = R2(), a = (i + 0.5 * s1) / n * TAU, q = rp(rb, a), tx = Math.cos(q[2]), ty = Math.sin(q[2]), nx = Math.sin(q[2]), ny = -Math.cos(q[2]);
+        var flick = t ? 0.82 + 0.18 * Math.sin(ph * (1 + (i % 3)) + s2 * TAU) : 0.9;
+        var H = band * (0.9 + s1 * 0.8) * (R.len || 1) * flick * cols[1], W = rper(rb) / n * 0.65 * (0.8 + s2 * 0.4) * (layer ? cols[1] + 0.15 : 1);
+        var sway = (t ? Math.sin(ph + i) * 0.25 : 0.1) * H, tipx = q[0] + nx * H + tx * sway, tipy = q[1] + ny * H + ty * sway;
+        g.beginPath(); g.moveTo(q[0] - tx * W, q[1] - ty * W);
+        g.bezierCurveTo(q[0] - tx * W + nx * H * 0.5, q[1] - ty * W + ny * H * 0.5, tipx - tx * W * 0.2 - nx * H * 0.2, tipy - ty * W * 0.2 - ny * H * 0.2, tipx, tipy);
+        g.bezierCurveTo(tipx + tx * W * 0.5 - nx * H * 0.35, tipy + ty * W * 0.5 - ny * H * 0.35, q[0] + tx * W + nx * H * 0.3, q[1] + ty * W + ny * H * 0.3, q[0] + tx * W, q[1] + ty * W);
+        g.closePath(); g.fillStyle = rgbStr(cols[0], layer ? 0.75 : 0.95); g.fill();
+      }
+      g.restore(); R2 = rng(77);
+    }
+  }
+
+  function tentaclesOver(g, N, r0, r1, col, t) {
+    var band = r1 - r0, rm = (r0 + r1) / 2, flesh = natural(col, "#8a3f8f"), n = Math.max(4, Math.round(nCount(16) / 2.2)), ph = phase(t);
+    var under = mix(flesh, [255, 200, 210], 0.55);
+    strokeTube(g, along(rm, 0, TAU, 3), band * 0.62, mul(flesh, 0.8));   // a fleshy hoop the arms grow from
+    for (var i = 0; i < n; i++) {
+      var side = i % 2 ? 1 : -1, q0 = rp(rm, (i + 0.5) / n * TAU), tx = Math.cos(q0[2]), ty = Math.sin(q0[2]), nx = Math.sin(q0[2]), ny = -Math.cos(q0[2]);
+      var L = band * 3.4 * (R.len || 1), m = 56, x = q0[0], y = q0[1], pts = [], sway = t ? Math.sin(ph + i * 1.9) * 0.35 : 0, w0 = band * 0.46;
+      for (var k = 0; k <= m; k++) {
+        var s2 = k / m, ang = side * (0.3 + 4.4 * Math.pow(s2, 2.8) + sway * s2);   // from leaning along the ring to a curl at the tip
+        var dx = nx * Math.cos(ang) + tx * Math.sin(ang), dy = ny * Math.cos(ang) + ty * Math.sin(ang);
+        pts.push([x, y, Math.atan2(dy, dx), -dy * side, dx * side, w0 * (1 - s2 * 0.88)]);
+        var stp = L / m * (1 - s2 * 0.55); x += dx * stp; y += dy * stp;
+      }
+      var k2;
+      for (k2 = 1; k2 < pts.length; k2++) { var a0 = pts[k2 - 1], a1 = pts[k2]; g.lineCap = "round"; g.strokeStyle = INKS; g.lineWidth = a1[5] * 1.25 + 1.2; g.beginPath(); g.moveTo(a0[0], a0[1]); g.lineTo(a1[0], a1[1]); g.stroke(); }
+      for (k2 = 1; k2 < pts.length; k2++) {
+        a0 = pts[k2 - 1]; a1 = pts[k2]; var l = lightAt(Math.cos(a1[2]), Math.sin(a1[2]));
+        g.strokeStyle = rgbStr(mix(flesh, WHITE, 0.08 + 0.12 * l)); g.lineWidth = a1[5]; g.beginPath(); g.moveTo(a0[0], a0[1]); g.lineTo(a1[0], a1[1]); g.stroke();
+        g.strokeStyle = rgbStr(under); g.lineWidth = a1[5] * 0.38; g.beginPath();
+        g.moveTo(a0[0] + a0[3] * a0[5] * 0.3, a0[1] + a0[4] * a0[5] * 0.3); g.lineTo(a1[0] + a1[3] * a1[5] * 0.3, a1[1] + a1[4] * a1[5] * 0.3); g.stroke();
+      }
+      for (k2 = 2; k2 < pts.length - 3; k2 += 3) {   // suckers along the inside of the curl
+        var q2 = pts[k2], sr = q2[5] * 0.2; if (sr < 0.7) continue;
+        g.fillStyle = rgbStr(mix(under, WHITE, 0.35)); g.strokeStyle = rgbStr(mul(flesh, 0.55)); g.lineWidth = Math.max(0.5, sr * 0.4);
+        g.beginPath(); g.arc(q2[0] + q2[3] * q2[5] * 0.34, q2[1] + q2[4] * q2[5] * 0.34, sr, 0, TAU); g.fill(); g.stroke();
+      }
+      for (k2 = 1; k2 < pts.length; k2 += 3) { var p1 = pts[k2]; g.fillStyle = "rgba(255,255,255,0.3)"; g.beginPath(); g.arc(p1[0] - p1[3] * p1[5] * 0.22, p1[1] - p1[4] * p1[5] * 0.22, p1[5] * 0.12, 0, TAU); g.fill(); }
+    }
+  }
+
+  function bonesOver(g, N, r0, r1, col, t) {
+    var band = r1 - r0, rm = (r0 + r1) / 2, ivory = natural(col, "#e9e0c8"), L = band * 1.5, n = Math.max(6, Math.round(rper(rm) / (L * 0.85)));
+    for (var i = 0; i < n; i++) {
+      var q = rp(rm + (i % 2 ? band * 0.12 : -band * 0.12), i / n * TAU), hl = L / 2, sw = band * 0.14, kr = band * 0.17, l = lightAt(Math.sin(q[2]), -Math.cos(q[2]));
+      g.save(); g.translate(q[0], q[1]); g.rotate(q[2] + (i % 2 ? 0.12 : -0.12));
+      g.beginPath(); g.rect(-hl + kr, -sw, (hl - kr) * 2, sw * 2);
+      [-1, 1].forEach(function (s) { g.moveTo(s * (hl - kr) + kr, -kr * 0.9); g.arc(s * (hl - kr), -kr * 0.9, kr, 0, TAU); g.moveTo(s * (hl - kr) + kr, kr * 0.9); g.arc(s * (hl - kr), kr * 0.9, kr, 0, TAU); });
+      g.save(); g.shadowColor = "rgba(0,0,0,0.4)"; g.shadowBlur = band * 0.12; g.shadowOffsetY = band * 0.05; g.strokeStyle = INKS; g.lineWidth = Math.max(1, band * 0.06); g.stroke(); g.restore();
+      var gr = g.createLinearGradient(0, -kr * 2, 0, kr * 2); gr.addColorStop(0, rgbStr(mix(ivory, WHITE, 0.4 + 0.3 * l))); gr.addColorStop(0.6, rgbStr(ivory)); gr.addColorStop(1, rgbStr(mix(ivory, [120, 100, 70], 0.45)));
+      g.fillStyle = gr; g.fill("nonzero");
+      g.strokeStyle = "rgba(120,100,70,0.4)"; g.lineWidth = Math.max(0.5, band * 0.025); g.beginPath(); g.moveTo(-hl * 0.5, sw * 0.4); g.lineTo(hl * 0.5, sw * 0.4); g.stroke();
+      g.restore();
+    }
+  }
+
+  function crystalsOver(g, N, r0, r1, col, t) {
+    var band = r1 - r0, gem = natural(col, "#5fc8ff"), n = nCount(Math.round(rper(r1) / (band * 0.55))), R2 = rng(19), ph = phase(t);
+    var rb = r0 + band * 0.35;
+    g.beginPath(); rring(g, rb + band * 0.12); rring(g, r0); g.fillStyle = "rgba(58,54,66,0.97)"; g.fill("evenodd"); g.strokeStyle = INKS; g.lineWidth = Math.max(1, band * 0.04); g.stroke();
+    for (var i = 0; i < n; i++) {
+      var a = (i + R2() * 0.7) / n * TAU, q = rp(rb, a), lean = (R2() - 0.5) * 0.7, tx = Math.cos(q[2]), ty = Math.sin(q[2]);
+      var nx = Math.sin(q[2]) * Math.cos(lean) + tx * Math.sin(lean), ny = -Math.cos(q[2]) * Math.cos(lean) + ty * Math.sin(lean);
+      var H = band * (0.6 + R2() * 0.9) * (R.len || 1), W = band * (0.14 + R2() * 0.1), px = -ny, py = nx, l = lightAt(nx, ny);
+      var tip = [q[0] + nx * H, q[1] + ny * H], sh = [q[0] + nx * H * 0.78, q[1] + ny * H * 0.78];
+      // two faces of a prism with a pointed tip: a light face and a shadowed face
+      var c1 = mix(gem, WHITE, 0.35 + 0.3 * l), c2 = mul(gem, 0.6);
+      g.beginPath(); g.moveTo(q[0] - px * W, q[1] - py * W); g.lineTo(sh[0] - px * W, sh[1] - py * W); g.lineTo(tip[0], tip[1]); g.lineTo(sh[0], sh[1]); g.lineTo(q[0], q[1]); g.closePath();
+      g.fillStyle = rgbStr(c1, 0.88); g.fill();
+      g.beginPath(); g.moveTo(q[0], q[1]); g.lineTo(sh[0], sh[1]); g.lineTo(tip[0], tip[1]); g.lineTo(sh[0] + px * W, sh[1] + py * W); g.lineTo(q[0] + px * W, q[1] + py * W); g.closePath();
+      g.fillStyle = rgbStr(c2, 0.9); g.fill();
+      g.beginPath(); g.moveTo(q[0] - px * W, q[1] - py * W); g.lineTo(sh[0] - px * W, sh[1] - py * W); g.lineTo(tip[0], tip[1]); g.lineTo(sh[0] + px * W, sh[1] + py * W); g.lineTo(q[0] + px * W, q[1] + py * W);
+      g.strokeStyle = INKS; g.lineWidth = Math.max(0.8, band * 0.03); g.lineJoin = "round"; g.stroke();
+      var sp = t ? Math.max(0, Math.sin(ph + i * 2.1)) : 0.3;   // a glint that moves from shard to shard
+      g.strokeStyle = "rgba(255,255,255," + (0.35 + 0.5 * sp * l).toFixed(2) + ")"; g.lineWidth = Math.max(0.6, W * 0.25);
+      g.beginPath(); g.moveTo(q[0] - px * W * 0.55 + nx * H * 0.1, q[1] - py * W * 0.55 + ny * H * 0.1); g.lineTo(sh[0] - px * W * 0.55, sh[1] - py * W * 0.55); g.stroke();
+    }
+  }
+  function sculpt(name, over, extra) {
+    add("Sculpted", name, function (p, col, t) { return [0, 0, 0, 0]; }, FLAT, null, Object.assign({ vector: true, over: over, sculpted: true }, extra || {}));
+  }
+  sculpt("Barbed wire", barbedOver);
+  sculpt("Spikes", spikesOver, { lenCount: true });
+  sculpt("Thorny vines", vinesOver, { lenCount: true });
+  sculpt("Snake", snakeOver, { anim: true });
+  sculpt("Two snakes", twoSnakesOver, { anim: true });
+  sculpt("Dragon", dragonOver, { anim: true });
+  sculpt("Chain", chainOver);
+  sculpt("Rope", ropeOver, { lenCount: true });
+  sculpt("Flames", flamesOver, { anim: true, lenCount: true });
+  sculpt("Tentacles", tentaclesOver, { anim: true, lenCount: true });
+  sculpt("Bones", bonesOver);
+  sculpt("Crystal shards", crystalsOver, { anim: true, lenCount: true });
+
+
+  var FAMS = ["Painted", "Metal", "Runes", "Wood", "Stone", "More", "Sculpted", "Tech", "Energy"];
+  var FAM_LABEL = { Painted: "Painted", Metal: "Metal", Runes: "Carved runes", Wood: "Wood", Stone: "Stone", More: "More", Sculpted: "Sculpted", Tech: "Tech", Energy: "Energy" };
+  var FAM_GAME = { Painted: "both", Metal: "both", Runes: "fantasy", Wood: "fantasy", Stone: "fantasy", More: "fantasy", Sculpted: "both", Tech: "scifi", Energy: "scifi" };
   function styleById(id) { for (var i = 0; i < STYLES.length; i++) if (STYLES[i].id === id) return STYLES[i]; return null; }
 
   function shade(rgb, p, sh) {
@@ -614,6 +1007,8 @@
     cur = { s: sh, cx: cxx, cy: cyy };
     p.band = band; p.rm = shapePerim(sh, (r0 + r1) / 2) / TAU; p.N = N; p.time = t;
     var noTint = st.fam === "Painted" || st.usesColor, lit = st.fam === "Energy" || !!st.emissive;
+    R.tintOn = !!tint;
+    if (st.vector) y1 = y0;   // drawn as vectors only (Sculpted)
     for (var y = y0; y < y1; y++) {
       for (var x = x0; x < x1; x++) {
         var dx = x + 0.5 - cxx, dy = y + 0.5 - cyy;

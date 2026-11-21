@@ -1,6 +1,6 @@
 /* Table Goblin token creator: lettering and objects drawn over the token. Ring text along the outline, number badges, Elite and Weak
    marks, status pips, and placeable banners, scrolls, plaques, nameplates and neon signs. Fonts come from Google Fonts, one family at
-   a time when it is first chosen. Loaded after token-rings.js. */
+   a time when it is first chosen. Loaded after token-rings.js. Props (holiday stickers and costume pieces) are drawn by token-props.js. */
 (function () {
   "use strict";
   var TG = window.TGTok = window.TGTok || {}, K = TG.rings;
@@ -239,7 +239,7 @@
   // Local frame helpers for the Objects tool: point (token px) to the object's own unrotated frame.
   function toLocal(O, p) { var c = Math.cos(-(O.rot || 0)), s = Math.sin(-(O.rot || 0)), dx = p[0] - O.x, dy = p[1] - O.y; return [dx * c - dy * s, dx * s + dy * c]; }
   function fromLocal(O, q) { var c = Math.cos(O.rot || 0), s = Math.sin(O.rot || 0); return [O.x + q[0] * c - q[1] * s, O.y + q[0] * s + q[1] * c]; }
-  function objHalf(O) { var ext = O.style === "ribbon" ? 1.3 : O.style === "scroll" ? 1.05 : 1; return [O.w / 2 * ext, O.h / 2 * (O.style === "ribbon" ? 1.25 : 1)]; }
+  function objHalf(O) { if (O.type === "prop" && TG.props) return TG.props.half(O); var ext = O.style === "ribbon" ? 1.3 : O.style === "scroll" ? 1.05 : 1; return [O.w / 2 * ext, O.h / 2 * (O.style === "ribbon" ? 1.25 : 1)]; }
   function hitObject(O, p, pad) { var q = toLocal(O, p), hh = objHalf(O); return Math.abs(q[0]) <= hh[0] + pad && Math.abs(q[1]) <= hh[1] + pad; }
 
   TG.objects = {
