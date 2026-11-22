@@ -464,6 +464,9 @@ img { max-width: 100%; }
   .feature-list { list-style: none; padding: 0; margin: 0 0 14px; }
   .feature-list li { margin: 0 0 12px; }
   .new-date { font-family: "IBM Plex Sans", sans-serif; font-size: 14px; font-weight: 600; color: var(--text-2); letter-spacing: 0; text-transform: none; margin: 22px 0 6px; }
+  .new-ver { display: inline-block; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12.5px; font-weight: 600; color: var(--accent); background: var(--accent-wash); border-radius: 999px; padding: 1px 9px; margin-right: 6px; vertical-align: 1px; }
+  .new-ver-site { color: var(--text-2); background: var(--surface-2); font-family: "IBM Plex Sans", sans-serif; }
+  .new-count { font-weight: 400; color: var(--text-3); }
   .new-list { margin: 0 0 6px; }
   .coming-list { margin: 0 0 14px; }
   .site-footer { margin: 70px 0 0; padding-top: 18px; border-top: 1px solid var(--line); color: var(--text-3); font-size: 13.5px; }
