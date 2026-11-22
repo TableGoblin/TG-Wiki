@@ -1378,7 +1378,7 @@
           <li><strong>How lasting menus work:</strong> a button or dropdown used to be tied to a copy of its menu held in the bot's memory, so it stopped working after a few minutes, or when the bot restarted. Now each button carries a short label saying what it is and which campaign it belongs to, and anything bigger (a half-built character, a shopping cart, the map painter's brush) is saved in the database for up to 7 days. When you click, the bot reads that, checks again that it's your menu in your campaign and that nothing has changed since it was posted, and then carries on. Menus no longer sit in memory waiting to be clicked, which keeps the bot light as more tables join. Quick in-turn prompts, like reactions and moving a token, still expire after a few minutes, since they only matter in the moment.</li>
           <li><strong>Search inside the retrain menu:</strong> <code>/tgretrain</code>'s feat, repertoire spell and signature spell menus now hold every choice, with a 🔎 Search button and page arrows under the dropdown, so you no longer have to rerun the command with <code>search</code> when the spell you want isn't in the first 25.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.1015</span> Nov 6, 2026 <span class="new-count">· 102 changes since v0.913</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.1015</span> Nov 6, 2026 <span class="new-count">· 102 changes since v0.0913</span></h3>
         <ul class="new-list">
           <li><strong>Feybound and Vaultlines:</strong> the new Pathfinder #225 Vaultlines and Feybound content is in. Build Fauns, Gremlins and Nymphs, the Sprite heritages (renamed with &ldquo;Sprite&rdquo;) and Fadrim, with their ancestry feats, the Feybound backgrounds and the Trickster muse, in the bot builder, Pathbuilder import and the site builder. Heritages that grant a feat or a language now give it (about 45 older heritages were missing theirs), and a low-light ancestry with a low-light heritage no longer breaks a build. Creatures removed upstream stay available for older adventures.</li>
           <li><strong>Content sources (which books count):</strong> every item, feat, spell and creature now knows which book it came from. A GM can restrict a campaign to chosen books from the <strong>Books</strong> button in <code>/tgm campaign_rules</code>; anything from other books then stays out of that campaign's builds, shops and loot. Any printing of a book counts as that book, content that moved to a newer book in a reprint (Sprite, for one) still counts for the older book too, and Pathfinder Society and Starfinder Society home campaigns stay wide open. The site builder has a <em>Books you own</em> picker, and shows the books your current build uses while none are ticked. Books added to our source material later stay off in a restricted campaign until the GM turns them on.</li>
@@ -1391,7 +1391,7 @@
           <li><strong>Rules and stealth:</strong> persistent damage doubles on a critical hit and halves on a basic save, Seek and Recall Knowledge no longer break stealth while attacks, Steal, Coerce and loud actions do, Bane is strict, a Barbarian's Rage applies the instinct boost for their level automatically, Intimidating Prowess counts on Demoralize and Coerce, and <code>/tge damage</code> can mark damage magical and damage vehicles. Spells that move a creature ask the caster where it goes.</li>
           <li><strong>Class details:</strong> Mystic Bond needs an adjacent, willing creature, a champion's reaction resistance is applied to the triggering hit, a Strike with no hands recorded asks whether the weapon is already in hand, Psychic Outburst has a two-round cast, Pierce the Eye is an action, Spell Mastery spells can be retrained with <code>/tgretrain</code>, and long spell lists are split into pages (&ldquo;More&hellip;&rdquo;). The terrain painter's dropdown is shorter: water depth, hazards, cliffs, light and darkness open their choices in the same dropdown.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.913</span> Nov 5, 2026 <span class="new-count">· 104 changes since v0.809</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0913</span> Nov 5, 2026 <span class="new-count">· 104 changes since v0.0809</span></h3>
         <ul class="new-list">
           <li><strong>Damage and resistances work on real hits:</strong> resistances, weaknesses and immunities (physical, energy, all damage and their exceptions) now match what weapons and spells actually deal. Immunity to precision damage and to critical hits is respected, extra damage like a Flaming rune or a creature's "plus 1d6 fire" is resisted as its own type, and persistent, zone and affliction damage now go through resistance, temporary Hit Points and dying.</li>
           <li><strong>Spells reach hit points and conditions:</strong> a cast message lists each target's result with an <em>Apply to Hit Points</em> button for damage and healing (Heal, Harm, Sorcerous Potency and the rest). Most spells with a saving throw now apply their condition on a failure, with incapacitation. Area spells affect the creatures in the area instead of the caster, Bless and Bane last their full minute, and Shield, Sure Strike, Resist Energy and False Vitality now work. Dispel Magic and 30 other counteract spells roll the check, and spontaneous slots and Focus Points are enforced.</li>
@@ -1405,7 +1405,7 @@
           <li><strong>Starfinder:</strong> all five Soldier fighting styles and the Operative specialization actions work, Install Upgrade and In Another Life are in, Grenade Specialist and Extra Enduring Mods are in, weapon, armor and shield grades now reach attacks, AC and saves, and ancestry innate spells were added.</li>
           <li><strong>Society home campaigns:</strong> the home campaign for Pathfinder Society and Starfinder Society characters is now set explicitly, so another society game on the Table Goblin server can no longer break check-out.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.809</span> Nov 4, 2026 <span class="new-count">· 12 changes since v0.797</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0809</span> Nov 4, 2026 <span class="new-count">· 12 changes since v0.0797</span></h3>
         <ul class="new-list">
           <li><strong>/tgchar tidy-up:</strong> <code>/tgchar print</code> is now <code>/tgchar sheet print:True</code>, the field list from <code>/tgchar update_fields</code> is what <code>/tgchar update</code> shows when you run it with nothing set (or <code>expression:help</code>), and <code>/tgchar create</code> is gone (use <code>/tgchar build</code> or <code>/tgchar import</code>). New: <code>/tgchar leave_society</code> saves a society character back to its home campaign and takes it out of the game.</li>
           <li><strong>Society characters stay in sync:</strong> a character checked out to a society game has its home record updated every 12 hours, and once more when the game ends or the character is deleted, so nothing it earns at a table is lost. The home character keeps the same id throughout.</li>
@@ -1419,7 +1419,7 @@
           <li><strong>Choices for unarmed attacks, and a few more feats:</strong> Creative Combat and Enlarged Proboscis ask which two traits to give your unarmed attacks (or your proboscis). Fire Fighter and Intensified Psychic Shock ask which benefit you take (Broad Flame, Empowered Flame, Explosive Flare, Long-Range Flare; Extended Shock, Mind Crusher, Peer Pressure, Psychic Wave) and apply it to the attack. Alloyed Attacks asks for cold iron, silver or adamantine (13th level), and the metal your unarmed Strikes are made of now counts against resistances for Precious Alloys and Metal-Veined Strikes too. Hardlight Weapon asks for a form, a damage type and a weapon group, and gives you the attack. Each Commercial, Tactical, Advanced and Superior Customization feat adds a customization slot to a Mechanic's drone. Dire Armplates gives +2 to Demoralize while you tick "Your armplate is raised". Rebound Kinetic Energy (from Kinetic Resonator) is a reaction that releases 1d4 force per 10 damage you took in a 10-foot emanation, and Leverage Specs marks a creature you critically recalled knowledge about for your Intelligence modifier in rounds.</li>
           <li><strong>More Starfinder feats that were left out:</strong> Flame Belch adds persistent fire (half your level) on a critical hit; Bug Bite adds persistent poison per die and makes your jaws d8 without finesse; Natural Hunter adds persistent bleed per die on a critical hit with your jaws; Voracious Bite, Blowhole and Even More Smashing! add their lines to a Strike; Long Tail gives a tailblade reach; Improved Conductivity gives your electricity Strikes the arc trait; Hero's Edge adds your weapon dice while your Heroic Last Stand hit points last. Kinetic Resonator now gives its resistance (your Intelligence modifier to physical damage). A Technomancer Dedication holder gets Overclock Gear, and Tashtari Cluster lets two pieces of gear be overclocked at once. Protective Bulk raises your shield for two adjacent allies (you take -1 AC), and Repurpose Mystic Power gives temporary Hit Points of double a spell's rank.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.797</span> Nov 3, 2026 <span class="new-count">· 40 changes since v0.757</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0797</span> Nov 3, 2026 <span class="new-count">· 40 changes since v0.0757</span></h3>
         <ul class="new-list">
           <li><strong>Starfinder archetype spellcasting:</strong> the Mystic, Technomancer and Witchwarper archetypes now give spell slots with their Basic, Expert and Master Spellcasting feats, the same way the Pathfinder casting archetypes do (a 1st-rank slot at 4th level, rising to 3rd at 8th; 4th to 6th from 12th; 7th and 8th from 18th), with a spellcaster entry for the archetype on the sheet. A Mystic's and Witchwarper's tradition (and a Witchwarper's Intelligence or Charisma) are asked for with <code>/tgarchetypecaster status</code>. Quantum Breadth adds a slot of every rank but your two highest, and Quantum Research gives a Witchwarper a second 10th-rank slot.</li>
           <li><strong>Witchwarper anchors and quantum field:</strong> a new <em>Sustain Quantum Field</em> action applies your anchor's anchoring effect, once a round: Core Memories lowers Stupefied by 1, Focal Point lowers Clumsy by 1 and ignores Suppressed until your next turn, and Tangible Object lowers Frightened by 1 (or, when you are not frightened, gives +1 to Will saves against fear and +2 to your Will DC against Demoralize). Sustaining also grows the field by 5 feet with Enlarge Quantum Field and reminds you of Complete Transposition's teleport. Warp Reality can make the field a 10-foot aura around you with Quantum Aura. Advanced Warp and Greater Warp give you your paradox's advanced and greater warp spell, Quantum Negation gives you that warp spell, Predict Outcome is a 10-minute exploration action, and Infinite Magic is a twice-a-day free action for a spell with no slot left.</li>
@@ -1457,7 +1457,7 @@
           <li><strong>More Focus Points for an Animist:</strong> Third Apparition (7th level) and Fourth Apparition (15th) each add a Focus Point to your pool, up to the cap of 3.</li>
           <li><strong>Dancing Invocation and Elf Step:</strong> A Liturgist Animist from 9th level has a free <em>Dancing Invocation</em> action: after you Leap, Step or Tumble Through, it Sustains one of your apparition spells or your vessel spell (it refuses any other spell). <em>Elf Step</em>, <em>Wing Step</em> and <em>Guarded Advance</em> Step twice, and for a Liturgist each Step can name a different spell to Sustain, so one action keeps two going.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.757</span> Nov 2, 2026 <span class="new-count">· 41 changes since v0.716</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0757</span> Nov 2, 2026 <span class="new-count">· 41 changes since v0.0716</span></h3>
         <ul class="new-list">
           <li><strong>See your apparitions:</strong> <code>/tganimist show</code> lists the apparitions you are attuned to, the primary first, with their Lore skills, the vessel spell and avatar forms. The Combat tab shows the same list, and the Spells tab marks which apparition gives each apparition spell.</li>
           <li><strong>An Animist's apparitions:</strong> The Animist's 14 apparitions are in the bot, with their Lore skills, spells and vessel spells. The build wizard has an Apparitions step (two to start, the first is your primary); a level-up offers the third at 7th and fourth at 15th. Attuning trains you in the apparition's Lores (expert from 8th, master from 16th), adds its spells to your apparition repertoire, and the primary's vessel spell becomes your focus spell. Overnight daily preparations let you re-attune and pick the primary, and Refocus lets you change the primary.</li>
@@ -1512,7 +1512,7 @@
           <li><strong>More senses:</strong> Serpent's Tongue, Sense Ki, Cultivator's Keen Eye, Uncanny Awareness, Vigilant Mask and Soulsight add their sense to the sheet.</li>
           <li><strong>Lore choices:</strong> Diabolic Scion no longer offers Cheliax; it offers Devil Lore, Hell Lore or a city of your choice. Starfinder Society Lore keeps its name.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.716</span> Nov 1, 2026 <span class="new-count">· 25 changes since v0.691</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0716</span> Nov 1, 2026 <span class="new-count">· 25 changes since v0.0691</span></h3>
         <ul class="new-list">
           <li><strong>Skill checks in chat:</strong> <code>alias:: I haul myself up {skill}</code> gives a dropdown of your skills, Perception and Lores; <code>{skill: athletics}</code> rolls it straight away and <code>{skill: athletics dc 20}</code> says how it went against a DC. Short names work (<code>ath</code>) and so do your Lores by name (<code>{skill: sailing}</code> or <code>{skill: lore sailing}</code>).</li>
           <li><strong>Name your dedication's Lore:</strong> Dedications that give a Lore (Pirate Dedication: Sailing Lore or a coastal city, Diabolic Scion, Trade Corp Rep) ask which one; use <code>/tgchar ancestry_choice</code> and pick from the list or type your own. Dedications that add "a Lore of your choice if you were already trained" (War Mage, Gladiator, Infernal Breaker and others) ask too, but only if you already had the Lore. Every dedication that names a Lore now trains it.</li>
@@ -1537,7 +1537,7 @@
 
             <section id="m-october-2026" style="padding-top:34px">
         <h2 class="new-head">October 2026</h2>
-        <h3 class="new-date"><span class="new-ver">v0.691</span> Oct 31, 2026 <span class="new-count">· 3 changes since v0.688</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0691</span> Oct 31, 2026 <span class="new-count">· 3 changes since v0.0688</span></h3>
         <ul class="new-list">
           <li><strong>Town shopkeepers:</strong> a vendor's ancestry must be one the campaign's game systems have. <code>/tgtown generate</code> rolls them from the right system, and <code>/tgtown shop add</code> and <code>/tgtown vendor_add</code> refuse an ancestry the campaign doesn't have (a Starfinder 2e campaign won't take a Half-Elf or a Tengu).</li>
           <li><strong>Invoke the Leviathan:</strong> the form now sets your AC to 22 + your level and gives you its two attacks on the Combat tab until it ends: a tentacle (reach 30 feet, +25, 3d10+15 bludgeoning, backswing and grapple) and a wail (3d10+15 sonic, a basic Reflex save).</li>
@@ -1557,11 +1557,11 @@
           <li><strong>Starfinder ancestry and skill feats:</strong> about 30 reroll feats, survival reactions (Undying, Too Stubborn to Die, Reroot), Quickened feats, timed resistances, Change Shape and the Shifter feats, flight, burrow and size changes as sheet effects, movement feats that work out the exact distance (you still move your token with <code>/tgmap move</code>), fear and Demoralize feats, and the hacking feats that apply Glitching.</li>
           <li><strong>Quantum field:</strong> casting a new quantum field replaces the old one on the map.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.688</span> Oct 30, 2026 <span class="new-count">· 12 changes since v0.676</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0688</span> Oct 30, 2026 <span class="new-count">· 12 changes since v0.0676</span></h3>
         <ul class="new-list">
           <li><strong>Starfinder 2e groundwork:</strong> every class, feat, archetype and piece of gear now knows which game system it belongs to, and the Starfinder 2e data (8 classes, 26 archetypes, about 2,600 feats, spells, gear and creatures) is loaded beside Pathfinder 2e, switched off by default. A GM will be able to run Pathfinder, Starfinder or both together from <code>/tgm campaign_rules</code> (<em>Game systems</em>). Technomancer, Mystic and Witchwarper already cast with the right tradition, slots and connection or paradox spells; the rest of the Starfinder rules are still being wired in.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.676</span> Oct 27, 2026 <span class="new-count">· 4 changes since v0.672</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0676</span> Oct 27, 2026 <span class="new-count">· 4 changes since v0.0672</span></h3>
         <ul class="new-list">
           <li><strong>Bulk NPCs:</strong> <code>/tgnpc bulk_add</code> adds many creatures from a CSV: exact bestiary names (with any stat overridden on the row) or custom NPCs. Run it without a file for a template. If any row is wrong nothing is added, and every problem is listed.</li>
           <li><strong>Edit a map's terrain again:</strong> <code>/tgmap import_terrain</code> applies a terrain file you edited on the Map prep page to a map already in Discord, so the image doesn't have to be uploaded again.</li>
@@ -1576,7 +1576,7 @@
           <li><strong>Crafting:</strong> a new <code>/tgcraft</code> command. <code>start</code> an item (half its Price in materials; the bot checks your level, Master from item level 9 and Legendary from 16, the Crafting feat for what it makes, and the formula for anything uncommon, rare or unique), <code>work</code> it with <strong>downtime days from the open downtime break</strong> (setup, then the Crafting check, then days that pay down the rest), <code>finish</code> it in coin. Buy or copy formulas, <code>reverse</code> engineer one from an item you hold, or upgrade an item for the Price difference. Impeccable Crafting, Reverse Engineering and Tattoo Artist change the check.</li>
           <li><strong>Cost of living, Subsist and travel:</strong> an optional campaign rule charges a standard of living for each downtime day unless you <strong>Subsist</strong>; feats that are exploration or downtime activities are now abilities; the explore panel has a GM <strong>Travel time</strong> button (distance, terrain, hustle) that can advance the clock.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.672</span> Oct 26, 2026 <span class="new-count">· 14 changes since v0.658</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0672</span> Oct 26, 2026 <span class="new-count">· 14 changes since v0.0658</span></h3>
         <ul class="new-list">
           <li><strong>Builder: collapsible sections and clickable reminders:</strong> every section of the character builder has a button in its corner to collapse or expand it, so finished sections stop taking up the screen. The attribute filter for backgrounds now sits in a highlighted box with a count of matching backgrounds. In the summary, each missed step ("Choose a background.", "Spend your free boosts.") is a link that jumps to the section that needs it.</li>
           <li><strong>Builder lists show everything:</strong> the backgrounds, feats and other pick lists on the character builder no longer stop after the first 40 to 80 entries. Every option that fits your filters is listed (equipment still shows the first 80 until you search).</li>
@@ -1593,7 +1593,7 @@
           <li><strong>Character recipes:</strong> the bot now records every choice a character is built and leveled with. <code>/tgchar export format:Recipe</code> downloads them, with the campaign's rules, coins and gear, as a file for the character builder coming to this site and for moving a character into a new campaign. Characters built or leveled from now on have one; older ones keep using the full snapshot.</li>
           <li><strong>Campaign code:</strong> saving <code>/tgm campaign_rules</code> (or raising the party level with <code>/tgm levelup</code>) posts and pins a short code in the character channel that carries the campaign's variant rules, rarity settings and party level. The character builder will read it so players are offered only what the campaign allows.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.658</span> Oct 25, 2026 <span class="new-count">· 14 changes since v0.641</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0658</span> Oct 25, 2026 <span class="new-count">· 14 changes since v0.0641</span></h3>
         <ul class="new-list">
           <li><strong>Map prep page:</strong> a new page on the wiki where you load a map image, paint walls, water, doors, windows, lights and the like exactly as <code>/tgmap terrain</code> does, pick the map's light level, and download a small terrain file. Add it to <code>/tgmap upload_gridless</code> or <code>upload_gridded</code> as <code>terrain_file</code> and the terrain and lighting arrive with the map. Nothing you paint is uploaded until you send the file to Discord. The page uses the bot's own colors and symbols.</li>
           <li><strong><code>/tgmap export_terrain</code>:</strong> sends back the terrain and light level of the running map or a library <code>slot</code> as that same file, to edit on the Map prep page or reuse.</li>
@@ -1621,7 +1621,7 @@
           <li><strong>Resilient runes count:</strong> a resilient rune on your worn armor now adds its item bonus (+1, +2 or +3) to every saving throw. It had been left out.</li>
           <li><strong>Modifiers stay in step:</strong> a skill the bot grants (a Summoner's eidolon skills) now refreshes your modifiers straight away.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.641</span> Oct 24, 2026 <span class="new-count">· 11 changes since v0.630</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0641</span> Oct 24, 2026 <span class="new-count">· 11 changes since v0.0630</span></h3>
         <ul class="new-list">
           <li><strong>Replies and images in character posts:</strong> when you answer a message with <code>pc::</code>, <code>gm::</code> or <code>npc::</code>, the post now shows what you replied to ("Replying to Dana: the start of their message") with a link to jump to it, and it pings them only if your reply did. Images and files you attach come through too. If one is too big for the server to carry, the post says which. Editing a post keeps its reply line.</li>
           <li><strong>Buttons answer right away:</strong> the buttons on chat actions (Strike, cast, Recall Knowledge and the rest) now respond immediately, so "This interaction failed" should stop appearing when the bot is a little slow.</li>
@@ -1634,12 +1634,12 @@
           <li><strong>Familiar Conduit</strong> now finds your familiar.</li>
           <li><strong>Restart notices:</strong> the new <strong>#goblin-restarts</strong> channel announces a restart 5 minutes ahead and says when the bot is back.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.630</span> Oct 23, 2026 <span class="new-count">· 6 changes since v0.624</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0630</span> Oct 23, 2026 <span class="new-count">· 6 changes since v0.0624</span></h3>
         <ul class="new-list">
           <li><strong>Recall Knowledge fixes:</strong> the button no longer times out, a success now answers saves for creatures ("Goblin Skeleton 1 (Weakest Save) Fortitude +2"), and the GM's message is plain text with no secret-check spoiler.</li>
           <li><strong>Recall Knowledge skills:</strong> the list shows only your trained skills that have the action (Arcana, Crafting, Nature, Occultism, Religion, Society) plus every Lore you're trained in, narrowed to the skills that suit the creature you picked.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.624</span> Oct 21, 2026 <span class="new-count">· 8 changes since v0.616</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0624</span> Oct 21, 2026 <span class="new-count">· 8 changes since v0.0616</span></h3>
         <ul class="new-list">
           <li><strong>Class features on every sheet:</strong> characters built in the wizard now list their class's automatic features with their text (Rage, Reactive Strike, Hunt Prey, Flurry of Blows, Spellstrike...), at the level they unlock. Previously only a few classes did.</li>
           <li><strong>Heritages:</strong> a heritage's own rules now follow your level (Benthic Azarketi's cold resistance), the Warrior Automaton and Warrior Jotunborn heritages upgrade your Fist, Iron Fists makes it lethal with shove, and a Pathbuilder import keeps its heritage so those rules apply to it.</li>
@@ -1672,7 +1672,7 @@
           <li><strong>Spellshape feats:</strong> Reach Spell, Widen Spell, Detonating Spell, Overwhelming Energy, Chaotic Spell, Scintillating Spell, Conceal Spell, Consecrate Spell and Quickened Casting are in your ability list: use one, then Cast a Spell, and the cast shows what the shape does to that spell (new range or area, the splash, the resistance ignored, the Chaotic roll).</li>
           <li><strong>More feat actions:</strong> Bespell Strikes adds its 1d6 to the Strike you choose, and Tempo Shift quickens you. The Combat tab lists the spells you are sustaining.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.616</span> Oct 20, 2026 <span class="new-count">· 13 changes since v0.602</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0616</span> Oct 20, 2026 <span class="new-count">· 13 changes since v0.0602</span></h3>
         <ul class="new-list">
           <li><strong>Sustaining spells:</strong> a sustained spell is tracked as soon as you cast it in an encounter, with its limit taken from the spell. There is a <em>Sustain a Spell</em> action (one action) and a free <em>Dismiss a Spell</em> in your ability list, the Sustain tells you what the spell wants, and Effortless Concentration sustains one for free at the start of your turn.</li>
           <li><strong>Lore skills:</strong> Lore skills from the build wizard are now trained, an ancestry Lore feat (Goblin Lore...) gives its Lore skill, and a Lore no longer reads "Lore Lore".</li>
@@ -1689,7 +1689,7 @@
           <li><strong>Feat actions:</strong> Quick Draw and other "then Strike" feats now roll the Strike, and Trick Magic Item rolls its skill check against the DC the GM gives.</li>
           <li><strong>Pathbuilder import:</strong> an imported character now gets its class and ancestry features (Sneak Attack, Darkvision, Overdrive...) with their text, its senses, its items inside the backpack they were in, and every spell slot per day. Update an older import with <code>/tgchar import</code> (<em>Update existing, keep my edits</em>) to pick these up.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.602</span> Oct 19, 2026 <span class="new-count">· 35 changes since v0.559</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0602</span> Oct 19, 2026 <span class="new-count">· 35 changes since v0.0559</span></h3>
         <ul class="new-list">
           <li><strong>Ranged unarmed Strikes:</strong> any Strike a feat or ancestry gives you with a range (a Leshy's Seedpod, a spit, a ranged tail) now rolls with Dexterity, adds no Strength to damage, and carries the feat's name. Propulsive adds half a positive Strength; a thrown weapon adds its full Strength like a melee weapon, unless it has the splash trait. Existing characters are corrected the next time their sheet recalculates.</li>
           <li><strong>NPC tokens:</strong> <code>/tgnpc set_avatar</code> gives an NPC a token image. It is kept in the GM channel, so players never see it in the Character Sheets channel.</li>
@@ -1702,7 +1702,7 @@
           <li><strong>Building a Rogue:</strong> the build wizard now has a Skill Feat step, since a Rogue gets one at 1st level.</li>
           <li><strong>Feat actions:</strong> every feat that costs an action, a reaction or a free action is in the ability list with its cost and limits, and many now roll their own Strikes, saves and conditions: pick the Strike and the target and the bot applies the extra damage, the condition and the save result. Movement and positioning stay with the table.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.559</span> Oct 17, 2026 <span class="new-count">· 9 changes since v0.550</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0559</span> Oct 17, 2026 <span class="new-count">· 9 changes since v0.0550</span></h3>
         <ul class="new-list">
           <li><strong>Gear tab:</strong> use a consumable on yourself or an ally, invest magic items (only invested items give their bonuses), give gear to another character, affix talismans, and stow things in a pack. Bulk and encumbrance are tracked. <code>{item}</code> and <code>{give}</code> work from chat.</li>
           <li><strong>Shops:</strong> <code>/tgshop</code> is now its own command, and you can sell loose gear back to a shop. The GM sets the sell rate in the campaign rules.</li>
@@ -1716,24 +1716,24 @@
           <li><strong>Party fund:</strong> <code>/tg party</code> is now <code>/tgparty</code>.</li>
           <li><strong>Characters:</strong> Wounded ends after a rest at full Hit Points. <code>/tgchar build</code> takes a <code>level</code> again: it builds at 1st level, then walks you through each level-up to the level you asked for.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.550</span> Oct 16, 2026 <span class="new-count">· 5 changes since v0.545</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0550</span> Oct 16, 2026 <span class="new-count">· 5 changes since v0.0545</span></h3>
         <ul class="new-list">
           <li><strong>Edit post:</strong> right-click something your character said, choose <em>Apps &rarr; Edit post</em>, and fix it within ten minutes.</li>
           <li><strong>Signature spells:</strong> Bards, Oracles, Psychics, Sorcerers and Summoners pick them while building (3rd level and up), and get one free spell swap each level.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.545</span> Oct 13, 2026 <span class="new-count">· 25 changes since v0.520</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0545</span> Oct 13, 2026 <span class="new-count">· 25 changes since v0.0520</span></h3>
         <ul class="new-list">
           <li><strong>Battle map lighting:</strong> the first version of the new lighting system is live on maps. The aim is working torches and carried light sources that can be lit, dropped and picked up again, and senses such as low-light, darkvision, greater darkvision, scent and tremorsense that change what each character can see.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.520</span> Oct 11, 2026 <span class="new-count">· 30 changes since v0.490</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0520</span> Oct 11, 2026 <span class="new-count">· 30 changes since v0.0490</span></h3>
         <ul class="new-list">
           <li><strong>Game data:</strong> the PF2e system module was updated, adding the new Bugbear ancestry and the latest spells, backgrounds and items.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.490</span> Oct 9, 2026 <span class="new-count">· 1 change since v0.489</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0490</span> Oct 9, 2026 <span class="new-count">· 1 change since v0.0489</span></h3>
         <ul class="new-list">
           <li><strong>Database move:</strong> the move to a dedicated database host finished without issue. That takes the load off the bot's own host and frees its resources for the bot.</li>
         </ul>
-        <h3 class="new-date"><span class="new-ver">v0.489</span> Oct 5, 2026 <span class="new-count">· 387 changes to date</span></h3>
+        <h3 class="new-date"><span class="new-ver">v0.0489</span> Oct 5, 2026 <span class="new-count">· 387 changes to date</span></h3>
         <ul class="new-list">
           <li><strong>Reddit launch:</strong> Table Goblin was announced on Reddit, with a 25-person invite code to bring some new players into the Discord server. Welcome to everyone who joined! New features are still coming, and a backend upgrade for better performance is next.</li>
         </ul>
