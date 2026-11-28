@@ -1,5 +1,5 @@
 /* The wiki's two tools (Map prep, Character builder): the same left rail, fonts and palette as the handbook (site.css), plus the parts only a tool needs.
-   Loaded after site.css; every colour is one of its tokens so light and dark follow the rest of the site. */
+   Loaded after site.css; every color is one of its tokens so light and dark follow the rest of the site. */
 
 main.tool-page .wrap { max-width: 1240px; padding: 0 32px; }
 @media (max-width: 900px) { main.tool-page .wrap { padding: 0 16px; } }

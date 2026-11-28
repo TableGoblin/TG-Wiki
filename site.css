@@ -6,7 +6,7 @@ img { max-width: 100%; }
   /* ---------------------------------------------------------------
      Table Goblin Handbook
      Palette: green-biased neutrals and one accent, the green.
-     Every colour is a token on :root so all three theme states
+     Every color is a token on :root so all three theme states
      -- explicit light, explicit dark, and un-stamped system -- resolve.
      --------------------------------------------------------------- */
   :root {
